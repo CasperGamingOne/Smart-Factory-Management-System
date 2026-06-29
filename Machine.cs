@@ -39,6 +39,12 @@
             Parts = parts;
         }
 
-        
+        public TimeSpan GetMachineAge()
+        {
+            return DateTime.Now - InstallationDate;
+        }
+
+        public abstract void Produce(Product product);
+
     }
 }

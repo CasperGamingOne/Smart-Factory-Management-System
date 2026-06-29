@@ -4,12 +4,13 @@
       "owner": "csharp-warnings",
       "pattern": [
         {
-          "regexp": "^(.*\\.cs)\\((\\d+),(\\d+)\\): warning CS\\d+: (.*)$",
+          "regexp": "^(.*)\\((\\d+),(\\d+)\\): warning (CS\\d+): (.*)$",
           "file": 1,
           "line": 2,
           "column": 3,
-          "message": 4,
-          "severity": "error"
+          "code": 4,
+          "message": 5,
+          "severity": "warning"
         }
       ]
     }
