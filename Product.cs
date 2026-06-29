@@ -7,8 +7,8 @@ namespace Smart_Factory_Management_System
     public abstract class Product
     {
         //proprietati
-        public string Name { get; set; }
-        public string Category { get; protected set; }
+        public string? Name { get; set; }
+        public string? Category { get; protected set; }
         public DateTime ProductionDate { get; private set; }
 
         // 

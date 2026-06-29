@@ -31,7 +31,7 @@ namespace Smart_Factory_Management_System
                 Console.WriteLine("0. Iesire");
 
                 Console.Write("\nOptiune: ");
-                int opt = int.Parse(Console.ReadLine());
+                int opt = int.Parse(Console.ReadLine()!);
 
                 switch (opt)
                 {
