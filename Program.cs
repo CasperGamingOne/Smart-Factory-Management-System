@@ -23,7 +23,7 @@ namespace Smart_Factory_Management_System
 
             while (rulare)
             {
-                //Console.Clear();
+                Console.Clear();
 
                 Console.WriteLine(" \n MANAGEMENT FABRICA (ANGAJATI SI PRODUSE)  \n ");
                 Console.WriteLine("1. Afiseaza echipa de angajati");
