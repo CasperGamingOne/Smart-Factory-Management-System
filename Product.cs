@@ -17,12 +17,7 @@ namespace Smart_Factory_Management_System
         private int quantity;
 
         // proprietatea pt costul de productie (cu validare) 
-        public double ProductionCost
-        {
-            get
-            {
-                return productionCost;
-            }
+        public double ProductionCost { get { return productionCost; }
             set
             {
                 if (value >= 0)
@@ -38,12 +33,7 @@ namespace Smart_Factory_Management_System
         }
 
         // proprietatea pentru Pretul de vanzare (cu validare)
-        public double SellingPrice
-        {
-            get
-            {
-                return sellingPrice;
-            }
+        public double SellingPrice { get { return sellingPrice; }
             set
             {
                 if (value >= 0)
@@ -59,12 +49,7 @@ namespace Smart_Factory_Management_System
         }
 
         // Proprietatea pentru Cantitate (cu validare)
-        public int Quantity
-        {
-            get
-            {
-                return quantity;
-            }
+        public int Quantity { get { return quantity; }
             set
             {
                 if (value >= 0)
