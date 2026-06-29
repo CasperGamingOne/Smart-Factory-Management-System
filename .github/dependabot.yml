@@ -10,5 +10,5 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-      time: "08:00"
+      time: "12:00"
       timezone: "Europe/Bucharest"
