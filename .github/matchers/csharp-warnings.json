@@ -1,0 +1,17 @@
+{
+  "problemMatcher": [
+    {
+      "owner": "csharp-warnings",
+      "pattern": [
+        {
+          "regexp": "^(.*\\.cs)\\((\\d+),(\\d+)\\): warning CS\\d+: (.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "message": 4,
+          "severity": "error"
+        }
+      ]
+    }
+  ]
+}
