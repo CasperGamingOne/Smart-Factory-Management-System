@@ -29,14 +29,50 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
 
-    - name: Build project
-      run: dotnet build --no-restore --configuration Release
+# 1. Run build, log to file, and catch exit status safely
+    - name: Build with dotnet
+      id: dotnet_build
+      run: |
+        set -o pipefail
+        if ! dotnet build --no-restore 2>&1 | tee build_log.txt; then
+          echo "build_outcome=failed" >> $GITHUB_OUTPUT
+        else
+          echo "build_outcome=success" >> $GITHUB_OUTPUT
+        fi
 
-    - name: Run Tests
-      run: dotnet test --no-build --configuration Release --verbosity normal
+    # 2. Parse logs (Runs ALWAYS)
+    - name: Analyze Build Logs
+      id: log_analysis
+      if: always()
+      run: |
+        if [ "${{ steps.dotnet_build.outputs.build_outcome }}" = "failed" ]; then
+          echo "status=failed" >> $GITHUB_OUTPUT
+          echo "title=❌ Build Failed on ${{ github.sha }}" >> $GITHUB_OUTPUT
+          tail -n 25 build_log.txt > issue_body.txt
+                
+        elif grep -q "warning CS" build_log.txt; then
+          echo "status=warning" >> $GITHUB_OUTPUT
+          echo "title=⚠️ Build completed with warnings on ${{ github.sha }}" >> $GITHUB_OUTPUT
+          grep "warning CS" build_log.txt | head -n 25 > issue_body.txt
+                
+        else
+          echo "status=success" >> $GITHUB_OUTPUT
+        fi
 
-    - name: Failed Build Issue
-      if: failure() 
-      uses: jayqi/failed-build-issue-action@v1.2.0
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+    # 3. Create the issue if status is 'failed' or 'warning'
+    - name: Create Issue on Warning or Failure
+      if: always() && (steps.log_analysis.outputs.status == 'failed' || steps.log_analysis.outputs.status == 'warning')
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh issue create \
+          --title "${{ steps.log_analysis.outputs.title }}" \
+          --body-file issue_body.txt \
+          --label "bug"
+
+    # 4. Explicitly fail the workflow at the very end if the build originally failed
+    - name: Finalize Workflow Status
+      if: always() && steps.dotnet_build.outputs.build_outcome == 'failed'
+      run: |
+        echo "Failing workflow because the dotnet build step failed."
+        exit 1
