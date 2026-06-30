@@ -24,6 +24,15 @@ namespace Smart_Factory_Management_System
         }
     }
     //clasele derivate pentru diferite tipuri de angajati
+    public class Director : Employee
+    {
+        public Director(string id, string name) : base(id, name) { Role = "Director"; }
+        public override void AfiseazaActivitate()
+        {
+            Console.WriteLine("Directorul " + Name + " stabileste strategia fabricii.");
+        }
+    }
+
     public class ProductionManager : Employee
     {
         public ProductionManager(string id, string name) : base(id, name)
@@ -35,7 +44,22 @@ namespace Smart_Factory_Management_System
             Console.WriteLine("Managerul de Productie " + Name + " verifica planul de componente electronice.");
         }
     }
-    //a doua clasa derivata
+    public class Engineer : Employee
+    {
+        public Engineer(string id, string name) : base(id, name) { Role = "Inginer"; }
+        public override void AfiseazaActivitate()
+        {
+            Console.WriteLine("Inginerul " + Name + " proiecteaza noi circuite electronice.");
+        }
+    }
+    public class Technician : Employee
+    {
+        public Technician(string id, string name) : base(id, name) { Role = "Tehnician"; }
+        public override void AfiseazaActivitate()
+        {
+            Console.WriteLine("Tehnicianul " + Name + " repara echipamentele defecte.");
+        }
+    }
     public class MachineOperator : Employee
     {
         public MachineOperator(string id, string name) : base(id, name)
@@ -47,4 +71,5 @@ namespace Smart_Factory_Management_System
             Console.WriteLine("Operatorul " + Name + " monitorizeaza bratul robotizat.");
         }
     }
+
 }
