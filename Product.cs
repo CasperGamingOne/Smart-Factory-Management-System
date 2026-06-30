@@ -17,35 +17,22 @@ namespace Smart_Factory_Management_System
         private int quantity;
 
         // proprietatea pt costul de productie (cu validare) 
-        public double ProductionCost { get { return productionCost; }
-            set
-            {
-                if (value >= 0)
-                {
-                    productionCost = value;
-                }
-                else
-                {
-                    productionCost = 0; // Previne costul negativ
-                    Console.WriteLine("!!! Costul de productie nu poate fi negativ! S-a setat automat pe 0.");
-                }
-            }
+        public double ProductionCost
+        {
+            get { return productionCost; }
+            set { productionCost = (value >= 0) ? value : 0; }
         }
 
         // proprietatea pentru Pretul de vanzare (cu validare)
-        public double SellingPrice { get { return sellingPrice; }
-            set
-            {
-                if (value >= 0)
-                {
-                    sellingPrice = value;
-                }
-                else
-                {
-                    sellingPrice = 0;
-                    Console.WriteLine("!!! Pretul de vanzare nu poate fi negativ! S-a setat automat pe 0.");
-                }
-            }
+        public double SellingPrice
+        {
+            get { return sellingPrice; }
+            set { sellingPrice = (value >= 0) ? value : 0; }
+        }
+        //calcul marja de profit 
+        public double CalculeazaMarjaProfit()
+        {
+            return SellingPrice - ProductionCost;
         }
 
         // Proprietatea pentru Cantitate (cu validare)
