@@ -159,7 +159,6 @@ namespace Smart_Factory_Management_System
             }
             else if (opt == "2")
             {
-                // Aici ai putea adauga logica de instantiere a unei masini noi
                 Console.WriteLine("Functionalitate de adaugare in curs de dezvoltare...");
             }
         }
@@ -180,7 +179,6 @@ namespace Smart_Factory_Management_System
                 Machine m = masinarii[index - 1];
                 Console.WriteLine($"\nComponentele masinii {m.Model}:");
 
-                // Presupunem ca 'm' are o proprietate numita 'Parts' care este un array de MachinePart
                 foreach (var p in m.Parts)
                 {
                     Console.WriteLine($"- {p.Name} | Stare: {p.Condition}");
