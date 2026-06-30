@@ -35,6 +35,80 @@
             return DateTime.Now - InstallationDate;
         }
 
+        public bool StartMachine()
+        {
+            if (Status == MachineStatus.Maintenance)
+            {
+                Console.WriteLine($"[ERROR] Cannot start '{Name}'! It is currently flagged for Maintenance.");
+                return false;
+            }
+
+            if (Parts == null)
+            {
+                Console.WriteLine($"[ERROR] Cannot start '{Name}' because it has no parts assigned.");
+                Status = MachineStatus.Stopped;
+                return false;
+            }
+
+            foreach (var part in Parts)
+            {
+                if (part.Condition == PartCondition.Critical)
+                {
+                    Console.WriteLine($"[CRITICAL] Cannot start '{Name}' because component '{part.Name}' is broken!");
+                    Status = MachineStatus.Stopped;
+                    return false;
+                }
+            }
+
+            Status = MachineStatus.Running;
+            Console.WriteLine($"[SYSTEM] Machine '{Name}' is now RUNNING production.");
+            return true;
+        }
+
+        public void StopMachine()
+        {
+            if (Status == MachineStatus.Running)
+            {
+                Status = MachineStatus.Stopped;
+                Console.WriteLine($"[SYSTEM] Machine '{Name}' has been safely STOPPED.");
+            }
+        }
+
+        public void InspectMachine()
+        {
+            Console.WriteLine($"[INSPECTION] Running diagnostics on {Name} (S/N: {SerialNumber})...");
+            bool Faults = false;
+
+            if (Parts == null)
+            {
+                Console.WriteLine($"[ERROR] Cannot inspect '{Name}' because it has no parts assigned.");
+                Condition = MachineCondition.Critical;
+                Status = MachineStatus.Maintenance;
+                return;
+            }
+
+
+            foreach (var part in Parts)
+            {
+                part.PrintPartInfo();
+                if (part.Condition == PartCondition.Critical)
+                {
+                    Faults = true;
+                }
+            }
+
+            if (Faults)
+            {
+                Condition = MachineCondition.Critical;
+                Status = MachineStatus.Maintenance;
+                Console.WriteLine($"[DIAGNOSTIC] '{Name}' failed inspection! Status forced to MAINTENANCE.");
+            }
+            else
+            {
+                Console.WriteLine($"[DIAGNOSTIC] '{Name}' passed inspection cleanly.");
+            }
+        }
+
         public abstract void Produce(Product product);       
     }
 
