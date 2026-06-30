@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-﻿using System;
-=======
-﻿using System.Reflection.PortableExecutable;
->>>>>>> 88a286f311bf02d2d9bc31b25b1cd0f62d3d3b2f
-
 namespace Smart_Factory_Management_System
 {
     internal class Program
@@ -17,11 +11,9 @@ namespace Smart_Factory_Management_System
 
         static void Main(string[] args)
         {
-<<<<<<< HEAD
             // Initializare 
             angajati[nrAngajati++] = new ProductionManager("M-101", "Andrei Popescu");
             angajati[nrAngajati++] = new MachineOperator("O-205", "Ionut Marin");
-=======
 
             MachinePart lito_power = new Power_Supply("ASML High-Voltage Grid", PartCondition.Excellent, 400);
             MachinePart lito_cooling = new Cooling_System("CryoHelix Sub-Zero", PartCondition.Excellent, "Liquid Helium");
@@ -57,9 +49,7 @@ namespace Smart_Factory_Management_System
                 new SMT_Machine("Horizon SolderPrinter X5", "DEK International", "SN-DEK-77492-B7", printer_parts, MachineCondition.Excellent),
                 new PaP_Machine("NXT-III High-Speed Mounter", "Fuji Corporation", "SN-FUJI-991A-040", pap_parts, MachineCondition.Excellent),
                 new Reflow_Oven("OmniMax Thermal Tunnel", "Heller Industries", "SN-HLR-5542-Z9", oven_parts, MachineCondition.Critical)
-            };
-
-            
+            };            
 
             // vecorul de angajati
             Employee[] angajati = new Employee[]
@@ -67,7 +57,6 @@ namespace Smart_Factory_Management_System
                 new ProductionManager("M-101", "Andrei Popescu"),
                 new MachineOperator("O-205", "Ionut Marin")
             };
->>>>>>> 88a286f311bf02d2d9bc31b25b1cd0f62d3d3b2f
 
             inventarProduse[nrProduse++] = new Microcontroller("Arduino Uno R4", 15.50, 29.99, 150, "ARM Cortex-M4");
             inventarProduse[nrProduse++] = new SensorModule("Senzor DHT22", 4.20, 9.50, 300, "Umiditate si Temperatura");
