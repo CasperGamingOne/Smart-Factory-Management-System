@@ -19,3 +19,7 @@
 - [ ] MachinePart.cs | @CasperGamingOne
 - [ ] Product.cs     | @ganeaandreea701-crypto
 - [ ] Employee.cs    | @ganeaandreea701-crypto
+
+<!---
+CasperGamingOne/Smart-Factory-Management-System 
+--->
