@@ -58,7 +58,7 @@ namespace Smart_Factory_Management_System
             inventarProduse[nrProduse++] = new SensorModule("Senzor DHT22", 4.20, 9.50, 300, "Umiditate si Temperatura");
 
             bool rulare = true;
-              
+
             while (rulare)
             {
                 //Console.Clear();
@@ -93,8 +93,8 @@ namespace Smart_Factory_Management_System
             }
         }
 
-       ///1
-       static void SubmeniuAngajati()
+        ///1
+        static void SubmeniuAngajati()
         {
             Console.WriteLine("\n--- SUBMENIU ANGAJATI ---");
             Console.WriteLine("1. Afiseaza echipa");
@@ -110,11 +110,53 @@ namespace Smart_Factory_Management_System
             }
             else if (opt == "2")
             {
+                Console.WriteLine("Alege tipul angajatului:");
+                Console.WriteLine("1. Director, 2. Inginer, 3. Tehnician, 4. Contabil, 5. Manager Productie, 6. Operator");
+                string tip = Console.ReadLine()!;
+
+
                 Console.Write("ID: "); string id = Console.ReadLine()!;
                 Console.Write("Nume: "); string nume = Console.ReadLine()!;
-                AdaugaAngajat(new ProductionManager(id, nume));
+
+
+                Employee nou = null; // initializam cu null
+                
+                // Decidem ce tip
+
+                switch (tip)
+                {
+
+                    case "1": nou = new Director(id, nume); break;
+
+                    case "2": nou = new Engineer(id, nume); break;
+
+                    case "3": nou = new Technician(id, nume); break;
+
+                    case "4": nou = new Accountant(id, nume); break;
+
+                    case "5": nou = new ProductionManager(id, nume); break;
+
+                    case "6": nou = new MachineOperator(id, nume); break;
+
+                    default: Console.WriteLine("Tip invalid!"); break;
+
+                }
+
+
+                // il adaugam in vectorul globalif (nou != null)
+
+                {
+
+                    AdaugaAngajat(nou);
+
+                    Console.WriteLine("\nAngajat adugat cu succes:");
+
+                    nou.AfiseazaActivitate();
+
+                }
             }
         }
+
 
         static void AdaugaAngajat(Employee e)
         {
@@ -150,7 +192,7 @@ namespace Smart_Factory_Management_System
             string opt = Console.ReadLine()!;
 
 
-            switch(opt)
+            switch (opt)
             {
                 case "1":
                     Console.WriteLine("\n--- LISTA MASINI ---");
@@ -192,7 +234,7 @@ namespace Smart_Factory_Management_System
 
                 if (m.Parts != null)
                     foreach (MachinePart p in m.Parts)
-                        Console.WriteLine($"- {p.Name} | Stare: {p.Condition}");                
+                        Console.WriteLine($"- {p.Name} | Stare: {p.Condition}");
             }
             else
                 Console.WriteLine("The selected machine does not have components.");
