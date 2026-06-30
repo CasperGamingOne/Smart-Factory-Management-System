@@ -1,13 +1,13 @@
-﻿using System.Net.NetworkInformation;
-
-namespace Smart_Factory_Management_System
+﻿namespace Smart_Factory_Management_System
 {
+    public enum PartCondition { Excellent, Good, Critical }
+
     internal abstract class MachinePart
     {
         public string? Name { get; private protected set; }
-        public bool? Condition { get; private protected set; }
+        public PartCondition? Condition { get; private protected set; }
 
-        public MachinePart(string name, bool? condition)
+        public MachinePart(string name, PartCondition? condition)
         {
             Name = name;
             Condition = condition;
@@ -19,7 +19,7 @@ namespace Smart_Factory_Management_System
     internal class Power_Supply : MachinePart
     {
         public int Voltage { get; }
-        public Power_Supply(string name, bool? condition, int voltage) : base(name, condition)
+        public Power_Supply(string name, PartCondition? condition, int voltage) : base(name, condition)
         {
             Voltage = voltage;
         }
@@ -32,7 +32,7 @@ namespace Smart_Factory_Management_System
     internal class Cooling_System : MachinePart
     {
         public string Type { get; private protected set; }
-        public Cooling_System(string name, bool? condition, string type) : base(name, condition)
+        public Cooling_System(string name, PartCondition? condition, string type) : base(name, condition)
         {
             Type = type;
         }
@@ -45,7 +45,7 @@ namespace Smart_Factory_Management_System
     internal class Control_Unit : MachinePart
     {
         public string Processor { get; private protected set; }
-        public Control_Unit(string name, bool? condition, string processor) : base(name, condition)
+        public Control_Unit(string name, PartCondition? condition, string processor) : base(name, condition)
         {
             Processor = processor;
         }
@@ -58,7 +58,7 @@ namespace Smart_Factory_Management_System
     internal class AOI_System : MachinePart
     {
         public string SystemType { get; private protected set; }
-        public AOI_System(string name, bool? condition, string systemType) : base(name, condition)
+        public AOI_System(string name, PartCondition? condition, string systemType) : base(name, condition)
         {
             SystemType = systemType;
         }
