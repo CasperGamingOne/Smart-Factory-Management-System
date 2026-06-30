@@ -18,6 +18,6 @@
 - [x] Machine.cs (Basic)      | @CasperGamingOne
 - [x] MachinePart.cs (Basic)  | @CasperGamingOne
 - [ ] Product.cs              | @ganeaandreea701-crypto
-- [ ] Employee.cs             | @ganeaandreea701-crypto
+- [x] Employee.cs (Basic)     | @ganeaandreea701-crypto
 - [ ] Program.cs              | @CasperGamingOne & @ganeaandreea701-crypto
 
