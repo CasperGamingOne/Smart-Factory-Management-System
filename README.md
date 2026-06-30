@@ -9,8 +9,9 @@
 
 [![Dependabot Updates](https://github.com/CasperGamingOne/Smart-Factory-Management-System/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/CasperGamingOne/Smart-Factory-Management-System/actions/workflows/dependabot/dependabot-updates)
 
-### Tasks and person assigned
+## Tasks and person assigned
 
+### ===== Tasks =====| ===== Assigned Person =====
 - [ ] Machine.cs     | @CasperGamingOne
 - [ ] MachinePart.cs | @CasperGamingOne
 - [ ] Product.cs     | @ganeaandreea701-crypto
