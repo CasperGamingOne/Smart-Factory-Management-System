@@ -14,6 +14,7 @@
 > [!NOTE]
 > Format: Task | Assigned Person
 
+- [ ] Factory.cs     | @CasperGamingOne
 - [ ] Machine.cs     | @CasperGamingOne
 - [ ] MachinePart.cs | @CasperGamingOne
 - [ ] Product.cs     | @ganeaandreea701-crypto
