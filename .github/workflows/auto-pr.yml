@@ -1,0 +1,31 @@
+name: Auto Pull Request Creator
+
+on:
+  push:
+    branches:
+      - 'dev/auto-update-*' # Triggers only on branches created by your local hook
+
+jobs:
+  create-pull-request:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Create Pull Request via GitHub CLI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          echo "Opening automated Pull Request for $BRANCH_NAME..."
+          gh pr create \
+            --title "🚀 Auto PR: Code updates from terminal push" \
+            --body "This Pull Request was automatically created from a local push intercept. Please review changes before merging into \`main\`." \
+            --base main \
+            --head "$BRANCH_NAME" \
+            --repo "${{ github.repository }}"
