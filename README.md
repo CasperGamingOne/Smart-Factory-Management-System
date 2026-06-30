@@ -3,7 +3,7 @@
 > [!IMPORTANT]
 > Project early in development!
 
-### Project Status
+## Project Status
 
 [![.NET Basic Autotest](https://github.com/CasperGamingOne/Smart-Factory-Management-System/actions/workflows/dotnet.yml/badge.svg)](https://github.com/CasperGamingOne/Smart-Factory-Management-System/actions/workflows/dotnet.yml)
 
