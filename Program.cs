@@ -12,8 +12,8 @@ namespace Smart_Factory_Management_System
         static void Main(string[] args)
         {
             // Initializare 
-            angajati[nrAngajati++] = new ProductionManager("M-101", "Andrei Popescu");
-            angajati[nrAngajati++] = new MachineOperator("O-205", "Ionut Marin");
+            //angajati[nrAngajati++] = new ProductionManager("M-101", "Andrei Popescu");
+            //angajati[nrAngajati++] = new MachineOperator("O-205", "Ionut Marin");
 
             MachinePart lito_power = new Power_Supply("ASML High-Voltage Grid", PartCondition.Excellent, 400);
             MachinePart lito_cooling = new Cooling_System("CryoHelix Sub-Zero", PartCondition.Excellent, "Liquid Helium");
@@ -52,7 +52,7 @@ namespace Smart_Factory_Management_System
             };            
 
             // vecorul de angajati
-            Employee[] angajati = new Employee[]
+            Employee[] angajati =
             {
                 new ProductionManager("M-101", "Andrei Popescu"),
                 new MachineOperator("O-205", "Ionut Marin")
