@@ -1,5 +1,6 @@
 namespace Smart_Factory_Management_System
 {
+
     internal class Program
     {
         // Vectori declarati global (static) pentru a fi accesati din orice metoda
@@ -9,8 +10,8 @@ namespace Smart_Factory_Management_System
         static Product[] inventarProduse = new Product[50];
         static int nrProduse = 0;
 
-        static Machine[] masinarii = new Machine[20];
-        static int nrMasini = 0;
+        static Machine[] machines = new Machine[50];
+        static int nr_machines = 0;
 
         static void Main(string[] args)
         {
@@ -43,13 +44,10 @@ namespace Smart_Factory_Management_System
 
             MachinePart[] oven_parts = { oven_power, oven_cooling, oven_control, oven_AOI };
 
-            Machine[] Machines =
-            {
-                new Litography_Machine("LithoScan EUV-3600", "ASML", "SN-ASML-2024-88A9", lito_parts, MachineCondition.Excellent),
-                new SMT_Machine("Horizon SolderPrinter X5", "DEK International", "SN-DEK-77492-B7", printer_parts, MachineCondition.Excellent),
-                new PaP_Machine("NXT-III High-Speed Mounter", "Fuji Corporation", "SN-FUJI-991A-040", pap_parts, MachineCondition.Excellent),
-                new Reflow_Oven("OmniMax Thermal Tunnel", "Heller Industries", "SN-HLR-5542-Z9", oven_parts, MachineCondition.Critical)
-            };
+            machines[nr_machines++] = new Litography_Machine("LithoScan EUV-3600", "ASML", "SN-ASML-2024-88A9", lito_parts, MachineCondition.Excellent);
+            machines[nr_machines++] = new SMT_Machine("Horizon SolderPrinter X5", "DEK International", "SN-DEK-77492-B7", printer_parts, MachineCondition.Excellent);
+            machines[nr_machines++] = new PaP_Machine("NXT-III High-Speed Mounter", "Fuji Corporation", "SN-FUJI-991A-040", pap_parts, MachineCondition.Excellent);
+            machines[nr_machines++] = new Reflow_Oven("OmniMax Thermal Tunnel", "Heller Industries", "SN-HLR-5542-Z9", oven_parts, MachineCondition.Critical);
 
             // vecorul de angajati
             angajati[nrAngajati++] = new ProductionManager("M-101", "Andrei Popescu");
@@ -131,6 +129,7 @@ namespace Smart_Factory_Management_System
                 Console.WriteLine("Eroare: Fabrica este plina!");
             }
         }
+
         //2
         static void SubmeniuProduse()
         {
@@ -141,55 +140,63 @@ namespace Smart_Factory_Management_System
                 Console.WriteLine("Produs: " + p.Name + " | Pret: " + p.SellingPrice + " RON | Stoc: " + p.Quantity);
             }
         }
+
         //3
         static void SubmeniuMasinarii()
         {
             Console.WriteLine("\n- MANAGEMENT MASINARII -");
             Console.WriteLine("1. Afiseaza toate masinile");
             Console.WriteLine("2. Adauga masina noua");
-            string opt = Console.ReadLine();
+            string opt = Console.ReadLine()!;
 
-            if (opt == "1")
+
+            switch(opt)
             {
-                Console.WriteLine("\n--- LISTA MASINI ---");
-                for (int i = 0; i < nrMasini; i++)
-                {
-                    Console.WriteLine($"{i + 1}. {masinarii[i].Model} (Producator: {masinarii[i].Brand}) - Stare: {masinarii[i].Condition}");
-                }
-            }
-            else if (opt == "2")
-            {
-                // Aici ai putea adauga logica de instantiere a unei masini noi
-                Console.WriteLine("Functionalitate de adaugare in curs de dezvoltare...");
+                case "1":
+                    Console.WriteLine("\n--- LISTA MASINI ---");
+                    foreach (Machine m in machines)
+                    {
+                        if (m != null)
+                        {
+                            Console.WriteLine($"- {m.Name} (Producator: {m.Manufacturer}) - Stare: {m.Condition}");
+                        }
+                    }
+                    break;
+
+                case "2":
+                    Console.WriteLine("Functionalitate de adaugare in curs de dezvoltare...");
+                    break;
+
+                default:
+                    Console.WriteLine("Optiune invalida!");
+                    break;
             }
         }
+
         //4
         static void SubmeniuPiese()
         {
             Console.WriteLine("\n- GESTIUNE PIESE COMPONENTE -");
             Console.WriteLine("Alege masina pentru a vedea piesele componente:");
 
-            for (int i = 0; i < nrMasini; i++)
+            for (int i = 0; i < nr_machines; i++)
             {
-                Console.WriteLine($"{i + 1}. {masinarii[i].Model}");
+                Console.WriteLine($"{i + 1}. {machines[i].Name}");
             }
 
             Console.Write("Optiune: ");
-            if (int.TryParse(Console.ReadLine(), out int index) && index > 0 && index <= nrMasini)
+            if (int.TryParse(Console.ReadLine(), out int index) && index > 0 && index <= nr_machines)
             {
-                Machine m = masinarii[index - 1];
-                Console.WriteLine($"\nComponentele masinii {m.Model}:");
+                Machine m = machines[index - 1];
+                Console.WriteLine($"\nComponentele masinii {m.Name}:");
 
                 // Presupunem ca 'm' are o proprietate numita 'Parts' care este un array de MachinePart
-                foreach (var p in m.Parts)
-                {
-                    Console.WriteLine($"- {p.Name} | Stare: {p.Condition}");
-                }
+                if (m.Parts != null)
+                    foreach (MachinePart p in m.Parts)
+                        Console.WriteLine($"- {p.Name} | Stare: {p.Condition}");                
             }
             else
-            {
-                Console.WriteLine("Selectie invalida.");
-            }
+                Console.WriteLine("The selected machine does not have components.");
         }
 
     }
