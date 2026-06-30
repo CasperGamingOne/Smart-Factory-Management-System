@@ -13,6 +13,18 @@
             Condition = condition;
         }
 
+        public void BreakDown()
+        {
+            Condition = PartCondition.Critical;
+            Console.WriteLine($"[ALERT] Component '{Name}' has failed!");
+        }
+
+        public void Repair()
+        {
+            Condition = PartCondition.Excellent;
+            Console.WriteLine($"[REPAIR] Component '{Name}' is now fully functional.");
+        }
+
         public abstract void PrintPartInfo();
     }
 
