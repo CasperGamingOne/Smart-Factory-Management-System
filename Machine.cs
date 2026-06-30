@@ -77,6 +77,7 @@
         public void InspectMachine()
         {
             Console.WriteLine($"[INSPECTION] Running diagnostics on {Name} (S/N: {SerialNumber})...");
+            Console.WriteLine($"[STATUS] Machine Current Condition: {Condition}, Status: {Status}");
             bool Faults = false;
 
             if (Parts == null)
@@ -86,7 +87,6 @@
                 Status = MachineStatus.Maintenance;
                 return;
             }
-
 
             foreach (var part in Parts)
             {
