@@ -72,7 +72,7 @@ namespace Smart_Factory_Management_System
                 Console.WriteLine("0. Iesire");
 
                 Console.Write("\nOptiune: ");
-                string input = Console.ReadLine();
+                string input = Console.ReadLine()!;
                 int opt;
                 if (!int.TryParse(input, out opt)) continue;   //transforma textul din variabila input intr-un nr intreg; daca reuseste pune rez in variab "opt"
                 //daca nu reuseste , trece peste
@@ -98,7 +98,7 @@ namespace Smart_Factory_Management_System
             Console.WriteLine("\n--- SUBMENIU ANGAJATI ---");
             Console.WriteLine("1. Afiseaza echipa");
             Console.WriteLine("2. Adauga angajat");
-            string opt = Console.ReadLine();
+            string opt = Console.ReadLine()!;
 
             if (opt == "1")
             {
@@ -109,8 +109,8 @@ namespace Smart_Factory_Management_System
             }
             else if (opt == "2")
             {
-                Console.Write("ID: "); string id = Console.ReadLine();
-                Console.Write("Nume: "); string nume = Console.ReadLine();
+                Console.Write("ID: "); string id = Console.ReadLine()!;
+                Console.Write("Nume: "); string nume = Console.ReadLine()!;
                 AdaugaAngajat(new ProductionManager(id, nume));
             }
         }
