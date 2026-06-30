@@ -4,39 +4,30 @@
 
     public enum MachineCondition { Excellent, Good, Critical }
 
-    abstract internal class Machine
+    internal abstract class Machine
     {
-        private protected string? machine_name, machine_manufacturer, machine_serial;
+        public string? Name { get; private protected set; }
 
-        private protected DateTime installation_date;
+        public string? Manufacturer { get; private protected set; }
 
-        private protected MachinePart[]? machine_parts;
+        public string? SerialNumber { get; private protected set; }
 
-        private protected MachineStatus status;
+        public DateTime InstallationDate { get; private protected set; }
 
-        private protected MachineCondition condition;
+        public MachinePart[]? Parts { get; private protected set; }
 
-        public string? Name { get { return machine_name; } set { machine_name = value; } }
+        public MachineStatus Status { get; private protected set; } = MachineStatus.Stopped;
 
-        public string? Manufacturer { get { return machine_manufacturer; } set { machine_manufacturer = value; } }
+        public MachineCondition Condition { get; private protected set; }
 
-        public string? SerialNumber { get { return machine_serial; } set { machine_serial = value; } }
-
-        public DateTime InstallationDate { get { return installation_date; } set { installation_date = value; } }
-
-        public MachinePart[]? Parts { get { return machine_parts; } set { machine_parts = value; } }
-
-        public MachineStatus Status { get { return status; } set { status = MachineStatus.Stopped; }  }
-
-        public MachineCondition Condition { get { return condition; } set { condition = MachineCondition.Excellent; } }
-
-        public Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts)
+        public Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
         {
             Name = machine_name;
             Manufacturer = machine_manufacturer;
             SerialNumber = machine_serial;
-            InstallationDate = DateTime.Now.AddYears(-5);
+            InstallationDate = DateTime.Now.AddYears(-7);
             Parts = parts;
+            Condition = condition;
         }
 
         public TimeSpan GetMachineAge()
@@ -44,7 +35,128 @@
             return DateTime.Now - InstallationDate;
         }
 
-        public abstract void Produce(Product product);
+        public bool StartMachine()
+        {
+            if (Status == MachineStatus.Maintenance)
+            {
+                Console.WriteLine($"[ERROR] Cannot start '{Name}'! It is currently flagged for Maintenance.");
+                return false;
+            }
 
+            if (Parts == null)
+            {
+                Console.WriteLine($"[ERROR] Cannot start '{Name}' because it has no parts assigned.");
+                Status = MachineStatus.Stopped;
+                return false;
+            }
+
+            foreach (var part in Parts)
+            {
+                if (part.Condition == PartCondition.Critical)
+                {
+                    Console.WriteLine($"[CRITICAL] Cannot start '{Name}' because component '{part.Name}' is broken!");
+                    Status = MachineStatus.Stopped;
+                    return false;
+                }
+            }
+
+            Status = MachineStatus.Running;
+            Console.WriteLine($"[SYSTEM] Machine '{Name}' is now RUNNING production.");
+            return true;
+        }
+
+        public void StopMachine()
+        {
+            if (Status == MachineStatus.Running)
+            {
+                Status = MachineStatus.Stopped;
+                Console.WriteLine($"[SYSTEM] Machine '{Name}' has been safely STOPPED.");
+            }
+        }
+
+        public void InspectMachine()
+        {
+            Console.WriteLine($"[INSPECTION] Running diagnostics on {Name} (S/N: {SerialNumber})...");
+            bool Faults = false;
+
+            if (Parts == null)
+            {
+                Console.WriteLine($"[ERROR] Cannot inspect '{Name}' because it has no parts assigned.");
+                Condition = MachineCondition.Critical;
+                Status = MachineStatus.Maintenance;
+                return;
+            }
+
+
+            foreach (var part in Parts)
+            {
+                part.PrintPartInfo();
+                if (part.Condition == PartCondition.Critical)
+                {
+                    Faults = true;
+                }
+            }
+
+            if (Faults)
+            {
+                Condition = MachineCondition.Critical;
+                Status = MachineStatus.Maintenance;
+                Console.WriteLine($"[DIAGNOSTIC] '{Name}' failed inspection! Status forced to MAINTENANCE.");
+            }
+            else
+            {
+                Console.WriteLine($"[DIAGNOSTIC] '{Name}' passed inspection cleanly.");
+            }
+        }
+
+        public abstract void Produce(Product product);       
+    }
+
+    internal class Litography_Machine : Machine
+    {
+        public Litography_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
+            : base(machine_name, machine_manufacturer, machine_serial, parts, condition)
+        {
+        }
+        public override void Produce(Product product)
+        {
+            Console.WriteLine($"Litography Machine {Name} is producing {product.Name}.");
+        }
+    }
+
+    internal class SMT_Machine : Machine  // Solder Paste Printer
+    {
+        public SMT_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
+            : base(machine_name, machine_manufacturer, machine_serial, parts, condition)
+        {
+        }
+        public override void Produce(Product product)
+        {
+            Console.WriteLine($"SMT Machine {Name} is producing {product.Name}.");
+        }
+    }
+
+    internal class PaP_Machine : Machine  // Pick and Place
+    {
+        public PaP_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
+            : base(machine_name, machine_manufacturer, machine_serial, parts, condition)
+        {
+        }
+        public override void Produce(Product product)
+        {
+            Console.WriteLine($"PAP Machine {Name} is producing {product.Name}.");
+        }
+    }
+
+    internal class Reflow_Oven : Machine
+    {
+        public Reflow_Oven(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
+            : base(machine_name, machine_manufacturer, machine_serial, parts, condition)
+        {
+        }
+        public override void Produce(Product product)
+        {
+            Console.WriteLine($"Reflow Oven {Name} is producing {product.Name}.");
+        }
     }
 }
