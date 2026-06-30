@@ -9,6 +9,7 @@
 
 ### Tasks and person assigned
 
-- [ ] Machine.cs | @CasperGamingOne
-- [ ] Product.cs | @ganeaandreea701-crypto
-- [ ] Employee.cs | @ganeaandreea701-crypto
+- [ ] Machine.cs     | @CasperGamingOne
+- [ ] MachinePart.cs | @CasperGamingOne
+- [ ] Product.cs     | @ganeaandreea701-crypto
+- [ ] Employee.cs    | @ganeaandreea701-crypto
