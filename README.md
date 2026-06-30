@@ -11,7 +11,9 @@
 
 ## Tasks and person assigned
 
-### ===== Tasks =====| ===== Assigned Person =====
+> [!NOTE]
+> Format: Task | Assigned Person
+
 - [ ] Machine.cs     | @CasperGamingOne
 - [ ] MachinePart.cs | @CasperGamingOne
 - [ ] Product.cs     | @ganeaandreea701-crypto
