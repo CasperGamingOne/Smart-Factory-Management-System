@@ -158,7 +158,7 @@ namespace Smart_Factory_Management_System
                     {
                         if (m != null)
                         {
-                            Console.WriteLine($"- {m.Name} (Producator: {m.Manufacturer}) - Stare: {m.Condition}");
+                            Console.WriteLine($"- {m.Name} (Producator: {m.Manufacturer}) - Serial Number: {m.SerialNumber} - Installation Date: {m.InstallationDate} - Stare: {m.Condition} - Status: {m.Status}");
                         }
                     }
                     break;
@@ -190,7 +190,6 @@ namespace Smart_Factory_Management_System
                 Machine m = machines[index - 1];
                 Console.WriteLine($"\nComponentele masinii {m.Name}:");
 
-                // Presupunem ca 'm' are o proprietate numita 'Parts' care este un array de MachinePart
                 if (m.Parts != null)
                     foreach (MachinePart p in m.Parts)
                         Console.WriteLine($"- {p.Name} | Stare: {p.Condition}");                
