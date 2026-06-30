@@ -3,9 +3,11 @@
 > [!IMPORTANT]
 > Project early in development!
 
-## Project Status
+## Quick Status View
 
 [![.NET Basic Autotest](https://github.com/CasperGamingOne/Smart-Factory-Management-System/actions/workflows/dotnet.yml/badge.svg)](https://github.com/CasperGamingOne/Smart-Factory-Management-System/actions/workflows/dotnet.yml)
+
+[![Dependabot Updates](https://github.com/CasperGamingOne/Smart-Factory-Management-System/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/CasperGamingOne/Smart-Factory-Management-System/actions/workflows/dependabot/dependabot-updates)
 
 ### Tasks and person assigned
 
