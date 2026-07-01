@@ -104,7 +104,7 @@
 
             // daca ajunge aici inseamna ca masina este oprita si nu poate fi reparata in timp ce functioneaza, deci poate fi reparata de catre tehnician
             this.Status = MachineStatus.Maintenance;
-            Console.WriteLine($"Masina {this.Name} este acum in mentenanta de catre {tech.Name}.");
+            Console.WriteLine($"Masina {this.Name} este acum in mentenanta de catre  Tehnician {tech.Name}.");
         }
 
         public void InspectMachine()

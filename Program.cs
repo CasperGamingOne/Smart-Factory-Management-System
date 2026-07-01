@@ -231,20 +231,33 @@ namespace Smart_Factory_Management_System
                     {
                         Machine masinaSelectata = machines[index];
 
-                        // Cautam un tehnician (sau il cerem de la tastatura)
-                        Technician techSelectat = null;
-                        foreach (var emp in angajati)
+                        // 1. Cerem ID-ul angajatului care vrea sa faca reparatia
+                        Console.Write("Introdu ID-ul angajatului care face reparatia: ");
+                        int idEmp = int.Parse(Console.ReadLine()!);
+
+                        // 2. Cautam angajatul in lista
+                        Employee empGasit = null;
+                        foreach (var e in angajati)
                         {
-                            if (emp is Technician) { techSelectat = (Technician)emp; break; }
+                            if (e != null && e.Id == idEmp) { empGasit = e; break; }
                         }
 
-                        if (techSelectat != null)
+                        // 3. Verificam Regula 16
+                        if (empGasit == null)
                         {
-                            masinaSelectata.Repair(techSelectat); // Aici se aplica regula 3
+                            Console.WriteLine("Eroare: Angajatul nu exista!");
+                        }
+                        else if (empGasit is Director) // regula16-Directorul nu opereaza masini
+                        {
+                            Console.WriteLine($"Eroare: {empGasit.Name} este Director si nu are voie sa repare utilaje!");
+                        }
+                        else if (empGasit is Technician tech) // Daca e tehnician, continuam
+                        {
+                            masinaSelectata.Repair(tech); // Aici se aplica Regula 3
                         }
                         else
                         {
-                            Console.WriteLine("Eroare: Nu exista niciun tehnician in echipa!");
+                            Console.WriteLine("Eroare: Doar tehnicienii pot repara utilaje!");
                         }
                     }
                     break;
@@ -253,6 +266,7 @@ namespace Smart_Factory_Management_System
                     Console.WriteLine("Optiune invalida!");
                     break;
             }
+            
         }
 
         //4
