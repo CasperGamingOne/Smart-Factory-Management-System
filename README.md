@@ -14,10 +14,12 @@
 > [!NOTE]
 > Format: Task | Assigned Person
 
-- [x] Factory.cs (Basic)      | @CasperGamingOne
-- [x] Machine.cs (Basic)      | @CasperGamingOne
-- [x] MachinePart.cs (Basic)  | @CasperGamingOne
-- [ ] Product.cs              | @ganeaandreea701-crypto
-- [x] Employee.cs (Basic)     | @ganeaandreea701-crypto
-- [ ] Program.cs              | @CasperGamingOne & @ganeaandreea701-crypto
+- [x] Factory.cs ~ Final             | @CasperGamingOne
+- [x] Machine.cs ~ Final             | @CasperGamingOne
+- [x] MachinePart.cs ~ Final         | @CasperGamingOne
+- [ ] Product.cs                     | @ganeaandreea701-crypto
+- [x] Employee.cs (Basic)            | @ganeaandreea701-crypto
+- [ ] Program.cs                     | @CasperGamingOne & @ganeaandreea701-crypto
+- [x] LoginHandler.cs                | @CasperGamingOne
+- [x] *MenuHandler.cs* not Final     | @CasperGamingOne & @ganeaandreea701-crypto
 
