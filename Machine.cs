@@ -1,6 +1,6 @@
 ﻿namespace Smart_Factory_Management_System
 {
-    public enum MachineStatus { Running, Stopped, Maintenance }
+    public enum MachineStatus { Running, Stopped, Maintenance }    //pt regula 3  - pt a sti in ce stare se afla masina 
 
     public enum MachineCondition { Excellent, Good, Critical }
 
@@ -18,7 +18,7 @@
 
         public MachineStatus Status { get; private protected set; } = MachineStatus.Stopped;
 
-        public MachineCondition Condition { get; private protected set; }
+        public MachineCondition Condition { get; protected set; }
 
         public Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
         {
@@ -35,6 +35,34 @@
             return DateTime.Now - InstallationDate;
         }
 
+        public virtual void ExecuteProductionCycle(Product product)
+        {
+            if (Status != MachineStatus.Running)
+            {
+                Console.WriteLine($"[ERROR] '{Name}' cannot produce: Machine is {Status}. (Regula 13)");
+                return;
+            }
+
+            // polimorfism
+            Produce(product);
+
+            // Regula 8: Degradarea conditiei
+            Console.WriteLine($"[SYSTEM] Production cycle complete. Machine '{Name}' condition slightly decreased.");
+            // Logica de degradare (ex: Good -> Critical)
+        }
+
+        public abstract void Produce(Product product);
+
+        public virtual void Repair(Technician tech)
+        {
+            if (this.Status == MachineStatus.Running)
+            {
+                Console.WriteLine($"EROARE: {tech.Name}, nu poti repara masina '{Name}' in timp ce functioneaza! (Regula 3)");
+                return;
+            }
+            this.Status = MachineStatus.Maintenance;
+            Console.WriteLine($"Masina {this.Name} este acum in mentenanta de catre {tech.Name}.");
+        }
         public bool StartMachine()
         {
             if (Status == MachineStatus.Maintenance)
@@ -74,9 +102,24 @@
             }
         }
 
+        nouuu(pt regula 3 )
+        public virtual void Repair(Technician tech)
+        {
+            if (this.Status == MachineStatus.Running)
+            {
+                Console.WriteLine($"EROARE: {tech.Name}, nu poti repara masina in timp ce functioneaza!");
+                return;
+            }
+
+            // daca ajunge aici inseamna ca masina este oprita si nu poate fi reparata in timp ce functioneaza, deci poate fi reparata de catre tehnician
+            this.Status = MachineStatus.Maintenance;
+            Console.WriteLine($"Masina {this.Name} este acum in mentenanta de catre {tech.Name}.");
+        }
+
         public void InspectMachine()
         {
             Console.WriteLine($"[INSPECTION] Running diagnostics on {Name} (S/N: {SerialNumber})...");
+            Console.WriteLine($"[STATUS] Machine Current Condition: {Condition}, Status: {Status}");
             bool Faults = false;
 
             if (Parts == null)
@@ -86,7 +129,6 @@
                 Status = MachineStatus.Maintenance;
                 return;
             }
-
 
             foreach (var part in Parts)
             {
@@ -121,6 +163,8 @@
         public override void Produce(Product product)
         {
             Console.WriteLine($"Litography Machine {Name} is producing {product.Name}.");
+            // Aici se sscade starea  (Regula 8)
+            this.Condition = MachineCondition.Good; // Exemplu de schimbare stare
         }
     }
 
@@ -159,4 +203,7 @@
             Console.WriteLine($"Reflow Oven {Name} is producing {product.Name}.");
         }
     }
+
+
 }
+

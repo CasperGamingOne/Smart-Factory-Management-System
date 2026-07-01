@@ -7,6 +7,8 @@
         public string? Name { get; private protected set; }
         public PartCondition? Condition { get; private protected set; }
 
+        private static readonly Random random = new Random()!;
+
         public MachinePart(string name, PartCondition? condition)
         {
             Name = name;
@@ -21,7 +23,7 @@
 
         public void Repair()
         {
-            Condition = PartCondition.Excellent;
+            Condition = random.Next(0, 2) == 0 ? PartCondition.Good : PartCondition.Excellent;
             Console.WriteLine($"[REPAIR] Component '{Name}' is now fully functional.");
         }
 
