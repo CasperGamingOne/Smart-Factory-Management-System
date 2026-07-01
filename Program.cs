@@ -50,8 +50,8 @@ namespace Smart_Factory_Management_System
             machines[nr_machines++] = new Reflow_Oven("OmniMax Thermal Tunnel", "Heller Industries", "SN-HLR-5542-Z9", oven_parts, MachineCondition.Critical);
 
             // vectorul de angajati
-            angajati[nrAngajati++] = new Technician("M-101", "Andrei Popescu");
-            angajati[nrAngajati++] = new SalesAgent("O-205", "Ionut Marin");
+            angajati[nrAngajati++] = new Technician(101, "Andrei Popescu");
+            angajati[nrAngajati++] = new SalesAgent(205, "Ionut Marin");
 
 
             //vectorul de produse
@@ -93,6 +93,17 @@ namespace Smart_Factory_Management_System
                 }
             }
         }
+        static bool EsteIdUnic(int idDeVerificat)
+        {
+            for (int i = 0; i < nrAngajati; i++)
+            {
+                if (angajati[i].Id == idDeVerificat)
+                {
+                    return false; // ID-ul exista deja, deci nu este unic
+                }
+            }
+            return true; // ID-ul este liber
+        }
 
         ///1
         static void SubmeniuAngajati()
@@ -119,10 +130,16 @@ namespace Smart_Factory_Management_System
                 string tip = Console.ReadLine()!;
 
 
-                Console.Write("ID: "); string id = Console.ReadLine()!;
+                Console.Write("ID: "); int id = int.Parse(Console.ReadLine()!);
+                //reg 11
+                if (!EsteIdUnic(id))
+                {
+                    Console.WriteLine("Eroare: Acest ID este deja folosit!");
+                    return; // Iesim din metoda, nu adaugam nimic
+                }
                 Console.Write("Nume: "); string nume = Console.ReadLine()!;
 
-
+               
                 Employee nou = null; // initializam cu null
                 
                 // Decidem ce tip
@@ -144,7 +161,8 @@ namespace Smart_Factory_Management_System
                 }
 
 
-                // il adaugam in vectorul globalif (nou != null)
+                // il adaugam in vectorul global
+                if (nou != null)
 
                 {
 
@@ -222,7 +240,7 @@ namespace Smart_Factory_Management_System
 
                         if (techSelectat != null)
                         {
-                            masinaSelectata.Repair(techSelectat); // Aici se aplica Regula 3!
+                            masinaSelectata.Repair(techSelectat); // Aici se aplica regula 3
                         }
                         else
                         {

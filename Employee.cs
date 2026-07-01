@@ -2,12 +2,12 @@
 {
     public abstract class Employee
     {
-        public string Id { get; private set; }    //proprietatile
+        public int Id { get; private set; }    //proprietatile
         public string Name { get; set; }
         public string Role { get; protected set;  }
     
 
-        protected Employee(string id, string name)  //constructorul
+        protected Employee(int id, string name)  //constructorul
          {
             Id = id;
             Name = name;
@@ -22,7 +22,7 @@
     //clasele derivate pentru diferite tipuri de angajati
     public class Director : Employee
     {
-        public Director(string id, string name) : base(id, name) { Role = "Director"; }
+        public Director(int id, string name) : base(id, name) { Role = "Director"; }
         public override void AfiseazaActivitate()
         {
             Console.WriteLine("Directorul " + Name + " stabileste strategia fabricii.");
@@ -32,7 +32,7 @@
     
     public class Technician : Employee
     {
-        public Technician(string id, string name) : base(id, name) { Role = "Tehnician"; }
+        public Technician(int id, string name) : base(id, name) { Role = "Tehnician"; }
         public override void AfiseazaActivitate()
         {
             Console.WriteLine("Tehnicianul " + Name + " repara echipamentele defecte.");
@@ -41,7 +41,7 @@
     
     public class SalesAgent : Employee
     {
-        public SalesAgent(string id, string name) : base(id, name) { Role = "Agent Vanzari"; }
+        public SalesAgent(int id, string name) : base(id, name) { Role = "Agent Vanzari"; }
         public override void AfiseazaActivitate()
         {
             Console.WriteLine("Agentul de Vanzari " + Name + " negociaza contracte cu clientii.");
@@ -49,7 +49,7 @@
     }
     public class Accountant : Employee
     {
-        public Accountant(string id, string name) : base(id, name) { Role = "Contabil"; }
+        public Accountant(int id, string name) : base(id, name) { Role = "Contabil"; }
         public override void AfiseazaActivitate()
         {
             Console.WriteLine("Contabilul " + Name + " calculeaza profitul si intocmeste facturile.");

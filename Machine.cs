@@ -53,16 +53,7 @@
 
         public abstract void Produce(Product product);
 
-        public virtual void Repair(Technician tech)
-        {
-            if (this.Status == MachineStatus.Running)
-            {
-                Console.WriteLine($"EROARE: {tech.Name}, nu poti repara masina '{Name}' in timp ce functioneaza! (Regula 3)");
-                return;
-            }
-            this.Status = MachineStatus.Maintenance;
-            Console.WriteLine($"Masina {this.Name} este acum in mentenanta de catre {tech.Name}.");
-        }
+     
         public bool StartMachine()
         {
             if (Status == MachineStatus.Maintenance)
@@ -102,7 +93,7 @@
             }
         }
 
-        nouuu(pt regula 3 )
+        //nouuu(pt regula 3 )
         public virtual void Repair(Technician tech)
         {
             if (this.Status == MachineStatus.Running)
@@ -151,7 +142,6 @@
             }
         }
 
-        public abstract void Produce(Product product);       
     }
 
     internal class Litography_Machine : Machine
@@ -200,7 +190,8 @@
         }
         public override void Produce(Product product)
         {
-            Console.WriteLine($"Reflow Oven {Name} is producing {product.Name}.");
+            Console.WriteLine($"Reflow Oven {Name} isthermally curing {product.Name}.");
+          ;
         }
     }
 
