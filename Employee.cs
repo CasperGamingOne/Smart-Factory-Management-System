@@ -29,22 +29,6 @@
         }
     }
 
-    public class ProductionManager : Employee
-    {
-        public ProductionManager(string id, string name) : base(id, name) { Role = "Production Manager"; }
-        public override void AfiseazaActivitate()
-        {
-            Console.WriteLine("Managerul de Productie " + Name + " verifica planul de componente electronice.");
-        }
-    }
-    public class Engineer : Employee
-    {
-        public Engineer(string id, string name) : base(id, name) { Role = "Inginer"; }
-        public override void AfiseazaActivitate()
-        {
-            Console.WriteLine("Inginerul " + Name + " proiecteaza noi circuite electronice.");
-        }
-    }
     public class Technician : Employee
     {
         public Technician(string id, string name) : base(id, name) { Role = "Tehnician"; }
@@ -53,25 +37,7 @@
             Console.WriteLine("Tehnicianul " + Name + " repara echipamentele defecte.");
         }
     }
-    public class MachineOperator : Employee
-    {
-        public MachineOperator(string id, string name) : base(id, name)
-        {
-            Role = "Machine Operator";
-        }
-        public override void AfiseazaActivitate()
-        {
-            Console.WriteLine("Operatorul " + Name + " monitorizeaza bratul robotizat.");
-        }
-    }
-    public class WarehouseOperator : Employee
-    {
-        public WarehouseOperator(string id, string name) : base(id, name) { Role = "Operator Depozit"; }
-        public override void AfiseazaActivitate()
-        {
-            Console.WriteLine("Operatorul Depozit " + Name + " gestioneaza stocurile si receptia marfii.");
-        }
-    }
+
     public class SalesAgent : Employee
     {
         public SalesAgent(string id, string name) : base(id, name) { Role = "Agent Vanzari"; }

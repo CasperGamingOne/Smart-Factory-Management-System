@@ -1,62 +1,105 @@
+using Spectre.Console;
+
 namespace Smart_Factory_Management_System
 {
 
     internal class Program
     {
-        // Vectori declarati global (static) pentru a fi accesati din orice metoda
-        static Employee[] angajati = new Employee[50];
-        static int nrAngajati = 0;
-
-        static Product[] inventarProduse = new Product[50];
-        static int nrProduse = 0;
-
-        static Machine[] machines = new Machine[50];
-        static int nr_machines = 0;
-
         static void Main(string[] args)
         {
+            // Initialize your core factory engine and mock data once at startup
+            Factory factory = new Factory();
 
-            MachinePart lito_power = new Power_Supply("ASML High-Voltage Grid", PartCondition.Excellent, 400);
-            MachinePart lito_cooling = new Cooling_System("CryoHelix Sub-Zero", PartCondition.Excellent, "Liquid Helium");
-            MachinePart lito_control = new Control_Unit("LithoMaster Core", PartCondition.Excellent, "Intel Xeon Scalable");
-            MachinePart lito_AOI = new AOI_System("Wafer Laser Interferometer", PartCondition.Excellent, "EUV Nano-Alignment Scanner");
+            // The Outer Application Loop: Keeps the system alive for new logins
+            while (true)
+            {
+                AnsiConsole.Clear();
+                AnsiConsole.Write(new Rule("[yellow]SMART FACTORY SYSTEM - LOGIN GATEWAY[/]").Centered());
 
-            MachinePart[] lito_parts = { lito_power, lito_cooling, lito_control, lito_AOI };
+                // 1. Invoke the LoginHandler to authenticate the user
+                // It prompts for credentials and returns the validated Employee object
+                Employee loggedInUser = LoginHandler.ShowLoginScreen(factory);
 
-            MachinePart printer_power = new Power_Supply("Delta PSU-24V Module", PartCondition.Excellent, 24);
-            MachinePart printer_cooling = new Cooling_System("Chassis Air Extraction", PartCondition.Excellent, "Forced Ambient Air");
-            MachinePart printer_control = new Control_Unit("SolderPrint PLC Unit", PartCondition.Excellent, "ARM Cortex-M7");
-            MachinePart printer_AOI = new AOI_System("Fiducial Alignment Cam", PartCondition.Excellent, "2D Solder Paste Inspection (SPI)");
+                if (loggedInUser == null)
+                {
+                    // If your login system returns null (e.g., if you choose to exit from login screen)
+                    AnsiConsole.MarkupLine("[red]Application shutting down...[/]");
+                    break;
+                }
 
-            MachinePart[] printer_parts = { printer_power, printer_cooling, printer_control, printer_AOI };
+                // Welcome the authenticated employee
+                AnsiConsole.MarkupLine($"[green]Welcome back, {loggedInUser.Name} ({loggedInUser.Role})![/]");
+                AnsiConsole.Status().Start("Booting production environment...", ctx => { System.Threading.Thread.Sleep(1000); });
 
-            MachinePart pap_power = new Power_Supply("Omron Servo Power Rail", PartCondition.Excellent, 230);
-            MachinePart pap_cooling = new Cooling_System("Dual Fan Heat Sink", PartCondition.Excellent, "Active Air Cooling");
-            MachinePart pap_control = new Control_Unit("Gantry Motion Matrix Card", PartCondition.Excellent, "AMD Ryzen Embedded");
-            MachinePart pap_AOI = new AOI_System("High-Speed Flying Vision Module", PartCondition.Excellent, "Component Orientation 2D Camera");
+                // 2. The Inner Session Loop: Active while a user is authenticated
+                bool sessionActive = true;
+                while (sessionActive)
+                {
+                    AnsiConsole.Clear();
+                    AnsiConsole.Write(new Rule($"[blue]FACTORY CONTROL PANEL - Session: {loggedInUser.Name}[/]").Centered());
 
-            MachinePart[] pap_parts = { pap_power, pap_cooling, pap_control, pap_AOI };
+                    // Render the mandatory application menu layout from your specification sheet
+                    var choice = AnsiConsole.Prompt(
+                        new SelectionPrompt<string>()
+                            .Title("[yellow]Select an operational module:[/]")
+                            .PageSize(10)
+                            .AddChoices(new[] {
+                                "1. Employee Management",
+                                "2. Machine Management",
+                                "3. Product Management",
+                                "4. Production",
+                                "5. Reports",
+                                "6. Factory Information",
+                                "7. Log Out / Exit Session"
+                            }));
 
-            MachinePart oven_power = new Power_Supply("Heavy Induction Heating Grid", PartCondition.Excellent, 415);
-            MachinePart oven_cooling = new Cooling_System("Nitrogen Exhaust Chiller", PartCondition.Excellent, "Forced Liquid Nitrogen");
-            MachinePart oven_control = new Control_Unit("Thermal Zone Governor", PartCondition.Excellent, "Siemens S7-1500 PLC");
-            MachinePart oven_AOI = new AOI_System("Exit Solder Defect Inspector", PartCondition.Excellent, "Post-Reflow Automated Optical Inspection");
+                    // 3. Central routing to independent, decoupled handler classes
+                    switch (choice)
+                    {
+                        case "1. Employee Management":
+                            // Spin up the independent room and pass factory references
+                            EmployeeMenuHandler.Run(factory, loggedInUser);
+                            break;
 
-            MachinePart[] oven_parts = { oven_power, oven_cooling, oven_control, oven_AOI };
+                        case "2. Machine Management":
+                            MachineMenuHandler.Run(factory, loggedInUser);
+                            break;
 
-            machines[nr_machines++] = new Litography_Machine("LithoScan EUV-3600", "ASML", "SN-ASML-2024-88A9", lito_parts, MachineCondition.Excellent);
-            machines[nr_machines++] = new SMT_Machine("Horizon SolderPrinter X5", "DEK International", "SN-DEK-77492-B7", printer_parts, MachineCondition.Excellent);
-            machines[nr_machines++] = new PaP_Machine("NXT-III High-Speed Mounter", "Fuji Corporation", "SN-FUJI-991A-040", pap_parts, MachineCondition.Excellent);
-            machines[nr_machines++] = new Reflow_Oven("OmniMax Thermal Tunnel", "Heller Industries", "SN-HLR-5542-Z9", oven_parts, MachineCondition.Critical);
+                        case "3. Product Management":
+                            // Product management handler logic here
+                            break;
 
-            // vecorul de angajati
-            angajati[nrAngajati++] = new ProductionManager("M-101", "Andrei Popescu");
-            angajati[nrAngajati++] = new MachineOperator("O-205", "Ionut Marin");
+                        case "4. Production":
+                            // Production simulation launcher logic here
+                            break;
 
-            //vectorul de produse
-            inventarProduse[nrProduse++] = new Microcontroller("Arduino Uno R4", 15.50, 29.99, 150, "ARM Cortex-M4");
-            inventarProduse[nrProduse++] = new SensorModule("Senzor DHT22", 4.20, 9.50, 300, "Umiditate si Temperatura");
+                        case "5. Reports":
+                            ReportMenuHandler.Run(factory, loggedInUser);
+                            break;
 
+                        case "6. Factory Information":
+                            // Display quick factory specifications/counters
+                            AnsiConsole.MarkupLine($"[bold]Factory Capacity Metrics:[/]");
+                            AnsiConsole.MarkupLine($"Machines Configured: [cyan]{factory.MachineCount}[/]");
+                            AnsiConsole.MarkupLine($"Active Staff: [cyan]{factory.EmployeeCount}[/]");
+                            AnsiConsole.MarkupLine("\nPress any key to return...");
+                            Console.ReadKey();
+                            break;
+
+                        case "7. Log Out / Exit Session":
+                            // To exit the inner loop cleanly, toggle the state boundary flags
+                            AnsiConsole.MarkupLine("[yellow]Logging out of current profile...[/]");
+                            System.Threading.Thread.Sleep(800);
+                            sessionActive = false;
+                            break;
+                    }
+                }
+
+                // When sessionActive becomes false, control breaks out of the inner loop
+                // and naturally flows back to the top of the while(true) loop, showing the login screen again!
+            }
+
+            /*
             bool rulare = true;
 
             while (rulare)
@@ -120,7 +163,7 @@ namespace Smart_Factory_Management_System
 
 
                 Employee nou = null; // initializam cu null
-                
+
                 // Decidem ce tip
 
                 switch (tip)
@@ -238,6 +281,8 @@ namespace Smart_Factory_Management_System
             }
             else
                 Console.WriteLine("The selected machine does not have components.");
+        }
+            */
         }
 
     }
