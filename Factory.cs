@@ -3,18 +3,18 @@
     internal class Factory
     {
         // Tracking counters stay private and safe
-        private int employeeCount = 0;
-        private int machineCount = 0;
-        private int productCount = 0;
+        private int employee_count = 0;
+        private int machine_count = 0;
+        private int product_count = 0;
 
         // Core bounded arrays
         public Employee[] Employees { get; private set; } = new Employee[100];
         public Machine[] Machines { get; private set; } = new Machine[50];
         public Product[] Inventory { get; private set; } = new Product[200];
 
-        public int EmployeeCount => employeeCount;
-        public int MachineCount => machineCount;
-        public int ProductCount => productCount;
+        public int EmployeeCount => employee_count;
+        public int MachineCount => machine_count;
+        public int ProductCount => product_count;
 
         // --- 1. THE CONSTRUCTOR HANDLES INITIAL DATA SEEDING ---
         public Factory()
@@ -67,31 +67,30 @@
             AddMachine(new Reflow_Oven("OmniMax Thermal Tunnel", "Heller Industries", "SN-HLR-5542-Z9", oven_parts, MachineCondition.Critical));
         }
 
-        // --- 2. THE PIPELINE SAFE METHODS REMAIN UNCHANGED ---
         public void AddEmployee(Employee employee)
         {
-            if (employeeCount < Employees.Length)
+            if (employee_count < Employees.Length)
             {
-                Employees[employeeCount] = employee;
-                employeeCount++; // Safely prepares index for the next manual or predefined entry
+                Employees[employee_count] = employee;
+                employee_count++;
             }
         }
 
         public void AddMachine(Machine machine)
         {
-            if (machineCount < Machines.Length)
+            if (machine_count < Machines.Length)
             {
-                Machines[machineCount] = machine;
-                machineCount++;
+                Machines[machine_count] = machine;
+                machine_count++;
             }
         }
 
         public void AddProduct(Product product)
         {
-            if (productCount < Inventory.Length)
+            if (product_count < Inventory.Length)
             {
-                Inventory[productCount] = product;
-                productCount++;
+                Inventory[product_count] = product;
+                product_count++;
             }
         }
 

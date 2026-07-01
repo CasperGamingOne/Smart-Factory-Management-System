@@ -29,9 +29,9 @@ namespace Smart_Factory_Management_System
 
                     case "2. Add New Employee":
                         // Restrict execution based on roles if your design calls for it
-                        if (loggedInUser.Role.ToString().ToLower() != "manager" && loggedInUser.Role.ToString().ToLower() != "admin")
+                        if (loggedInUser.Role.ToString().ToLower() != "director")
                         {
-                            AnsiConsole.MarkupLine("[red]❌ Access Denied: Only Managers can add new staff.[/]");
+                            AnsiConsole.MarkupLine("[red]❌ Access Denied: Only Directors can add new staff.[/]");
                         }
                         else
                         {
@@ -80,7 +80,7 @@ namespace Smart_Factory_Management_System
             var role = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("Select Job Title:")
-                    .AddChoices(new[] { "Operator", "Engineer", "Manager" }));
+                    .AddChoices(new[] { "Technician", "Sales Agent", "Accountant" }));
 
             // Add back into your underlying factory system safely
             // factory.AddEmployee(new Employee(id, name, role));
