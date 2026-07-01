@@ -18,16 +18,21 @@
         public void BreakDown()
         {
             Condition = PartCondition.Critical;
-            Console.WriteLine($"[ALERT] Component '{Name}' has failed!");
         }
 
-        public void Repair()
+        public void Repair(PartCondition restoredCondition)
         {
-            Condition = random.Next(0, 2) == 0 ? PartCondition.Good : PartCondition.Excellent;
-            Console.WriteLine($"[REPAIR] Component '{Name}' is now fully functional.");
+            Condition = restoredCondition;
+        }
+        public void DegradeStep()
+        {
+            if (Condition == PartCondition.Excellent)
+                Condition = PartCondition.Good;
+            else if (Condition == PartCondition.Good)
+                Condition = PartCondition.Critical;
         }
 
-        public abstract void PrintPartInfo();
+        public abstract string PrintPartInfo();
     }
 
     internal class Power_Supply : MachinePart
@@ -37,9 +42,9 @@
         {
             Voltage = voltage;
         }
-        public override void PrintPartInfo()
+        public override string PrintPartInfo()
         {
-            Console.WriteLine($"Power Supply Name: {Name}, Condition: {Condition}, Voltage: {Voltage}V");
+            return $"Voltage Output: [cyan]{Voltage}V[/]";
         }
     }
 
@@ -50,9 +55,9 @@
         {
             Type = type;
         }
-        public override void PrintPartInfo()
+        public override string PrintPartInfo()
         {
-            Console.WriteLine($"Cooling System Name: {Name}, Condition: {Condition}, Type: {Type}");
+            return $"Cooling System Type: [cyan]{Type}[/]";
         }
     }
 
@@ -63,9 +68,9 @@
         {
             Processor = processor;
         }
-        public override void PrintPartInfo()
+        public override string PrintPartInfo()
         {
-            Console.WriteLine($"Control Unit Name: {Name}, Condition: {Condition}, Processor: {Processor}");
+            return $"Processor: [cyan]{Processor}[/]";
         }
     }
 
@@ -76,9 +81,9 @@
         {
             SystemType = systemType;
         }
-        public override void PrintPartInfo()
+        public override string PrintPartInfo()
         {
-            Console.WriteLine($"AOI System Name: {Name}, Condition: {Condition}, System Type: {SystemType}");
+            return $"AOI System Type: [cyan]{SystemType}[/]";
         }
     }
 }

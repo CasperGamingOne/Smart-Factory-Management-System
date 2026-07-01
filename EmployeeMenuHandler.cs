@@ -82,8 +82,23 @@ namespace Smart_Factory_Management_System
                     .Title("Select Job Title:")
                     .AddChoices(new[] { "Technician", "Sales Agent", "Accountant" }));
 
+            switch(role)
+            {
+                case "Technician":
+                    factory.AddEmployee(new Technician(id, name));
+                    break;
+                case "Sales Agent":
+                    factory.AddEmployee(new SalesAgent(id, name));
+                    break;
+                case "Accountant":
+                    factory.AddEmployee(new Accountant(id, name));
+                    break;
+                default:
+                    AnsiConsole.MarkupLine("[red]❌ Invalid role selection. Operation aborted.[/]");
+                    return;
+            }
             // Add back into your underlying factory system safely
-            // factory.AddEmployee(new Employee(id, name, role));
+            
             AnsiConsole.MarkupLine($"[green]✔ Employee '{name}' registered successfully![/]");
         }
     }
