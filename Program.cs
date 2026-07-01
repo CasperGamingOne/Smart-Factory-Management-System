@@ -253,7 +253,7 @@ namespace Smart_Factory_Management_System
                         }
                         else if (empGasit is Technician tech) // Daca e tehnician, continuam
                         {
-                            masinaSelectata.Repair(tech); // Aici se aplica Regula 3
+                            masinaSelectata.Repair(tech); // Aici se aplica Regula 3-tehnicianul poate repara utilajul
                         }
                         else
                         {

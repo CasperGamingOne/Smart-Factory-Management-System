@@ -46,9 +46,8 @@
             // polimorfism
             Produce(product);
 
-            // Regula 8: Degradarea conditiei
+            // Regula 8- Degradarea conditiei
             Console.WriteLine($"[SYSTEM] Production cycle complete. Machine '{Name}' condition slightly decreased.");
-            // Logica de degradare (ex: Good -> Critical)
         }
 
         public abstract void Produce(Product product);
@@ -104,7 +103,7 @@
 
             // daca ajunge aici inseamna ca masina este oprita si nu poate fi reparata in timp ce functioneaza, deci poate fi reparata de catre tehnician
             this.Status = MachineStatus.Maintenance;
-            Console.WriteLine($"Masina {this.Name} este acum in mentenanta de catre  Tehnician {tech.Name}.");
+            Console.WriteLine($"Masina {this.Name} este acum in mentenanta de catre  Tehnician fexe{tech.Name}.");
         }
 
         public void InspectMachine()
