@@ -44,25 +44,13 @@
             }
 
             // polimorfism
-            Produce(product);
+            // Produce(product);
 
             // Regula 8: Degradarea conditiei
             Console.WriteLine($"[SYSTEM] Production cycle complete. Machine '{Name}' condition slightly decreased.");
             // Logica de degradare (ex: Good -> Critical)
         }
 
-        public abstract void Produce(Product product);
-
-        public virtual void Repair(Technician tech)
-        {
-            if (this.Status == MachineStatus.Running)
-            {
-                Console.WriteLine($"EROARE: {tech.Name}, nu poti repara masina '{Name}' in timp ce functioneaza! (Regula 3)");
-                return;
-            }
-            this.Status = MachineStatus.Maintenance;
-            Console.WriteLine($"Masina {this.Name} este acum in mentenanta de catre {tech.Name}.");
-        }
         public bool StartMachine()
         {
             if (Status == MachineStatus.Maintenance)
@@ -102,7 +90,7 @@
             }
         }
 
-        nouuu(pt regula 3 )
+        // pt regula 3 
         public virtual void Repair(Technician tech)
         {
             if (this.Status == MachineStatus.Running)

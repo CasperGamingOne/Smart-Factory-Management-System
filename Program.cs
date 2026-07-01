@@ -222,7 +222,7 @@ namespace Smart_Factory_Management_System
 
                         if (techSelectat != null)
                         {
-                            masinaSelectata.Repair(techSelectat); // Aici se aplica Regula 3!
+                            masinaSelectata.Repair(techSelectat);
                         }
                         else
                         {
