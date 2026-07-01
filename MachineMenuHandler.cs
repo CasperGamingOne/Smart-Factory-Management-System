@@ -29,7 +29,15 @@ namespace Smart_Factory_Management_System
                         break;
 
                     case "2. Run Deep Component Inspection":
-                        RunPolymorphicInspection(factory);
+                        // Restrict execution based on roles if your design calls for it
+                        if (loggedInUser.Role.ToString().ToLower() != "technician")
+                        {
+                            AnsiConsole.MarkupLine($"[red]❌ Access Denied: {loggedInUser.Role} cannot perform this action.[/]");
+                        }
+                        else
+                        {
+                            RunPolymorphicInspection(factory);
+                        }
                         break;
 
                     case "3. Return to Main Menu":

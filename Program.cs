@@ -57,7 +57,6 @@ namespace Smart_Factory_Management_System
                     switch (choice)
                     {
                         case "1. Employee Management":
-                            // Spin up the independent room and pass factory references
                             EmployeeMenuHandler.Run(factory, loggedInUser);
                             break;
 
@@ -70,7 +69,7 @@ namespace Smart_Factory_Management_System
                             break;
 
                         case "4. Production":
-                            // Production simulation launcher logic here
+                            ProductionMenuHandler.Run(factory, loggedInUser);
                             break;
 
                         case "5. Reports":

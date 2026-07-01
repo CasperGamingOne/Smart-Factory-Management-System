@@ -94,11 +94,51 @@ namespace Smart_Factory_Management_System
 
         public void StopMachine()
         {
-            if (Status == MachineStatus.Running)
+            AnsiConsole.Clear();
+            AnsiConsole.Write(Align.Left(new Rule($"[red]System Shutdown Sequence: {Name}[/]")));
+            AnsiConsole.WriteLine();
+
+            // Safe State Guard: If it's already stopped, exit cleanly without blinking animations
+            if (Status == MachineStatus.Stopped)
             {
-                Status = MachineStatus.Stopped;
-                Console.WriteLine($"[SYSTEM] Machine '{Name}' has been safely STOPPED.");
+                var alreadyStoppedPanel = new Panel(
+                    new Markup($"[yellow]⚠ [bold]SYSTEM IDLE:[/] [underline]{Name}[/] is already stopped and sitting securely in standby mode.[/]")
+                )
+                {
+                    Border = BoxBorder.Rounded,
+                    Padding = new Padding(1, 1, 1, 1)
+                };
+                AnsiConsole.Write(alreadyStoppedPanel);
+                return;
             }
+
+            // High-precision simulated spin down sequence
+            AnsiConsole.Status()
+                .Spinner(Spinner.Known.Dots)
+                .SpinnerStyle(Style.Parse("red bold"))
+                .Start("Initiating safe assembly line deceleration...", ctx =>
+                {
+                    Thread.Sleep(500);
+                    ctx.Status("Spooling down dynamic mechanical sub-structures...");
+                    Thread.Sleep(600);
+                    ctx.Status("Isolating secondary high-voltage power relays...");
+                    Thread.Sleep(500);
+                });
+
+            // Commit State Change
+            Status = MachineStatus.Stopped;
+
+            var stopPanel = new Panel(
+                new Markup($"[red]🛑 [bold]SHUTDOWN COMPLETE:[/] {Name} has been safely isolated and powered down.\n" +
+                           $"[grey]Operational State updated to:[/] [yellow bold]STOPPED (STANDBY)[/]")
+            )
+            {
+                Border = BoxBorder.Rounded,
+                Padding = new Padding(1, 1, 1, 1),
+                Header = new PanelHeader("[red bold] SYSTEM OFFLINE [/]")
+            };
+
+            AnsiConsole.Write(stopPanel);
         }
 
         protected void ApplyProductionWearAndTear()

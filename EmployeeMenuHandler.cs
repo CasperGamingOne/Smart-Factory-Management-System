@@ -31,7 +31,7 @@ namespace Smart_Factory_Management_System
                         // Restrict execution based on roles if your design calls for it
                         if (loggedInUser.Role.ToString().ToLower() != "director")
                         {
-                            AnsiConsole.MarkupLine("[red]❌ Access Denied: Only Directors can add new staff.[/]");
+                            AnsiConsole.MarkupLine($"[red]❌ Access Denied: {loggedInUser.Role} cannot perform this action.[/]");
                         }
                         else
                         {
