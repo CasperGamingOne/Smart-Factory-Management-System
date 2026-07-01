@@ -29,7 +29,7 @@
             AddEmployee(new SalesAgent("103", "Alexandru Dumitru"));
             AddEmployee(new Accountant("104", "Elena Vasilescu"));
 
-            AddProduct(new Microcontroller("Arduino Uno R4", 15.50, 29.99, 150, "ARM Cortex-M4"));
+            AddProduct(new Microprocessor("Arduino Uno R4", 15.50, 29.99, 150, "ARM Cortex-M4"));
             AddProduct(new SensorModule("Senzor DHT22", 4.20, 9.50, 300, "Umiditate si Temperatura"));
 
             MachinePart lito_power = new Power_Supply("ASML High-Voltage Grid", PartCondition.Excellent, 400);

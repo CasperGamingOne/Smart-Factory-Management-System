@@ -4,7 +4,7 @@ namespace Smart_Factory_Management_System
 {
         internal static class LoginHandler
         {
-            public static Employee ShowLoginScreen(Factory factory)
+            public static Employee? ShowLoginScreen(Factory factory)
             {
                 while (true)
                 {
@@ -31,7 +31,7 @@ namespace Smart_Factory_Management_System
                     }
 
                     // Null-safe check inside the internal Factory collection up to EmployeeCount
-                    Employee matchedEmployee = null;
+                    Employee? matchedEmployee = null;
                     for (int i = 0; i < factory.EmployeeCount; i++)
                     {
                         if (factory.Employees[i] != null && factory.Employees[i].Id.Equals(empId, StringComparison.OrdinalIgnoreCase))

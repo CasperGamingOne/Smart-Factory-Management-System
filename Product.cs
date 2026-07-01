@@ -59,10 +59,10 @@
         }
     }
     //clasele derivate pentru diferite tipuri de produse
-    public class Microcontroller : Product
+    public class Microprocessor : Product
     {
         public string Architecture { get; set; }
-        public Microcontroller(string name, double cost, double price, int quantity, string arch)
+        public Microprocessor(string name, double cost, double price, int quantity, string arch)
             : base(name, cost, price, quantity)
         {
             Category = "Semiconductori";

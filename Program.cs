@@ -18,7 +18,7 @@ namespace Smart_Factory_Management_System
 
                 // 1. Invoke the LoginHandler to authenticate the user
                 // It prompts for credentials and returns the validated Employee object
-                Employee loggedInUser = LoginHandler.ShowLoginScreen(factory);
+                Employee? loggedInUser = LoginHandler.ShowLoginScreen(factory);
 
                 if (loggedInUser == null)
                 {

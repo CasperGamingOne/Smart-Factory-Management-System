@@ -52,7 +52,7 @@ namespace Smart_Factory_Management_System
                 }
 
                 // 3. Extract and match the selected machine from the factory array
-                Machine selectedMachine = null;
+                Machine? selectedMachine = null;
                 for (int i = 0; i < factory.MachineCount; i++)
                 {
                     if (selectedOption.Contains(factory.Machines[i].SerialNumber))
@@ -108,9 +108,9 @@ namespace Smart_Factory_Management_System
                 if (selectedProductType == "[red]« Cancel Job Request[/]") continue;
 
                 // 6. Instantiate the chosen product asset matching your business requirements
-                Product productToProduce = selectedProductType switch
+                Product? productToProduce = selectedProductType switch
                 {
-                    "Microprocessor (Silicon Wafer Layer)" => new Microcontroller("NextGen Microprocessor", 375, 500, 10, "CPU-5nm"),
+                    "Microprocessor (Silicon Wafer Layer)" => new Microprocessor("NextGen Microprocessor", 375, 500, 10, "CPU-5nm"),
                     "High-Density Motherboard Assembly" => new SensorModule("Flir Lepton Micro-Thermal", 150, 200, 20, "ThermalInfrared"),
                     _ => null
                 };

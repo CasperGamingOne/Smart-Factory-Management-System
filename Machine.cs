@@ -155,7 +155,7 @@ namespace Smart_Factory_Management_System
             // 2. Select a single random active part from the array
             int randomIndex = _random.Next(0, activePartsCount);
             int currentStep = 0;
-            MachinePart selectedPart = null;
+            MachinePart? selectedPart = null;
 
             foreach (var part in Parts)
             {
