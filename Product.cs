@@ -2,36 +2,32 @@
 {
     public abstract class Product
     {
-        //proprietati
         public string? Name { get; set; }
         public string? Category { get; protected set; }
         public DateTime ProductionDate { get; private set; }
 
-        // 
         private double productionCost;
         private double sellingPrice;
         private int quantity;
 
-        // proprietatea pt costul de productie (cu validare) 
         public double ProductionCost
         {
             get { return productionCost; }
             set { productionCost = (value >= 0) ? value : 0; }
         }
 
-        // proprietatea pentru Pretul de vanzare (cu validare)
         public double SellingPrice
         {
             get { return sellingPrice; }
             set { sellingPrice = (value >= 0) ? value : 0; }
         }
-        //calcul marja de profit 
+ 
         public double CalculeazaMarjaProfit()
         {
             return SellingPrice - ProductionCost;
         }
 
-        // Proprietatea pentru Cantitate (cu validare)
+        /*
         public int Quantity { get { return quantity; }
             set
             {
@@ -47,6 +43,7 @@
 
             }
         }
+        */
 
         // Constructorul pt intitializarea unui produs
         public Product(string name, double cost, double price, int quantity)
@@ -54,7 +51,7 @@
             Name = name;
             ProductionCost = cost;
             SellingPrice = price;
-            Quantity = quantity;
+            // Quantity = quantity;
             ProductionDate = DateTime.Now;
         }
     }

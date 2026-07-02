@@ -85,7 +85,11 @@ namespace Smart_Factory_Management_System
                 .Title("Select a machine to manage:")
                 .PageSize(10)
                 // This converts the machine object into the display string
-                .UseConverter(m => $"[bold]{m.Name}[/] | Serial: {m.SerialNumber} | Condition: {m.Condition}");
+                .UseConverter(m =>
+                {
+                    string statusColor = m.Condition == MachineCondition.Critical ? "red" : "green";
+                    return $"[{statusColor}]{m.Name}[/] - [dim]Status: {m.Status}[/]";
+                });
             for (int i = 0; i < factory.MachineCount; i++)
             {
                 selector.AddChoice(factory.Machines[i]);
