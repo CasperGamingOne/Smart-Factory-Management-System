@@ -1,8 +1,8 @@
-name: Smart Factory Validation System
-
+name: Smart Factory CI
 on:
-  pull_request:
-    branches: [ "main", "new-tui-frontend" ]
+  workflow_dispatch: # Required to reveal the manual execution controls
+  push:
+    branches: [ "new-tui-frontend" ]
 
 permissions:
   pull-requests: write
