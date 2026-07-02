@@ -81,7 +81,11 @@ namespace Smart_Factory_Management_System
             }
 
             // Let the user choose exactly which machine they wish to audit
-            var selector = new SelectionPrompt<Machine>().Title("Choose an asset to pull blueprints and components:");
+            var selector = new SelectionPrompt<Machine>()
+                .Title("Select a machine to manage:")
+                .PageSize(10)
+                // This converts the machine object into the display string
+                .UseConverter(m => $"[bold]{m.Name}[/] | Serial: {m.SerialNumber} | Condition: {m.Condition}");
             for (int i = 0; i < factory.MachineCount; i++)
             {
                 selector.AddChoice(factory.Machines[i]);
