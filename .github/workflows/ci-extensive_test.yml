@@ -27,7 +27,6 @@ jobs:
     - name: Compile and Build Solution
       run: dotnet build --configuration Release --no-restore
 
-    # Step 1: Execute your verification engine and output logs to a file
     - name: Execute Automated Scenario Matrix Tests
       id: test_runner
       run: |
@@ -35,7 +34,6 @@ jobs:
         dotnet run --configuration Release --no-build -- --run-ci > calidation_output.log
       continue-on-error: true
 
-      # Step 2: Read log file, look up open Pull Requests for this branch, and post it
       - name: Post Validation Logs to Pull Request
         uses: actions/github-script@v7
         with:
