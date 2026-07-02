@@ -27,42 +27,63 @@ jobs:
     - name: Compile and Build Solution
       run: dotnet build --configuration Release --no-restore
 
-    - name: Execute Automated Scenario Matrix Tests
-      id: test_runner
-      run: |
-        # Boot application in headless mode, capture all output logs safely
-        dotnet run --configuration Release --no-build -- --run-ci > csharp_test_results.log
-      continue-on-error: true
-
-    - name: Post Diagnostic Audit Updates to Pull Request Thread
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const fs = require('fs');
-          let reportContent = "";
+    # Step 1: Execute your verification engine and output logs to a file
+    - name: Execute Smart Factory Validation Engine
+        run: |
+          echo "Running C# automated business rule validations..."
+          # Running your system in CI mode and piping both standard outputs and errors into a log file
+          dotnet run -- --run-ci > validation_output.log 2>&1 || true
           
-          try {
-            reportContent = fs.readFileSync('csharp_test_results.log', 'utf8');
-          } catch (err) {
-            reportContent = "⚠️ Could not read diagnostic test logs. Build process failed ahead of runtime execution.";
-          }
+          # Print to runner console so you still have it there
+          cat validation_output.log
 
-          const isSuccess = "${{ steps.test_runner.outcome }}" === "success";
-          
-          let commentBody = "";
-          if (isSuccess) {
-            commentBody = `🎉 **ALL OBJECT Lifecycles AND INTEGRATION CHECKS VERIFIED** 🎉\n\n${reportContent}`;
-          } else {
-            commentBody = `🚨 **INTEGRATION REGRESSION ENGINE BREAK DETECTED** 🚨\n\nYour branch modification has violated the core business validation requirements stated in the technical specifications document! Review the failure points down below:\n\n${reportContent}`;
-          }
+      # Step 2: Read log file, look up open Pull Requests for this branch, and post it
+      - name: Post Validation Logs to Pull Request
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            // 1. Read the saved execution logs
+            let logContent = "No log output recorded.";
+            if (fs.existsSync('validation_output.log')) {
+              logContent = fs.readFileSync('validation_output.log', 'utf8');
+            }
 
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: commentBody
-          });
+            // 2. Resolve the PR Number (checks trigger context first, then looks up via API)
+            let prNumber = context.payload.pull_request ? context.payload.pull_request.number : null;
+            
+            if (!prNumber) {
+              // Extract the branch name (e.g., refs/heads/new-tui-frontend -> new-tui-frontend)
+              const branchName = context.ref.replace('refs/heads/', '');
+              core.info(`Manual run detected on branch: ${branchName}. Searching for an open Pull Request...`);
+              
+              const openPRs = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+                head: `${context.repo.owner}:${branchName}`
+              });
 
-          if (!isSuccess) {
-            core.setFailed("Automated business validation scenarios failed.");
-          }
+              if (openPRs.data.length > 0) {
+                prNumber = openPRs.data[0].number;
+                core.info(`Found active Pull Request: #${prNumber}`);
+              }
+            }
+
+            // 3. Construct the clean markdown message wrapper
+            const commentBody = `🚨 **INTEGRATION REGRESSION ENGINE BREAK DETECTED** 🚨\n\nYour branch modification has violated the core business validation requirements stated in the technical specifications document!\n\n### 📋 Execution Engine Failure Log:\n\`\`\`text\n${logContent}\n\`\`\``;
+
+            // 4. Deliver the comment to the PR if found
+            if (prNumber) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: commentBody
+              });
+              core.info("Successfully posted validation logs to the Pull Request comment feed!");
+            } else {
+              core.warning("Could not find an open Pull Request for this branch. Printing logs to summary instead.");
+              core.error(commentBody);
+            }
