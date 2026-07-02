@@ -7,6 +7,9 @@
         private int machine_count = 0;
         private int product_count = 0;
 
+        public ProductionOrder[] PendingOrders { get; private set; } = new ProductionOrder[50];
+    public int OrderCount { get; private set; } = 0;
+
         // Core bounded arrays
         public Employee[] Employees { get; private set; } = new Employee[100];
         public Machine[] Machines { get; private set; } = new Machine[50];
@@ -90,6 +93,15 @@
             {
                 Inventory[product_count] = product;
                 product_count++;
+            }
+        }
+
+        public void AddOrder(ProductionOrder order)
+        {
+            if (OrderCount < PendingOrders.Length)
+            {
+                PendingOrders[OrderCount] = order;
+                OrderCount++;
             }
         }
 

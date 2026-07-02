@@ -28,6 +28,8 @@ namespace Smart_Factory_Management_System
 
         public Type SupportedProductType { get; private protected set; }
 
+        public ProductionOrder ActiveOrder { get; private protected set; }
+
         public Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
         {
             idCounter++;
@@ -48,6 +50,11 @@ namespace Smart_Factory_Management_System
             return TimeSpan.FromDays((DateTime.Now - InstallationDate).TotalDays);
         }
 
+        public void StartOrder(ProductionOrder order)
+        {
+            ActiveOrder = order;
+            Status = MachineStatus.Running;
+        }
         public bool StartMachine()
         {
             AnsiConsole.Clear();
@@ -327,6 +334,13 @@ namespace Smart_Factory_Management_System
 
         public override void Produce(Product blueprint)
         {
+            if (ActiveOrder == null || ActiveOrder.IsComplete)
+            {
+                Status = MachineStatus.Stopped;
+                AnsiConsole.Write(new Markup($"[green]✔ Successfully manufactured: {blueprint.Name}[/]\n"));
+                return;
+            }
+
             if (blueprint.GetType() != SupportedProductType)
             {
                 throw new InvalidOperationException($"This machine only produces {SupportedProductType.Name}!");
@@ -348,11 +362,10 @@ namespace Smart_Factory_Management_System
                 {
                     Thread.Sleep(800);
                 });
-
-            AnsiConsole.Write(new Markup($"[green]✔ Successfully manufactured: {blueprint.Name}[/]\n"));
+            ActiveOrder.CompletedCount++;
 
             // Triggers completely random simulation tracking chance for part failure
-            ApplyProductionWearAndTear();
+            ApplyProductionWearAndTear();           
         }
     }
 

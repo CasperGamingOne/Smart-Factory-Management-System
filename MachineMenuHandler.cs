@@ -31,13 +31,9 @@ namespace Smart_Factory_Management_System
                     case "2. Run Deep Component Inspection":
                         // Restrict execution based on roles if your design calls for it
                         if (loggedInUser is not Technician)  /// better handling for role check
-                        {
                             AnsiConsole.MarkupLine($"[red]❌ Access Denied: {loggedInUser.Role} cannot perform this action.[/]");
-                        }
                         else
-                        {
                             RunInspection(factory);
-                        }
                         break;
 
                     case "3. Return to Main Menu":

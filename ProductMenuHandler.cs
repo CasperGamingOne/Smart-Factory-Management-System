@@ -74,8 +74,7 @@ namespace Smart_Factory_Management_System
             table.AddColumn("[bold yellow]Technical Specifications[/]");
             table.AddColumn("[bold magenta]Value ($)[/]");
 
-            // Loop strictly to .ProductCount tracking bound to guarantee null safety
-            /*
+            // Populate table rows with inventory data
             for (int i = 0; i < factory.ProductCount; i++)
             {
                 var product = factory.Inventory[i];
@@ -92,7 +91,6 @@ namespace Smart_Factory_Management_System
                     );
                 }
             }
-            */
 
             AnsiConsole.Write(table);
             AnsiConsole.WriteLine("\nPress any key to return...");
@@ -126,7 +124,7 @@ namespace Smart_Factory_Management_System
             double storageUtilization = ((double)factory.ProductCount / factory.Inventory.Length) * 100;
 
             var statsGrid = new Grid().AddColumns(2);
-            statsGrid.AddRow("[bold white]Total Volume Level:[/]", $"[green]{factory.ProductCount} items[/] (📊 CPUs: {cpuCount} | ⚙️ PCBs: {pcbCount} | 📷 Lenses: {opticsCount})");
+            statsGrid.AddRow("[bold white]Total Volume Level:[/]", $"[green]{factory.ProductCount} items[/] (📊 CPUs: {cpuCount} | ⚙️ PCBs: {pcbCount} )");
             statsGrid.AddRow("[bold white]Asset Portfolio Valuation:[/]", $"[yellow]${cumulativeValue:F2} USD[/]");
             statsGrid.AddRow("[bold white]Warehouse Occupancy Rate:[/]", $"[cyan]{storageUtilization:F1}% utilized[/]");
 
@@ -160,7 +158,7 @@ namespace Smart_Factory_Management_System
 
             // Build unique SKU tracking token
             string preCode = categorySelection.Substring(0, 3).ToUpper();
-            //string generatedSku = $"SKU-{DateTime.Now.Ticks.ToString().Substring(11)}-{preCode}";
+            // string generatedSku = $"SKU-{DateTime.Now.Ticks.ToString().Substring(11)}-{preCode}";
 
             // Reference Variable initialization
             Product specializedProduct = null;

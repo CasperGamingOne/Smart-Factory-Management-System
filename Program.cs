@@ -7,6 +7,8 @@ namespace Smart_Factory_Management_System
     {
         static void Main(string[] args)
         {
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+
             // Initialize your core factory engine and mock data once at startup
             Factory factory = new Factory();
 

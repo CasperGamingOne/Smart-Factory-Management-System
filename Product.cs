@@ -1,4 +1,7 @@
-﻿namespace Smart_Factory_Management_System
+﻿using System.Net.Sockets;
+using System.Runtime.InteropServices;
+
+namespace Smart_Factory_Management_System
 {
     public abstract class Product
     {
@@ -53,6 +56,8 @@
             Quantity = quantity;
             ProductionDate = DateTime.Now;
         }
+
+        public abstract string GetTechnicalSpecifications();
     }
     //clasele derivate pentru diferite tipuri de produse
     public class Microprocessor : Product
@@ -63,6 +68,15 @@
         {
             Cores = cores;
             ClockSpeed = clockSpeed;
+        }
+
+        public override string GetTechnicalSpecifications()
+        {
+            // Return a formatted string that the UI can simply pass to a Panel
+            return $"[bold cyan]Model:[/] {Name}\n" +
+                   // $"[bold cyan]Serial:[/] {SerialNumber}\n" +
+                   $"[bold yellow]Cores:[/] {Cores}\n" +
+                   $"[bold yellow]Clock Speed:[/] {ClockSpeed} GHz";
         }
     }
 
@@ -82,6 +96,15 @@
         {
             SocketStandard = socket;
             PhysicalForm = type;
+        }
+
+        public override string GetTechnicalSpecifications()
+        {
+            // Return a formatted string that the UI can simply pass to a Panel
+            return $"[bold cyan]Model:[/] {Name}\n" +
+                   // $"[bold cyan]Serial:[/] {SerialNumber}\n" +
+                   $"[bold yellow]Socket:[/] {SocketStandard}\n" +
+                   $"[bold yellow]Form Factor:[/] {PhysicalForm}";
         }
     }
 
