@@ -50,6 +50,7 @@ namespace Smart_Factory_Management_System
             machines[nr_machines++] = new Reflow_Oven("OmniMax Thermal Tunnel", "Heller Industries", "SN-HLR-5542-Z9", oven_parts, MachineCondition.Critical);
 
             // vectorul de angajati
+            angajati[nrAngajati++] = new Director(999, "Marius Ionescu");
             angajati[nrAngajati++] = new Technician(101, "Andrei Popescu");
             angajati[nrAngajati++] = new SalesAgent(205, "Ionut Marin");
 
@@ -57,6 +58,8 @@ namespace Smart_Factory_Management_System
             //vectorul de produse
             inventarProduse[nrProduse++] = new Microcontroller("Arduino Uno R4", 15.50, 29.99, 150, "ARM Cortex-M4");
             inventarProduse[nrProduse++] = new SensorModule("Senzor DHT22", 4.20, 9.50, 300, "Umiditate si Temperatura");
+            inventarProduse[nrProduse++] = new PowerModule("AC/DC Converter 12V", 25.00, 45.00, 50, 12.0);
+            inventarProduse[nrProduse++] = new CommunicationModule("ESP32-WROOM-32", 3.50, 8.00, 200, "Wi-Fi & Bluetooth");
 
             bool rulare = true;
 
@@ -206,7 +209,7 @@ namespace Smart_Factory_Management_System
         {
             Console.WriteLine("\n- MANAGEMENT MASINARII -");
             Console.WriteLine("1. Afiseaza toate masinile");
-            Console.WriteLine("2. Adauga masina noua");
+            Console.WriteLine("2. Reparatie/Interventie");
             string opt = Console.ReadLine()!;
 
 

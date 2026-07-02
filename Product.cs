@@ -79,5 +79,28 @@
             SensorType = type;
         }
     }
+    public class PowerModule : Product   //produs nou: Modul de Alimentare
+    {
+        public double OutputVoltage { get; set; } // Tensiunea de iesire (5V,12V )
+
+        public PowerModule(string name, double cost, double price, int quantity, double voltage)
+            : base(name, cost, price, quantity)
+        {
+            Category = "Alimentare";
+            OutputVoltage = voltage;
+        }
+    }
+    // Produs nou: Modul de Comunicare
+    public class CommunicationModule : Product
+    {
+        public string Protocol { get; set; } // Tipul protocolului (ex: Wi-Fi, Bluetooth, LoRa)
+
+        public CommunicationModule(string name, double cost, double price, int quantity, string protocol)
+            : base(name, cost, price, quantity)
+        {
+            Category = "Comunicatii";
+            Protocol = protocol;
+        }
+    }
 
 }
