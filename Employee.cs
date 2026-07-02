@@ -2,14 +2,17 @@
 {
     public abstract class Employee
     {
-        public string Id { get; private set; }    //proprietatile
+        private static int idCounter = 0;
+
+        public int Id { get; private set; }
         public string Name { get; set; }
         public string Role { get; protected set;  }
     
 
-        protected Employee(string id, string name)  //constructorul
+        protected Employee(string name)
          {
-            Id = id;
+            idCounter++;
+            Id = idCounter;
             Name = name;
             Role = "Angajat Simplu";
          }
@@ -22,7 +25,7 @@
     //clasele derivate pentru diferite tipuri de angajati
     public class Director : Employee
     {
-        public Director(string id, string name) : base(id, name) { Role = "Director"; }
+        public Director(string name) : base(name) { Role = "Director"; }
         public override void AfiseazaActivitate()
         {
             Console.WriteLine("Directorul " + Name + " stabileste strategia fabricii.");
@@ -31,7 +34,7 @@
 
     public class Technician : Employee
     {
-        public Technician(string id, string name) : base(id, name) { Role = "Tehnician"; }
+        public Technician(string name) : base(name) { Role = "Tehnician"; }
         public override void AfiseazaActivitate()
         {
             Console.WriteLine("Tehnicianul " + Name + " repara echipamentele defecte.");
@@ -40,7 +43,7 @@
 
     public class SalesAgent : Employee
     {
-        public SalesAgent(string id, string name) : base(id, name) { Role = "Agent Vanzari"; }
+        public SalesAgent(string name) : base(name) { Role = "Agent Vanzari"; }
         public override void AfiseazaActivitate()
         {
             Console.WriteLine("Agentul de Vanzari " + Name + " negociaza contracte cu clientii.");
@@ -48,7 +51,7 @@
     }
     public class Accountant : Employee
     {
-        public Accountant(string id, string name) : base(id, name) { Role = "Contabil"; }
+        public Accountant(string name) : base(name) { Role = "Contabil"; }
         public override void AfiseazaActivitate()
         {
             Console.WriteLine("Contabilul " + Name + " calculeaza profitul si intocmeste facturile.");

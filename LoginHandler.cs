@@ -34,7 +34,7 @@ namespace Smart_Factory_Management_System
                     Employee? matchedEmployee = null;
                     for (int i = 0; i < factory.EmployeeCount; i++)
                     {
-                        if (factory.Employees[i] != null && factory.Employees[i].Id.Equals(empId, StringComparison.OrdinalIgnoreCase))
+                        if (factory.Employees[i] != null && factory.Employees[i].Id.ToString().Equals(empId, StringComparison.OrdinalIgnoreCase))
                         {
                             matchedEmployee = factory.Employees[i];
                             break;

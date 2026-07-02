@@ -69,10 +69,18 @@
             Architecture = arch;
         }
     }
-    public class SensorModule : Product
+
+    public enum BoardState { BlankBoard, SolderPrinted, ComponentsPlaced, BakedAndSoldered }
+
+    public class Motherboard : Product
     {
+        public BoardState CurrentState { get; private set; } = BoardState.BlankBoard;
+
+        // Only the machines will call this
+        public void TransitionTo(BoardState nextState) => CurrentState = nextState;
+
         public string SensorType { get; set; }
-        public SensorModule(string name, double cost, double price, int quantity, string type)
+        public Motherboard(string name, double cost, double price, int quantity, string type)
             : base(name, cost, price, quantity)
         {
             Category = "Senzori";

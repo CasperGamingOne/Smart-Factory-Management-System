@@ -64,7 +64,7 @@ namespace Smart_Factory_Management_System
             {
                 if (factory.Employees[i] != null)
                 {
-                    table.AddRow(factory.Employees[i].Id, factory.Employees[i].Name, factory.Employees[i].Role.ToString());
+                    table.AddRow(factory.Employees[i].Id.ToString(), factory.Employees[i].Name, factory.Employees[i].Role.ToString());
                 }
             }
 
@@ -85,13 +85,13 @@ namespace Smart_Factory_Management_System
             switch(role)
             {
                 case "Technician":
-                    factory.AddEmployee(new Technician(id, name));
+                    factory.AddEmployee(new Technician(name));
                     break;
                 case "Sales Agent":
-                    factory.AddEmployee(new SalesAgent(id, name));
+                    factory.AddEmployee(new SalesAgent(name));
                     break;
                 case "Accountant":
-                    factory.AddEmployee(new Accountant(id, name));
+                    factory.AddEmployee(new Accountant(name));
                     break;
                 default:
                     AnsiConsole.MarkupLine("[red]❌ Invalid role selection. Operation aborted.[/]");

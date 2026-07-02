@@ -24,13 +24,13 @@
 
         private void SeedInitialData()
         {
-            AddEmployee(new Director("101", "Andrei Popescu"));
-            AddEmployee(new Technician("102", "Maria Ionescu"));
-            AddEmployee(new SalesAgent("103", "Alexandru Dumitru"));
-            AddEmployee(new Accountant("104", "Elena Vasilescu"));
+            AddEmployee(new Director("Andrei Popescu"));
+            AddEmployee(new Technician("Maria Ionescu"));
+            AddEmployee(new SalesAgent("Alexandru Dumitru"));
+            AddEmployee(new Accountant("Elena Vasilescu"));
 
             AddProduct(new Microprocessor("Arduino Uno R4", 15.50, 29.99, 150, "ARM Cortex-M4"));
-            AddProduct(new SensorModule("Senzor DHT22", 4.20, 9.50, 300, "Umiditate si Temperatura"));
+            AddProduct(new Motherboard("Motherboard ATX", 50.00, 99.99, 100, "ATX"));
 
             MachinePart lito_power = new Power_Supply("ASML High-Voltage Grid", PartCondition.Excellent, 400);
             MachinePart lito_cooling = new Cooling_System("CryoHelix Sub-Zero", PartCondition.Excellent, "Liquid Helium");

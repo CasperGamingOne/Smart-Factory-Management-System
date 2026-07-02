@@ -111,7 +111,7 @@ namespace Smart_Factory_Management_System
                 Product? productToProduce = selectedProductType switch
                 {
                     "Microprocessor (Silicon Wafer Layer)" => new Microprocessor("NextGen Microprocessor", 375, 500, 10, "CPU-5nm"),
-                    "High-Density Motherboard Assembly" => new SensorModule("Flir Lepton Micro-Thermal", 150, 200, 20, "ThermalInfrared"),
+                    "High-Density Motherboard Assembly" => new Motherboard("Flir Lepton Micro-Thermal", 150, 200, 20, "ThermalInfrared"),
                     _ => null
                 };
 

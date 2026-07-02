@@ -8,6 +8,10 @@ namespace Smart_Factory_Management_System
 
     internal abstract class Machine
     {
+        private static int idCounter = 0;
+
+        public int Id { get; private protected set; }
+
         public string? Name { get; private protected set; }
 
         public string? Manufacturer { get; private protected set; }
@@ -22,14 +26,19 @@ namespace Smart_Factory_Management_System
 
         public MachineCondition Condition { get; private protected set; }
 
+        public Type SupportedProductType { get; private protected set; }
+
         public Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
         {
+            idCounter++;
+            Id = idCounter;
             Name = machine_name;
             Manufacturer = machine_manufacturer;
             SerialNumber = machine_serial;
             InstallationDate = DateTime.Now.AddYears(-7);
             Parts = parts;
             Condition = condition;
+            SupportedProductType = typeof(Product); // Default to base Product type; override in derived classes as needed
         }
 
         private static readonly Random _random = new Random();
@@ -313,17 +322,23 @@ namespace Smart_Factory_Management_System
         public Litography_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
             : base(machine_name, machine_manufacturer, machine_serial, parts, condition)
         {
+            SupportedProductType = typeof(Microprocessor);
         }
-        public override void Produce(Product product)
+
+        public override void Produce(Product blueprint)
         {
+            if (blueprint.GetType() != SupportedProductType)
+            {
+                throw new InvalidOperationException($"This machine only produces {SupportedProductType.Name}!");
+            }
             // Block production if machine is stopped or broken
             if (Status != MachineStatus.Running)
             {
-                AnsiConsole.Write(new Markup($"[red]❌ Cannot produce {product.Name}. Machine is offline. Please boot or repair it first.[/]\n"));
+                AnsiConsole.Write(new Markup($"[red]❌ Cannot produce {blueprint.Name}. Machine is offline. Please boot or repair it first.[/]\n"));
                 return;
             }
 
-            AnsiConsole.Write(new Markup($"[cyan]🏭 Starting processing sequence for: [underline]{product.Name}[/][/]\n"));
+            AnsiConsole.Write(new Markup($"[cyan]🏭 Starting processing sequence for: [underline]{blueprint.Name}[/][/]\n"));
 
             // Output progress bar or loading spinner
             AnsiConsole.Status()
@@ -334,7 +349,7 @@ namespace Smart_Factory_Management_System
                     Thread.Sleep(800);
                 });
 
-            AnsiConsole.Write(new Markup($"[green]✔ Successfully manufactured: {product.Name}[/]\n"));
+            AnsiConsole.Write(new Markup($"[green]✔ Successfully manufactured: {blueprint.Name}[/]\n"));
 
             // Triggers completely random simulation tracking chance for part failure
             ApplyProductionWearAndTear();
@@ -346,10 +361,29 @@ namespace Smart_Factory_Management_System
         public SMT_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
             : base(machine_name, machine_manufacturer, machine_serial, parts, condition)
         {
+            SupportedProductType = typeof(Motherboard);
         }
+
         public override void Produce(Product product)
         {
-            Console.WriteLine($"SMT Machine {Name} is producing {product.Name}.");
+            if (product is Motherboard board)
+            {
+                // 'board' is safely available here and guaranteed to be assigned.
+                if (board.CurrentState == BoardState.BlankBoard)
+                {
+                    board.TransitionTo(BoardState.SolderPrinted);
+                    Console.WriteLine($"[green]Successfully processed {board.Name}[/]");
+                }
+                else
+                {
+                    Console.WriteLine($"[yellow]Warning: {board.Name} is not in a processable state.[/]");
+                }
+            }
+            else
+            {
+                // This handles the case where the product passed is NOT a Motherboard
+                Console.WriteLine($"[red]Error: This machine cannot process {product.GetType().Name}[/]");
+            }
         }
     }
 
@@ -361,7 +395,24 @@ namespace Smart_Factory_Management_System
         }
         public override void Produce(Product product)
         {
-            Console.WriteLine($"PAP Machine {Name} is producing {product.Name}.");
+            if (product is Motherboard board)
+            {
+                // 'board' is safely available here and guaranteed to be assigned.
+                if (board.CurrentState == BoardState.BlankBoard)
+                {
+                    board.TransitionTo(BoardState.SolderPrinted);
+                    Console.WriteLine($"[green]Successfully processed {board.Name}[/]");
+                }
+                else
+                {
+                    Console.WriteLine($"[yellow]Warning: {board.Name} is not in a processable state.[/]");
+                }
+            }
+            else
+            {
+                // This handles the case where the product passed is NOT a Motherboard
+                Console.WriteLine($"[red]Error: This machine cannot process {product.GetType().Name}[/]");
+            }
         }
     }
 
@@ -373,7 +424,24 @@ namespace Smart_Factory_Management_System
         }
         public override void Produce(Product product)
         {
-            Console.WriteLine($"Reflow Oven {Name} is producing {product.Name}.");
+            if (product is Motherboard board)
+            {
+                // Now 'board' is safely available here and guaranteed to be assigned.
+                if (board.CurrentState == BoardState.BlankBoard)
+                {
+                    board.TransitionTo(BoardState.SolderPrinted);
+                    Console.WriteLine($"[green]Successfully processed {board.Name}[/]");
+                }
+                else
+                {
+                    Console.WriteLine($"[yellow]Warning: {board.Name} is not in a processable state.[/]");
+                }
+            }
+            else
+            {
+                // This handles the case where the product passed is NOT a Motherboard
+                Console.WriteLine($"[red]Error: This machine cannot process {product.GetType().Name}[/]");
+            }
         }
     }
 }
