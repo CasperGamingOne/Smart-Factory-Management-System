@@ -129,6 +129,13 @@ namespace Smart_Factory_Management_System
         }
         
     }
+    public class FinishedProduct : Product
+    {
+        public FinishedProduct(string name, double cost, double price, int quantity)
+            : base(name, cost, price, quantity)
+        {
+            Category = "Produs Final";
+        }
+    }
 
-    
 }

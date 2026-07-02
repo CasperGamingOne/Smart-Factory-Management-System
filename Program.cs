@@ -329,6 +329,29 @@ namespace Smart_Factory_Management_System
                 default:
                     Console.WriteLine("Optiune invalida!");
                     break;
+                case "5":
+                    Console.Write("Alege masina pentru productie: ");
+                    if (int.TryParse(Console.ReadLine(), out int idxProd) && idxProd > 0 && idxProd <= nr_machines)
+                    {
+                        Machine m = machines[idxProd - 1];
+
+                        // Regula 1
+                        if (m.Status == MachineStatus.Running)
+                        {
+                            Product produsReal = new FinishedProduct("Produs Standard", 10.0, 20.0, 1);
+            
+                            m.ExecuteProductionCycle(produsReal);
+                        }
+                        else
+                        {
+                            Console.WriteLine($"[ERROR] Masina {m.Name} nu poate produce pentru ca este {m.Status}. Porneste-o intâi!");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("[ERROR] Numar masina invalid.");
+                    }
+                    break;
 
             }
             
