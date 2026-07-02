@@ -10,18 +10,7 @@ namespace Smart_Factory_Management_System
             // Initialize your core factory engine and mock data once at startup
             Factory factory = new Factory();
 
-            if (args.Length > 0 && args[0] == "--run-ci")
-            {
-                bool testsPassed = SimulationTester.RunAllScenarios(factory, out string testOutput);
 
-                // Print output to standard console stream for GitHub Actions to read
-                Console.WriteLine(testOutput);
-
-                // Exit cleanly with standard OS exit codes (0 = Success, 1 = Error)
-                Environment.Exit(testsPassed ? 0 : 1);
-            }
-            else
-            {
                 // The Outer Application Loop: Keeps the system alive for new logins
                 while (true)
                 {
@@ -109,7 +98,6 @@ namespace Smart_Factory_Management_System
 
                 // When sessionActive becomes false, control breaks out of the inner loop
                 // and naturally flows back to the top of the while(true) loop, showing the login screen again!
-            }
 
             /*
             bool rulare = true;
