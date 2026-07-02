@@ -75,12 +75,13 @@
         // Only the machines will call this
         public void TransitionTo(BoardState nextState) => CurrentState = nextState;
 
-        public string SensorType { get; set; }
-        public Motherboard(string name, double cost, double price, int quantity, string type)
+        public string SocketStandard { get; set; }
+        public string PhysicalForm { get; set; }
+        public Motherboard(string name, double cost, double price, int quantity, string socket, string type)
             : base(name, cost, price, quantity)
         {
-            Category = "Senzori";
-            SensorType = type;
+            SocketStandard = socket;
+            PhysicalForm = type;
         }
     }
 

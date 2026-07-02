@@ -73,7 +73,6 @@ namespace Smart_Factory_Management_System
 
         private static void AddNewEmployeeFlow(Factory factory)
         {
-            string id = AnsiConsole.Ask<string>("Enter new Employee ID:");
             string name = AnsiConsole.Ask<string>("Enter Employee Full Name:");
 
             // Assuming standard system roles

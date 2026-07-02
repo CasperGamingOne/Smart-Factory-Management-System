@@ -110,14 +110,14 @@ namespace Smart_Factory_Management_System
                 // 6. Instantiate the chosen product asset matching your business requirements
                 Product? productToProduce = selectedProductType switch
                 {
-                    "Microprocessor (Silicon Wafer Layer)" => new Microprocessor("NextGen Microprocessor", 375, 500, 10, "CPU-5nm"),
-                    "High-Density Motherboard Assembly" => new Motherboard("Flir Lepton Micro-Thermal", 150, 200, 20, "ThermalInfrared"),
+                    "Microprocessor (Silicon Wafer Layer)" => new Microprocessor("NextGen Microprocessor", 375, 500, 10, 4, 2.5),
+                    "High-Density Motherboard Assembly" => new Motherboard("Flir Lepton Micro-Thermal", 150, 200, 20, "AM4", "ATX"),
                     _ => null
                 };
 
                 if (productToProduce == null) continue;
 
-                // 7. Execute the polymorphic workflow pipeline
+                // 7. Execute the workflow pipeline
                 AnsiConsole.Clear();
                 AnsiConsole.Write(Align.Left(new Rule($"[cyan]Executing Production Job Loop: {productToProduce.Name}[/]")));
                 AnsiConsole.WriteLine();

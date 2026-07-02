@@ -66,7 +66,7 @@ namespace Smart_Factory_Management_System
                                 break;
 
                             case "3. Product Management":
-                                // Product management handler logic here
+                                ProductMenuHandler.Run(factory, loggedInUser);
                                 break;
 
                             case "4. Production":

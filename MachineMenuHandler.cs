@@ -36,7 +36,7 @@ namespace Smart_Factory_Management_System
                         }
                         else
                         {
-                            RunPolymorphicInspection(factory);
+                            RunInspection(factory);
                         }
                         break;
 
@@ -72,7 +72,7 @@ namespace Smart_Factory_Management_System
             AnsiConsole.Write(table);
         }
 
-        private static void RunPolymorphicInspection(Factory factory)
+        private static void RunInspection(Factory factory)
         {
             if (factory.MachineCount == 0)
             {

@@ -288,7 +288,7 @@ namespace Smart_Factory_Management_System
             var componentTable = new Table().Border(TableBorder.Rounded);
             componentTable.AddColumn("[bold]Tracked Component Item[/]");
             componentTable.AddColumn(new TableColumn("[bold]Health Status[/]").Centered());
-            componentTable.AddColumn("[bold]Polymorphic Technical Specifications & Diagnostics[/]");
+            componentTable.AddColumn("[bold]Technical Specifications & Diagnostics[/]");
 
             foreach (var part in Parts)
             {

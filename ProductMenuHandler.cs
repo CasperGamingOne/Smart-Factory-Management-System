@@ -4,7 +4,7 @@ namespace Smart_Factory_Management_System
 { 
     internal class ProductMenuHandler
     {
-        public static void Show(Factory factory, Employee currentUser)
+        public static void Run(Factory factory, Employee currentUser)
         {
             while (true)
             {
@@ -30,7 +30,7 @@ namespace Smart_Factory_Management_System
                         .Title("[bold white]Navigate to an inventory operation:[/]")
                         .PageSize(10)
                         .AddChoices(new[] {
-                            "1. View Finished Goods Stock (Polymorphic Table)",
+                            "1. View Finished Goods Stock",
                             "2. View Inventory Financial & Capacity Analytics",
                             "3. Manually Register/Seed Asset (Manager Override)",
                             "4. Return to Main Menu"
@@ -38,7 +38,7 @@ namespace Smart_Factory_Management_System
 
                 switch (choice)
                 {
-                    case "1. View Finished Goods Stock (Polymorphic Table)":
+                    case "1. View Finished Goods Stock":
                         DisplayInventoryTable(factory);
                         break;
                     case "2. View Inventory Financial & Capacity Analytics":
@@ -71,10 +71,11 @@ namespace Smart_Factory_Management_System
             table.AddColumn("[bold blue]Slot[/]");
             table.AddColumn("[bold cyan]Component Name[/]");
             table.AddColumn("[bold green]Unique SKU / Serial[/]");
-            table.AddColumn("[bold yellow]Technical Specifications (Polymorphic)[/]");
+            table.AddColumn("[bold yellow]Technical Specifications[/]");
             table.AddColumn("[bold magenta]Value ($)[/]");
 
             // Loop strictly to .ProductCount tracking bound to guarantee null safety
+            /*
             for (int i = 0; i < factory.ProductCount; i++)
             {
                 var product = factory.Inventory[i];
@@ -91,6 +92,7 @@ namespace Smart_Factory_Management_System
                     );
                 }
             }
+            */
 
             AnsiConsole.Write(table);
             AnsiConsole.WriteLine("\nPress any key to return...");
@@ -140,9 +142,9 @@ namespace Smart_Factory_Management_System
             AnsiConsole.WriteLine();
 
             // Authorization check
-            if (currentUser.Role.ToString().ToLower() != "manager")
+            if (currentUser is not SalesAgent)
             {
-                AnsiConsole.Write(new Panel("[red]❌ ACCESS DENIED: Only personnel with structural 'Manager' roles can manually override warehouse tracking logs.[/]").Border(BoxBorder.Rounded));
+                AnsiConsole.Write(new Panel("[red]❌ ACCESS DENIED: Only personnel with structural 'SalesAgent' roles can manually override warehouse tracking logs.[/]").Border(BoxBorder.Rounded));
                 AnsiConsole.WriteLine("\nPress any key to return...");
                 Console.ReadKey(true);
                 return;
@@ -151,16 +153,16 @@ namespace Smart_Factory_Management_System
             AnsiConsole.MarkupLine("[bold white]Select specific product concrete class to initialize:[/]");
             var categorySelection = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .AddChoices(new[] { "Microprocessor", "Motherboard", "Camera Module" }));
+                    .AddChoices(new[] { "Microprocessor", "Motherboard" }));
 
             string baselineModelName = AnsiConsole.Ask<string>($"Enter common designation name for this [cyan]{categorySelection}[/]:");
             double financialValue = AnsiConsole.Ask<double>("Set baseline unit manufacturing cost value ($):");
 
             // Build unique SKU tracking token
             string preCode = categorySelection.Substring(0, 3).ToUpper();
-            string generatedSku = $"SKU-{DateTime.Now.Ticks.ToString().Substring(11)}-{preCode}";
+            //string generatedSku = $"SKU-{DateTime.Now.Ticks.ToString().Substring(11)}-{preCode}";
 
-            // Polymorphic Reference Variable initialization
+            // Reference Variable initialization
             Product specializedProduct = null;
 
             // Conditional block branches based on target subclass parameters
@@ -175,18 +177,18 @@ namespace Smart_Factory_Management_System
                     double coreClockSpeed = AnsiConsole.Ask<double>("Set processor core computing frequency target (GHz):");
 
                     // Specific Concrete Instantiation
-                    specializedProduct = new Microprocessor(baselineModelName, generatedSku, financialValue, DateTime.Now, processingCores, coreClockSpeed);
+                    specializedProduct = new Microprocessor(baselineModelName, financialValue, 0, 1, processingCores, coreClockSpeed);
                     break;
 
                 case "Motherboard":
-                    string socketStandard = AnsiConsole.Ask<string>("Enter target layout architectural socket standard type (e.g., AM5, LGA1700):");
+                    string socket = AnsiConsole.Ask<string>("Enter target layout architectural socket standard type (e.g., AM5, LGA1700):");
                     string physicalForm = AnsiConsole.Prompt(
                         new SelectionPrompt<string>()
                             .Title("Select board layout form standard dimension factor:")
                             .AddChoices(new[] { "ATX", "Micro-ATX", "Mini-ITX", "E-ATX" }));
 
                     // Specific Concrete Instantiation
-                    specializedProduct = new Motherboard(baselineModelName, generatedSku, financialValue, DateTime.Now, socketStandard, physicalForm);
+                    specializedProduct = new Motherboard(baselineModelName, financialValue, 0, 1, socket, physicalForm);
                     break;
             }
 
@@ -194,7 +196,7 @@ namespace Smart_Factory_Management_System
             {
                 factory.AddProduct(specializedProduct);
                 AnsiConsole.WriteLine();
-                AnsiConsole.Write(new Panel($"[green]✅ Polymorphic Derived Asset Registered!\nLogged Serial: [yellow]{generatedSku}[/]\nSpecs: {specializedProduct.GetTechnicalSpecifications()}[/]").Border(BoxBorder.Rounded));
+                AnsiConsole.Write(new Panel($"[green]✅ Derived Asset Registered!\nLogged Serial: [yellow]{specializedProduct.Name}[/]\nSpecs: {specializedProduct.ProductionDate}[/]").Border(BoxBorder.Rounded));
             }
 
             AnsiConsole.WriteLine("\nPress any key to return...");
