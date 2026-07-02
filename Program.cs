@@ -240,6 +240,12 @@ namespace Smart_Factory_Management_System
             Console.WriteLine("\n- MANAGEMENT MASINARII -");
             Console.WriteLine("1. Afiseaza toate masinile");
             Console.WriteLine("2. Reparatie/Interventie");
+            Console.WriteLine("3. Diagnosticare masina (Inspect)");
+            Console.WriteLine("4. Porneste masina");
+            Console.WriteLine("5. Executa ciclu de productie: ");
+
+            Console.Write("Alege o optiune: ");
+
             string opt = Console.ReadLine()!;
 
 
@@ -295,9 +301,35 @@ namespace Smart_Factory_Management_System
                     }
                     break;
 
+                case "3":
+                    Console.Write("Introdu numarul masinii pentru diagnosticare: ");
+                    if (int.TryParse(Console.ReadLine(), out int idx) && idx > 0 && idx <= nr_machines)
+                    {
+                        Machine masinaSelectata = machines[idx - 1];
+                        //reg 19,20
+
+                        masinaSelectata.Inspect();
+                    }
+                    else
+                    {
+                        Console.WriteLine("Numar masina invalid!");
+                    }
+                    break;
+
+                case "4":
+                    // Logica de pornire (Regula 6)
+                    Console.Write("Alege masina de pornit: ");
+                    if (int.TryParse(Console.ReadLine(), out int idxStart) && idxStart > 0 && idxStart <= nr_machines)
+                    {
+                        machines[idxStart - 1].StartMachine();
+                    }
+                    break;
+
+
                 default:
                     Console.WriteLine("Optiune invalida!");
                     break;
+
             }
             
         }

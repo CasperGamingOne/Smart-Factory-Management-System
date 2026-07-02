@@ -127,7 +127,8 @@ namespace Smart_Factory_Management_System
             Category = "Comunicatii";
             Protocol = protocol;
         }
+        
     }
 
-
+    
 }

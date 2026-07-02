@@ -37,9 +37,9 @@
 
         public virtual void ExecuteProductionCycle(Product product)
         {
-            if (Status != MachineStatus.Running)
+            if (Status != MachineStatus.Running)  //verificam starea inainte de a produce  -Reg 1
             {
-                Console.WriteLine($"[ERROR] '{Name}' cannot produce: Machine is {Status}. (Regula 13)");
+                Console.WriteLine($"[ERROR] '{Name}' cannot produce: Machine is {Status}");
                 return;
             }
 
@@ -57,11 +57,11 @@
         {
             if (Status == MachineStatus.Maintenance)
             {
-                Console.WriteLine($"[ERROR] Cannot start '{Name}'! It is currently flagged for Maintenance.");
+                Console.WriteLine($"[ERROR] Cannot start '{Name}'! It is currently flagged for Maintenance.");   //regula 2 
                 return false;
             }
 
-            if (Parts == null)
+            if (Parts == null || Parts.Length == 0)  //daca lipseste o piesa sau daca este o lista goala
             {
                 Console.WriteLine($"[ERROR] Cannot start '{Name}' because it has no parts assigned.");
                 Status = MachineStatus.Stopped;
@@ -70,6 +70,7 @@
 
             foreach (var part in Parts)
             {
+                if (part == null) continue;  //daca exista intrari nule-previne prabusirea programului
                 if (part.Condition == PartCondition.Critical)
                 {
                     Console.WriteLine($"[CRITICAL] Cannot start '{Name}' because component '{part.Name}' is broken!");
@@ -106,39 +107,20 @@
             Console.WriteLine($"Masina {this.Name} este acum in mentenanta de catre  Tehnician fexe{tech.Name}.");
         }
 
-        public void InspectMachine()
+        public virtual void Inspect()
         {
             Console.WriteLine($"[INSPECTION] Running diagnostics on {Name} (S/N: {SerialNumber})...");
-            Console.WriteLine($"[STATUS] Machine Current Condition: {Condition}, Status: {Status}");
-            bool Faults = false;
 
             if (Parts == null)
             {
-                Console.WriteLine($"[ERROR] Cannot inspect '{Name}' because it has no parts assigned.");
-                Condition = MachineCondition.Critical;
-                Status = MachineStatus.Maintenance;
+                Console.WriteLine($"[ERROR] No parts assigned to {Name}.");
                 return;
             }
 
-            foreach (var part in Parts)
-            {
-                part.PrintPartInfo();
-                if (part.Condition == PartCondition.Critical)
-                {
-                    Faults = true;
-                }
-            }
+            foreach (var part in Parts)  {part.PrintPartInfo();}
 
-            if (Faults)
-            {
-                Condition = MachineCondition.Critical;
-                Status = MachineStatus.Maintenance;
-                Console.WriteLine($"[DIAGNOSTIC] '{Name}' failed inspection! Status forced to MAINTENANCE.");
-            }
-            else
-            {
-                Console.WriteLine($"[DIAGNOSTIC] '{Name}' passed inspection cleanly.");
-            }
+      
+ 
         }
 
     }
@@ -155,6 +137,11 @@
             // Aici se sscade starea  (Regula 8)
             this.Condition = MachineCondition.Good; // Exemplu de schimbare stare
         }
+        public override void Inspect()       //reg 19
+        {
+            base.Inspect(); // Apeleaza verificarea de baza
+            Console.WriteLine($"-> [SPECIFIC] Litography {Name}: Verificare aliniere fascicul laser...");
+        }
     }
 
     internal class SMT_Machine : Machine  // Solder Paste Printer
@@ -166,6 +153,11 @@
         public override void Produce(Product product)
         {
             Console.WriteLine($"SMT Machine {Name} is producing {product.Name}.");
+        }
+        public override void Inspect()
+        {
+            base.Inspect();
+            Console.WriteLine($"-> [SPECIFIC] SMT {Name}: Calibrare duze și presiune pastă lipire...");   //reg 19
         }
     }
 
@@ -179,6 +171,11 @@
         {
             Console.WriteLine($"PAP Machine {Name} is producing {product.Name}.");
         }
+        public override void Inspect()
+        {
+            base.Inspect(); 
+            Console.WriteLine($"-> [SPECIFIC] PaP {Name}: Calibrare sistem viziune si verificare axele X-Y-Z.");
+        }
     }
 
     internal class Reflow_Oven : Machine
@@ -190,7 +187,12 @@
         public override void Produce(Product product)
         {
             Console.WriteLine($"Reflow Oven {Name} isthermally curing {product.Name}.");
-          ;
+          
+        }
+        public override void Inspect()
+        {
+            base.Inspect();
+            Console.WriteLine($"-> [SPECIFIC] Reflow Oven {Name}: Test senzori temperatura si elemente incalzire...");
         }
     }
 
