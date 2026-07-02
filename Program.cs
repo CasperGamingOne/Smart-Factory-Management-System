@@ -10,40 +10,52 @@ namespace Smart_Factory_Management_System
             // Initialize your core factory engine and mock data once at startup
             Factory factory = new Factory();
 
-            // The Outer Application Loop: Keeps the system alive for new logins
-            while (true)
+            if (args.Length > 0 && args[0] == "--run-ci")
             {
-                AnsiConsole.Clear();
-                AnsiConsole.Write(new Rule("[yellow]SMART FACTORY SYSTEM - LOGIN GATEWAY[/]").Centered());
+                bool testsPassed = SimulationTester.RunAllScenarios(factory, out string testOutput);
 
-                // 1. Invoke the LoginHandler to authenticate the user
-                // It prompts for credentials and returns the validated Employee object
-                Employee? loggedInUser = LoginHandler.ShowLoginScreen(factory);
+                // Print output to standard console stream for GitHub Actions to read
+                Console.WriteLine(testOutput);
 
-                if (loggedInUser == null)
-                {
-                    // If your login system returns null (e.g., if you choose to exit from login screen)
-                    AnsiConsole.MarkupLine("[red]Application shutting down...[/]");
-                    break;
-                }
-
-                // Welcome the authenticated employee
-                AnsiConsole.MarkupLine($"[green]Welcome back, {loggedInUser.Name} ({loggedInUser.Role})![/]");
-                AnsiConsole.Status().Start("Booting production environment...", ctx => { System.Threading.Thread.Sleep(1000); });
-
-                // 2. The Inner Session Loop: Active while a user is authenticated
-                bool sessionActive = true;
-                while (sessionActive)
+                // Exit cleanly with standard OS exit codes (0 = Success, 1 = Error)
+                Environment.Exit(testsPassed ? 0 : 1);
+            }
+            else
+            {
+                // The Outer Application Loop: Keeps the system alive for new logins
+                while (true)
                 {
                     AnsiConsole.Clear();
-                    AnsiConsole.Write(new Rule($"[blue]FACTORY CONTROL PANEL - Session: {loggedInUser.Name}[/]").Centered());
+                    AnsiConsole.Write(new Rule("[yellow]SMART FACTORY SYSTEM - LOGIN GATEWAY[/]").Centered());
 
-                    // Render the mandatory application menu layout from your specification sheet
-                    var choice = AnsiConsole.Prompt(
-                        new SelectionPrompt<string>()
-                            .Title("[yellow]Select an operational module:[/]")
-                            .PageSize(10)
-                            .AddChoices(new[] {
+                    // 1. Invoke the LoginHandler to authenticate the user
+                    // It prompts for credentials and returns the validated Employee object
+                    Employee? loggedInUser = LoginHandler.ShowLoginScreen(factory);
+
+                    if (loggedInUser == null)
+                    {
+                        // If your login system returns null (e.g., if you choose to exit from login screen)
+                        AnsiConsole.MarkupLine("[red]Application shutting down...[/]");
+                        break;
+                    }
+
+                    // Welcome the authenticated employee
+                    AnsiConsole.MarkupLine($"[green]Welcome back, {loggedInUser.Name} ({loggedInUser.Role})![/]");
+                    AnsiConsole.Status().Start("Booting production environment...", ctx => { System.Threading.Thread.Sleep(1000); });
+
+                    // 2. The Inner Session Loop: Active while a user is authenticated
+                    bool sessionActive = true;
+                    while (sessionActive)
+                    {
+                        AnsiConsole.Clear();
+                        AnsiConsole.Write(new Rule($"[blue]FACTORY CONTROL PANEL - Session: {loggedInUser.Name}[/]").Centered());
+
+                        // Render the mandatory application menu layout from your specification sheet
+                        var choice = AnsiConsole.Prompt(
+                            new SelectionPrompt<string>()
+                                .Title("[yellow]Select an operational module:[/]")
+                                .PageSize(10)
+                                .AddChoices(new[] {
                                 "1. Employee Management",
                                 "2. Machine Management",
                                 "3. Product Management",
@@ -51,48 +63,49 @@ namespace Smart_Factory_Management_System
                                 "5. Reports",
                                 "6. Factory Information",
                                 "7. Log Out / Exit Session"
-                            }));
+                                }));
 
-                    // 3. Central routing to independent, decoupled handler classes
-                    switch (choice)
-                    {
-                        case "1. Employee Management":
-                            EmployeeMenuHandler.Run(factory, loggedInUser);
-                            break;
+                        // 3. Central routing to independent, decoupled handler classes
+                        switch (choice)
+                        {
+                            case "1. Employee Management":
+                                EmployeeMenuHandler.Run(factory, loggedInUser);
+                                break;
 
-                        case "2. Machine Management":
-                            MachineMenuHandler.Run(factory, loggedInUser);
-                            break;
+                            case "2. Machine Management":
+                                MachineMenuHandler.Run(factory, loggedInUser);
+                                break;
 
-                        case "3. Product Management":
-                            // Product management handler logic here
-                            break;
+                            case "3. Product Management":
+                                // Product management handler logic here
+                                break;
 
-                        case "4. Production":
-                            ProductionMenuHandler.Run(factory, loggedInUser);
-                            break;
+                            case "4. Production":
+                                ProductionMenuHandler.Run(factory, loggedInUser);
+                                break;
 
-                        case "5. Reports":
-                            ReportMenuHandler.Run(factory, loggedInUser);
-                            break;
+                            case "5. Reports":
+                                ReportMenuHandler.Run(factory, loggedInUser);
+                                break;
 
-                        case "6. Factory Information":
-                            // Display quick factory specifications/counters
-                            AnsiConsole.MarkupLine($"[bold]Factory Capacity Metrics:[/]");
-                            AnsiConsole.MarkupLine($"Machines Configured: [cyan]{factory.MachineCount}[/]");
-                            AnsiConsole.MarkupLine($"Active Staff: [cyan]{factory.EmployeeCount}[/]");
-                            AnsiConsole.MarkupLine("\nPress any key to return...");
-                            Console.ReadKey();
-                            break;
+                            case "6. Factory Information":
+                                // Display quick factory specifications/counters
+                                AnsiConsole.MarkupLine($"[bold]Factory Capacity Metrics:[/]");
+                                AnsiConsole.MarkupLine($"Machines Configured: [cyan]{factory.MachineCount}[/]");
+                                AnsiConsole.MarkupLine($"Active Staff: [cyan]{factory.EmployeeCount}[/]");
+                                AnsiConsole.MarkupLine("\nPress any key to return...");
+                                Console.ReadKey();
+                                break;
 
-                        case "7. Log Out / Exit Session":
-                            // To exit the inner loop cleanly, toggle the state boundary flags
-                            AnsiConsole.MarkupLine("[yellow]Logging out of current profile...[/]");
-                            System.Threading.Thread.Sleep(800);
-                            sessionActive = false;
-                            break;
+                            case "7. Log Out / Exit Session":
+                                // To exit the inner loop cleanly, toggle the state boundary flags
+                                AnsiConsole.MarkupLine("[yellow]Logging out of current profile...[/]");
+                                System.Threading.Thread.Sleep(800);
+                                sessionActive = false;
+                                break;
+                        }
                     }
-                }
+                }            
 
                 // When sessionActive becomes false, control breaks out of the inner loop
                 // and naturally flows back to the top of the while(true) loop, showing the login screen again!

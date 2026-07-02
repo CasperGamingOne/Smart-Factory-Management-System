@@ -29,7 +29,7 @@ namespace Smart_Factory_Management_System
 
                     case "2. Add New Employee":
                         // Restrict execution based on roles if your design calls for it
-                        if (loggedInUser.Role.ToString().ToLower() != "director")
+                        if (loggedInUser is not Director)
                         {
                             AnsiConsole.MarkupLine($"[red]❌ Access Denied: {loggedInUser.Role} cannot perform this action.[/]");
                         }
@@ -97,6 +97,7 @@ namespace Smart_Factory_Management_System
                     AnsiConsole.MarkupLine("[red]❌ Invalid role selection. Operation aborted.[/]");
                     return;
             }
+
             // Add back into your underlying factory system safely
             
             AnsiConsole.MarkupLine($"[green]✔ Employee '{name}' registered successfully![/]");
