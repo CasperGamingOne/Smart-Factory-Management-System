@@ -14,7 +14,7 @@
             idCounter++;
             Id = idCounter;
             Name = name;
-            Role = "Angajat Simplu";
+            Role = "Auxiliary";
          }
 
         public virtual void AfiseazaActivitate()

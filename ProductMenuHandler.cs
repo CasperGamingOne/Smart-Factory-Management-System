@@ -1,7 +1,7 @@
 ﻿using Spectre.Console;
 
 namespace Smart_Factory_Management_System
-{ /*
+{ 
     internal class ProductMenuHandler
     {
         public static void Show(Factory factory, Employee currentUser)
@@ -85,9 +85,9 @@ namespace Smart_Factory_Management_System
                     table.AddRow(
                         (i + 1).ToString(),
                         product.Name,
-                        product.SerialNumber,
+                        product.ProductionCost.ToString(),
                         dynamicSpecs,
-                        $"${product.Price:F2}"
+                        $"${product.SellingPrice:F2}"
                     );
                 }
             }
@@ -113,12 +113,11 @@ namespace Smart_Factory_Management_System
                 var product = factory.Inventory[i];
                 if (product != null)
                 {
-                    cumulativeValue += product.Price;
+                    cumulativeValue += product.SellingPrice;
 
                     // Type checking subclasses safely for metrics grouping
                     if (product is Microprocessor) cpuCount++;
                     else if (product is Motherboard) pcbCount++;
-                    else if (product is CameraModule) opticsCount++;
                 }
             }
 
@@ -189,14 +188,6 @@ namespace Smart_Factory_Management_System
                     // Specific Concrete Instantiation
                     specializedProduct = new Motherboard(baselineModelName, generatedSku, financialValue, DateTime.Now, socketStandard, physicalForm);
                     break;
-
-                case "Sensor Module":
-                    int lensResolution = AnsiConsole.Ask<int>("Enter image sensor focal array resolution capacity (Megapixels):");
-                    bool imageStabilization = AnsiConsole.Confirm("Does this optical sub-assembly house integrated mechanical OIS?");
-
-                    // Specific Concrete Instantiation
-                    specializedProduct = new SensorModule(baselineModelName, generatedSku, financialValue, DateTime.Now, lensResolution, imageStabilization);
-                    break;
             }
 
             if (specializedProduct != null)
@@ -210,5 +201,4 @@ namespace Smart_Factory_Management_System
             Console.ReadKey(true);
         }
     }
-    */
 }

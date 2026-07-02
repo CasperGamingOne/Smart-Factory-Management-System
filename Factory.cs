@@ -29,8 +29,8 @@
             AddEmployee(new SalesAgent("Alexandru Dumitru"));
             AddEmployee(new Accountant("Elena Vasilescu"));
 
-            AddProduct(new Microprocessor("Arduino Uno R4", 15.50, 29.99, 150, "ARM Cortex-M4"));
-            AddProduct(new Motherboard("Motherboard ATX", 50.00, 99.99, 100, "ATX"));
+            AddProduct(new Microprocessor("Arduino Uno R4", 50, 74.99, 10, "ARM Cortex-M4"));
+            AddProduct(new Motherboard("Motherboard ATX", 50.00, 99.99, 5, "ATX"));
 
             MachinePart lito_power = new Power_Supply("ASML High-Voltage Grid", PartCondition.Excellent, 400);
             MachinePart lito_cooling = new Cooling_System("CryoHelix Sub-Zero", PartCondition.Excellent, "Liquid Helium");

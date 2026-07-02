@@ -3,7 +3,8 @@
     public abstract class Product
     {
         public string? Name { get; set; }
-        public string? Category { get; protected set; }
+        public int? Cores { get; protected set; }
+        public double ClockSpeed { get; protected set; }
         public DateTime ProductionDate { get; private set; }
 
         private double productionCost;
@@ -27,7 +28,6 @@
             return SellingPrice - ProductionCost;
         }
 
-        /*
         public int Quantity { get { return quantity; }
             set
             {
@@ -43,7 +43,6 @@
 
             }
         }
-        */
 
         // Constructorul pt intitializarea unui produs
         public Product(string name, double cost, double price, int quantity)
@@ -51,7 +50,7 @@
             Name = name;
             ProductionCost = cost;
             SellingPrice = price;
-            // Quantity = quantity;
+            Quantity = quantity;
             ProductionDate = DateTime.Now;
         }
     }
@@ -59,11 +58,11 @@
     public class Microprocessor : Product
     {
         public string Architecture { get; set; }
-        public Microprocessor(string name, double cost, double price, int quantity, string arch)
+        public Microprocessor(string name, double cost, double price, int quantity, int cores, double clockSpeed)
             : base(name, cost, price, quantity)
         {
-            Category = "Semiconductori";
-            Architecture = arch;
+            Cores = cores;
+            ClockSpeed = clockSpeed;
         }
     }
 
