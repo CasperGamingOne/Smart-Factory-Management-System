@@ -3,7 +3,6 @@ name: Generate and Deploy GitHub Pages Docs
 on:
   push:
     branches:
-      - main
       - new-tui-frontend  # Track feature development branches seamlessly
   workflow_dispatch:      # Allows you to trigger this documentation build manually via the UI
 
