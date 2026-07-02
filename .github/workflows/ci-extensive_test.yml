@@ -24,15 +24,14 @@ jobs:
     - name: Restore Project Dependencies
       run: dotnet restore
 
-    - name: Compile and Build Solution
-      run: dotnet build --configuration Release --no-restore
-
-    - name: Execute Automated Scenario Matrix Tests
-      id: test_runner
-      run: |
-        # Boot application in headless mode, capture all output logs safely
-        dotnet run --configuration Release --no-build -- --run-ci > calidation_output.log
-      continue-on-error: true
+    - name: Execute Smart Factory Validation Engine
+        run: |
+          echo "Running C# automated business rule validations..."
+          # Running your system in CI mode and piping both standard outputs and errors into a log file
+          dotnet run -- --run-ci > validation_output.log 2>&1 || true
+          
+          # Print to runner console so you still have it there
+          cat validation_output.log
 
       - name: Post Validation Logs to Pull Request
         uses: actions/github-script@v7
