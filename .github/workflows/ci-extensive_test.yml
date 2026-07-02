@@ -1,0 +1,68 @@
+name: Smart Factory Validation System
+
+on:
+  pull_request:
+    branches: [ "main", "new-tui-frontend" ]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  run-regression-matrix:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository Code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET Environment
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore Project Dependencies
+      run: dotnet restore
+
+    - name: Compile and Build Solution
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Execute Automated Scenario Matrix Tests
+      id: test_runner
+      run: |
+        # Boot application in headless mode, capture all output logs safely
+        dotnet run --configuration Release --no-build -- --run-ci > csharp_test_results.log
+      continue-on-error: true
+
+    - name: Post Diagnostic Audit Updates to Pull Request Thread
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          let reportContent = "";
+          
+          try {
+            reportContent = fs.readFileSync('csharp_test_results.log', 'utf8');
+          } catch (err) {
+            reportContent = "⚠️ Could not read diagnostic test logs. Build process failed ahead of runtime execution.";
+          }
+
+          const isSuccess = "${{ steps.test_runner.outcome }}" === "success";
+          
+          let commentBody = "";
+          if (isSuccess) {
+            commentBody = `🎉 **ALL OBJECT Lifecycles AND INTEGRATION CHECKS VERIFIED** 🎉\n\n${reportContent}`;
+          } else {
+            commentBody = `🚨 **INTEGRATION REGRESSION ENGINE BREAK DETECTED** 🚨\n\nYour branch modification has violated the core business validation requirements stated in the technical specifications document! Review the failure points down below:\n\n${reportContent}`;
+          }
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: commentBody
+          });
+
+          if (!isSuccess) {
+            core.setFailed("Automated business validation scenarios failed.");
+          }
