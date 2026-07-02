@@ -1,4 +1,6 @@
-﻿namespace Smart_Factory_Management_System
+﻿using Smart_Factory_Management_System;
+
+namespace Smart_Factory_Management_System
 {
     public abstract class Product
     {
@@ -6,6 +8,8 @@
         public string? Name { get; set; }
         public string? Category { get; protected set; }
         public DateTime ProductionDate { get; private set; }
+        public ProductMaterial[] Materiale { get; private set; }
+        private int nrMateriale = 0;
 
         // 
         private double productionCost;
@@ -32,7 +36,9 @@
         }
 
         // Proprietatea pentru Cantitate (cu validare)
-        public int Quantity { get { return quantity; }
+        public int Quantity
+        {
+            get { return quantity; }
             set
             {
                 if (value >= 0)
@@ -56,6 +62,26 @@
             SellingPrice = price;
             Quantity = quantity;
             ProductionDate = DateTime.Now;
+            Materiale = new ProductMaterial[10];
+
+        }
+        // Metoda pentru adaugarea unui material
+        public void AdaugaMaterial(string nume, double cantitate, string unitate)
+        {
+            if (cantitate < 0)
+            {
+                Console.WriteLine("Eroare: Cantitatea materialului nu poate fi negativa!");
+                return; // Opreste executia metodei aici
+            }
+            if (nrMateriale < Materiale.Length)
+            {
+                Materiale[nrMateriale] = new ProductMaterial(nume, cantitate, unitate);
+                nrMateriale++;
+            }
+            else
+            {
+                Console.WriteLine("Eroare: Nu mai poti adauga materiale (limita atinsa).");
+            }
         }
     }
     //clasele derivate pentru diferite tipuri de produse
@@ -102,5 +128,6 @@
             Protocol = protocol;
         }
     }
+
 
 }

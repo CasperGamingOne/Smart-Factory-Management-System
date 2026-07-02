@@ -56,7 +56,10 @@ namespace Smart_Factory_Management_System
 
 
             //vectorul de produse
-            inventarProduse[nrProduse++] = new Microcontroller("Arduino Uno R4", 15.50, 29.99, 150, "ARM Cortex-M4");
+            inventarProduse[nrProduse++] = new Microcontroller("Arduino sa fac R4", 15.50, 29.99, 150, "ARM Cortex-M4");
+
+
+
             inventarProduse[nrProduse++] = new SensorModule("Senzor DHT22", 4.20, 9.50, 300, "Umiditate si Temperatura");
             inventarProduse[nrProduse++] = new PowerModule("AC/DC Converter 12V", 25.00, 45.00, 50, 12.0);
             inventarProduse[nrProduse++] = new CommunicationModule("ESP32-WROOM-32", 3.50, 8.00, 200, "Wi-Fi & Bluetooth");
@@ -196,11 +199,38 @@ namespace Smart_Factory_Management_System
         //2
         static void SubmeniuProduse()
         {
-            Console.WriteLine("\n--- STOC PRODUSE ---");
-            for (int i = 0; i < nrProduse; i++)
+            Console.WriteLine("\n--- GESTIUNE PRODUSE ---");
+            Console.WriteLine("1. Afiseaza inventarul");
+            Console.WriteLine("2. Adauga materiale la un produs");
+            string opt = Console.ReadLine()!;
+
+            if (opt == "1")
             {
-                Product p = inventarProduse[i];
-                Console.WriteLine("Produs: " + p.Name + " | Pret: " + p.SellingPrice + " RON | Stoc: " + p.Quantity);
+                for (int i = 0; i < nrProduse; i++)
+                {
+                    Product p = inventarProduse[i];
+                    Console.WriteLine($"{i + 1}. {p.Name} | Pret: {p.SellingPrice} RON | Stoc: {p.Quantity}");
+                    // Afisam si materialele daca exista
+                    for (int j = 0; j < p.Materiale.Length; j++)
+                    {
+                        if (p.Materiale[j] != null) p.Materiale[j].AfiseazaDetaliiMaterial();
+                    }
+                }
+            }
+            else if (opt == "2")
+            {
+                Console.Write("Alege numarul produsului: ");
+                if (int.TryParse(Console.ReadLine(), out int index) && index > 0 && index <= nrProduse)
+                {
+                    Product p = inventarProduse[index - 1];
+
+                    Console.Write("Nume material: "); string matNume = Console.ReadLine()!;
+                    Console.Write("Cantitate necesara: "); double matCant = double.Parse(Console.ReadLine()!);
+                    Console.Write("Unitate masura (ex: g, buc): "); string matUnit = Console.ReadLine()!;
+
+                    p.AdaugaMaterial(matNume, matCant, matUnit);
+                    Console.WriteLine("Material adaugat cu succes la produsul " + p.Name + "!");
+                }
             }
         }
 
