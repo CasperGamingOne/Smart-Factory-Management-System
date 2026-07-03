@@ -2,8 +2,6 @@
 
 > [!IMPORTANT]
 > Project early in development! Repo Map 👇
-> 
-> https://caspergamingone.github.io/Smart-Factory-Management-System/#MachineMenuHandler_cs
 
 ## Quick Status View
 
