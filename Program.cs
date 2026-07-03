@@ -1,4 +1,4 @@
-namespace Smart_Factory_Management_System
+﻿namespace Smart_Factory_Management_System
 {
 
     internal class Program
@@ -74,6 +74,9 @@ namespace Smart_Factory_Management_System
                 Console.WriteLine("2. Management Produse");
                 Console.WriteLine("3. Management Masinarii");
                 Console.WriteLine("4. Management Piese Componente");
+                Console.WriteLine("5. Management Productie");
+                Console.WriteLine("6. Adauga masina noua");
+
                 Console.WriteLine("0. Iesire");
 
                 Console.Write("\nOptiune: ");
@@ -88,6 +91,8 @@ namespace Smart_Factory_Management_System
                     case 2: SubmeniuProduse(); break;
                     case 3: SubmeniuMasinarii(); break;
                     case 4: SubmeniuPiese(); break;
+                    case 5: SubmeniuProductie(); break;
+                    case 6: AdaugaMasinaNoua();break;
                     case 0: rulare = false; break;
                     default: Console.WriteLine("Optiune invalida!"); break;
                 }
@@ -344,7 +349,7 @@ namespace Smart_Factory_Management_System
                         }
                         else
                         {
-                            Console.WriteLine($"[ERROR] Masina {m.Name} nu poate produce pentru ca este {m.Status}. Porneste-o int�i!");
+                            Console.WriteLine($"[ERROR] Masina {m.Name} nu poate produce pentru ca este {m.Status}. Porneste-o intâi!");
                         }
                     }
                     else

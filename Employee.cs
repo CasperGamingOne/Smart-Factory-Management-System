@@ -27,15 +27,34 @@
         {
             Console.WriteLine("Directorul " + Name + " stabileste strategia fabricii.");
         }
+        public void CreeazaComandaProductie(string numeProdus, int cantitate)  //reg 5
+        {
+            Console.WriteLine($"[DIRECTOR] {Name} a lansat o noua comandă de productie:");
+            Console.WriteLine($"-> Produs: {numeProdus} | Cantitate: {cantitate} unitati.");
+
+        }
     }
 
     
     public class Technician : Employee
     {
-        public Technician(int id, string name) : base(id, name) { Role = "Tehnician"; }
+        public Technician(string name) : base(name) { Role = "Tehnician"; }
         public override void AfiseazaActivitate()
         {
             Console.WriteLine("Tehnicianul " + Name + " repara echipamentele defecte.");
+        }
+        internal void InspecteazaMasina(Machine m)
+        {
+            if (IsCertifiedInspector)
+            {
+                Console.WriteLine($"[INSPECȚIE] Tehnicianul {Name} (Certificat) inspectează mașina {m.Name}.");
+                m.Inspect(); // Apelează logica de diagnosticare
+                m.InspectataDeInginer = true; // Setează flag-ul pentru Regula 4
+            }
+            else
+            {
+                Console.WriteLine($"[EROARE] Tehnicianul {Name} nu are certificare de inginer pentru inspecții!");
+            }
         }
     }
     
