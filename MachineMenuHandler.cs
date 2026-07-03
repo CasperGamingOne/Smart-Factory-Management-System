@@ -16,11 +16,7 @@ namespace Smart_Factory_Management_System
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("[yellow]Select a diagnostic option:[/]")
-                        .AddChoices(new[] {
-                            "1. Overall Fleet Status Overview",
-                            "2. Run Deep Component Inspection",
-                            "3. Return to Main Menu"
-                        }));
+                        .AddChoices(MenuOptions.MachineMenu));
 
                 switch (choice)
                 {
@@ -36,7 +32,11 @@ namespace Smart_Factory_Management_System
                             RunInspection(factory);
                         break;
 
-                    case "3. Return to Main Menu":
+                    case "3. Fulfill Pending Orders":
+                        // Allow technicians to fulfill orders from within the machine menu
+                        ProductionMenuHandler.Run(factory, loggedInUser);
+                        break;
+                    case "4. Return to Main Menu":
                         inRoom = false;
                         break;
                 }
@@ -57,14 +57,14 @@ namespace Smart_Factory_Management_System
             table.AddColumn("[cyan]Operational Status[/]");
             table.AddColumn("[cyan]Structural Condition[/]");
 
-            for (int i = 0; i < factory.MachineCount; i++)
-            {
-                var mach = factory.Machines[i];
-                if (mach != null)
+                for (int i = 0; i < factory.MachineCount; i++)
                 {
-                    table.AddRow(mach.Name, mach.Manufacturer, mach.Status.ToString(), mach.Condition.ToString());
+                    var mach = factory.Machines[i];
+                    if (mach != null)
+                    {
+                        table.AddRow(mach.Name ?? "-", mach.Manufacturer ?? "-", mach.Status.ToString(), mach.Condition.ToString());
+                    }
                 }
-            }
             AnsiConsole.Write(table);
         }
 

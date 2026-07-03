@@ -62,7 +62,7 @@ namespace Smart_Factory_Management_System
     //clasele derivate pentru diferite tipuri de produse
     public class Microprocessor : Product
     {
-        public string Architecture { get; set; }
+        public string? Architecture { get; set; }
         public Microprocessor(string name, double cost, double price, int quantity, int cores, double clockSpeed)
             : base(name, cost, price, quantity)
         {
@@ -89,8 +89,8 @@ namespace Smart_Factory_Management_System
         // Only the machines will call this
         public void TransitionTo(BoardState nextState) => CurrentState = nextState;
 
-        public string SocketStandard { get; set; }
-        public string PhysicalForm { get; set; }
+        public string? SocketStandard { get; set; }
+        public string? PhysicalForm { get; set; }
         public Motherboard(string name, double cost, double price, int quantity, string socket, string type)
             : base(name, cost, price, quantity)
         {

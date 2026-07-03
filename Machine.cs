@@ -28,7 +28,7 @@ namespace Smart_Factory_Management_System
 
         public Type SupportedProductType { get; private protected set; }
 
-        public ProductionOrder ActiveOrder { get; private protected set; }
+        public ProductionOrder? ActiveOrder { get; private protected set; }
 
         public Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
         {
@@ -72,7 +72,7 @@ namespace Smart_Factory_Management_System
                 });
 
             // Null-checked safety verification over the array loop
-            foreach (var part in Parts)
+            foreach (var part in Parts ?? System.Array.Empty<MachinePart>())
             {
                 if (part != null && part.Condition == PartCondition.Critical)
                 {
@@ -161,7 +161,7 @@ namespace Smart_Factory_Management_System
         {
             // 1. Filter instantiated parts into a clean tracking bucket
             int activePartsCount = 0;
-            foreach (var part in Parts)
+            foreach (var part in Parts ?? System.Array.Empty<MachinePart>())
             {
                 if (part != null) activePartsCount++;
             }
@@ -173,7 +173,7 @@ namespace Smart_Factory_Management_System
             int currentStep = 0;
             MachinePart? selectedPart = null;
 
-            foreach (var part in Parts)
+            foreach (var part in Parts ?? System.Array.Empty<MachinePart>())
             {
                 if (part != null)
                 {
@@ -227,7 +227,7 @@ namespace Smart_Factory_Management_System
                 {
                     Thread.Sleep(600);
 
-                    foreach (var part in Parts)
+                    foreach (var part in Parts ?? System.Array.Empty<MachinePart>())
                     {
                         if (part == null) continue;
 
@@ -281,8 +281,8 @@ namespace Smart_Factory_Management_System
             profileTable.AddColumn("[grey]Assigned Value[/]");
 
             // Ensure all secondary parameters evaluate explicitly to strings
-            profileTable.AddRow("Manufacturer Identity", Manufacturer.ToString());
-            profileTable.AddRow("Factory Serial Reference", SerialNumber.ToString());
+            profileTable.AddRow("Manufacturer Identity", Manufacturer ?? "-");
+            profileTable.AddRow("Factory Serial Reference", SerialNumber ?? "-");
             profileTable.AddRow("Asset Total Life Age", $"{GetMachineAge()} Years Old");
 
             string statusColor = Status == MachineStatus.Running ? "green" : (Status == MachineStatus.Stopped ? "yellow" : "orange3");
@@ -297,11 +297,14 @@ namespace Smart_Factory_Management_System
             componentTable.AddColumn(new TableColumn("[bold]Health Status[/]").Centered());
             componentTable.AddColumn("[bold]Technical Specifications & Diagnostics[/]");
 
-            foreach (var part in Parts)
+                    foreach (var part in Parts ?? System.Array.Empty<MachinePart>())
             {
                 if (part == null) continue;
 
-                string partColor = part.Condition switch
+                var p = part;
+
+                var condVal = p.Condition.GetValueOrDefault();
+                string partColor = condVal switch
                 {
                     PartCondition.Excellent => "green",
                     PartCondition.Good => "yellow",
@@ -311,9 +314,9 @@ namespace Smart_Factory_Management_System
 
                 // All three arguments here are guaranteed to be strings, resolving the error completely
                 componentTable.AddRow(
-                    part.Name.ToString(),
-                    $"[{partColor}]{part.Condition.ToString().ToUpper()}[/]",
-                    part.PrintPartInfo()
+                    p.Name ?? "-",
+                    $"[{partColor}]{(p.Condition?.ToString().ToUpper() ?? "UNKNOWN")}[/]",
+                    p.PrintPartInfo() ?? "-"
                 );
             }
 
@@ -362,8 +365,6 @@ namespace Smart_Factory_Management_System
                 {
                     Thread.Sleep(800);
                 });
-            ActiveOrder.CompletedCount++;
-
             // Triggers completely random simulation tracking chance for part failure
             ApplyProductionWearAndTear();           
         }

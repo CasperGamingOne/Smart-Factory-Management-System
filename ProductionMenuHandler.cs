@@ -1,4 +1,5 @@
 ﻿using Spectre.Console;
+using System;
 
 namespace Smart_Factory_Management_System
 {
@@ -21,119 +22,147 @@ namespace Smart_Factory_Management_System
                     return;
                 }
 
-                // 2. Build a beautiful Spectre choice list from the Factory's active tracking array
-                var machinePrompt = new SelectionPrompt<string>()
-                    .Title("Select a target manufacturing asset to engage:")
-                    .PageSize(10)
-                    .MoreChoicesText("[grey](Move up and down to browse active hardware catalog)[/]");
+                // 2. Offer two main actions: choose pending order or return
+                var action = AnsiConsole.Prompt(new SelectionPrompt<string>()
+                    .Title("Choose production action:")
+                    .AddChoices(MenuOptions.ProductionActions));
 
-                // Safely add instantiated machines based on the factory loop tracking variable
-                for (int i = 0; i < factory.MachineCount; i++)
+                if (action != null && (action.StartsWith("2") || action.Contains("Return", StringComparison.OrdinalIgnoreCase)))
+                    return;
+
+                // Show pending orders
+                if (factory.OrderCount == 0)
                 {
-                    var mach = factory.Machines[i];
-                    string statusBadge = mach.Status switch
-                    {
-                        MachineStatus.Running => "[green]RUNNING[/]",
-                        MachineStatus.Stopped => "[yellow]STOPPED[/]",
-                        MachineStatus.Maintenance => "[orange3]MAINTENANCE[/]",
-                        _ => "UNKNOWN"
-                    };
-
-                    // Format option string cleanly so it is easily parsable later
-                    machinePrompt.AddChoice($"{mach.Name} ({mach.SerialNumber}) - Status: {statusBadge}");
-                }
-                machinePrompt.AddChoice("[red]« Return to Main Control Menu[/]");
-
-                var selectedOption = AnsiConsole.Prompt(machinePrompt);
-
-                if (selectedOption == "[red]« Return to Main Control Menu[/]")
-                {
+                    AnsiConsole.MarkupLine("[yellow]No pending production orders to fulfill.[/]");
+                    AnsiConsole.WriteLine("\nPress any key to return...");
+                    Console.ReadKey(true);
                     return;
                 }
 
-                // 3. Extract and match the selected machine from the factory array
+                var orderSelector = new SelectionPrompt<ProductionOrder>().Title("Select a pending order to process:")
+                    .UseConverter(o => $"{o.OrderId} - {o.ProductName} x{o.Quantity} ({o.CompletedCount}/{o.Quantity}) assigned to #{o.AssignedTechnicianId}");
+                for (int i = 0; i < factory.OrderCount; i++)
+                {
+                    var o = factory.PendingOrders[i];
+                    if (o != null && !o.IsComplete)
+                        orderSelector.AddChoice(o);
+                }
+
+                var order = AnsiConsole.Prompt(orderSelector);
+
+                // Ensure the logged-in technician is assigned
+                if (loggedInUser is Technician == false && order.AssignedTechnicianId != loggedInUser.Id)
+                {
+                    AnsiConsole.MarkupLine("[red]Only the assigned technician can start this order.[/]");
+                    AnsiConsole.WriteLine("\nPress any key to return...");
+                    Console.ReadKey(true);
+                    return;
+                }
+
+                // Find a machine that supports the product type
                 Machine? selectedMachine = null;
                 for (int i = 0; i < factory.MachineCount; i++)
                 {
-                    if (selectedOption.Contains(factory.Machines[i].SerialNumber))
+                    var mach = factory.Machines[i];
+                    if (mach != null && mach.SupportedProductType.Name.Contains(order.ProductName, StringComparison.OrdinalIgnoreCase))
                     {
-                        selectedMachine = factory.Machines[i];
+                        selectedMachine = mach;
                         break;
                     }
                 }
 
-                if (selectedMachine == null) continue;
-
-                // 4. State Validation Guard: Boot the machine if it's currently turned off
-                if (selectedMachine.Status == MachineStatus.Stopped)
+                // If not found, allow user to pick any machine
+                if (selectedMachine == null)
                 {
-                    AnsiConsole.Write(new Markup($"\n[yellow]⚠ Machine [underline]{selectedMachine.Name}[/] is currently offline (STOPPED).[/]\n"));
-                    bool bootChoice = AnsiConsole.Confirm("Would you like to initiate system boot diagnostics and start the asset?");
-
-                    if (bootChoice)
-                    {
-                        // StartMachine checks component health; returns false if any part is Critical
-                        bool bootSuccess = selectedMachine.StartMachine();
-                        AnsiConsole.WriteLine();
-                        AnsiConsole.Write(new Markup("[grey]Press any key to continue...[/]"));
-                        Console.ReadKey(true);
-
-                        if (!bootSuccess) continue; // Loop back to selection deck if boot sequence failed
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                }
-                else if (selectedMachine.Status == MachineStatus.Maintenance)
-                {
-                    AnsiConsole.Write(new Markup($"\n[orange3]❌ ACCESS DENIED:[/] [underline]{selectedMachine.Name}[/] is locked in Engineering Maintenance mode. Operations suspended.\n"));
-                    AnsiConsole.Write(new Markup("[grey]Press any key to continue...[/]"));
-                    Console.ReadKey(true);
-                    continue;
+                    var machineSelector = new SelectionPrompt<Machine>().Title("Select machine to use:");
+                    for (int i = 0; i < factory.MachineCount; i++) machineSelector.AddChoice(factory.Machines[i]);
+                    selectedMachine = AnsiConsole.Prompt(machineSelector);
                 }
 
-                // 5. Select the Product to Manufacture (Electronics Factory Core Inventory Profile)
-                AnsiConsole.WriteLine();
-                var productPrompt = new SelectionPrompt<string>()
-                    .Title($"[cyan]Choose a production target blueprint for {selectedMachine.Name}:[/]")
-                    .AddChoices(new[] {
-                        "Microprocessor (Silicon Wafer Layer)",
-                        "High-Density Motherboard Assembly",
-                        "4K Optical Camera Sensor Module",
-                        "[red]« Cancel Job Request[/]"
-                    });
-
-                var selectedProductType = AnsiConsole.Prompt(productPrompt);
-                if (selectedProductType == "[red]« Cancel Job Request[/]") continue;
-
-                // 6. Instantiate the chosen product asset matching your business requirements
-                Product? productToProduce = selectedProductType switch
+                // Boot machine if needed
+                if (selectedMachine.Status != MachineStatus.Running)
                 {
-                    "Microprocessor (Silicon Wafer Layer)" => new Microprocessor("NextGen Microprocessor", 375, 500, 10, 4, 2.5),
-                    "High-Density Motherboard Assembly" => new Motherboard("Flir Lepton Micro-Thermal", 150, 200, 20, "AM4", "ATX"),
+                    bool bootChoice = AnsiConsole.Confirm($"Machine {selectedMachine.Name} is not running. Boot it?");
+                    if (!bootChoice) continue;
+                    if (!selectedMachine.StartMachine()) continue;
+                }
+
+                // Determine a realistic unit production cost by checking seeded inventory
+                double unitCost = 0;
+                for (int i = 0; i < factory.ProductCount; i++)
+                {
+                    var p = factory.Inventory[i];
+                    if (p != null && p.Name != null && p.Name.Contains(order.ProductName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        unitCost = p.ProductionCost;
+                        break;
+                    }
+                }
+
+                // Fallback to small defaults if not found
+                if (unitCost <= 0)
+                    unitCost = order.ProductName == "Microprocessor" ? 50 : 20;
+
+                // Prepare a product template for instantiation per unit
+                Product? template = order.ProductName switch
+                {
+                    "Microprocessor" => new Microprocessor("Batch Microprocessor", unitCost, 0, 1, 4, 2.5),
+                    "Motherboard" => new Motherboard("Batch Motherboard", unitCost, 0, 1, "AM4", "ATX"),
                     _ => null
                 };
 
-                if (productToProduce == null) continue;
-
-                // 7. Execute the workflow pipeline
-                AnsiConsole.Clear();
-                AnsiConsole.Write(Align.Left(new Rule($"[cyan]Executing Production Job Loop: {productToProduce.Name}[/]")));
-                AnsiConsole.WriteLine();
-
-                // Runs internal timers, simulation updates, and executes ApplyProductionWearAndTear()
-                selectedMachine.Produce(productToProduce);
-
-                // 8. Log the completed product output directly into factory inventory storage if system didn't trip
-                if (selectedMachine.Status == MachineStatus.Running)
+                if (template == null)
                 {
-                    factory.AddProduct(productToProduce);
-                    AnsiConsole.Write(new Markup($"\n[green]✔ Production inventory receipts accepted! Inventory updated (+1 {productToProduce.Name}).[/]\n"));
+                    AnsiConsole.MarkupLine("[red]Unknown product type for this order.[/]");
+                    continue;
+                }
+
+                // Non-null alias for template to satisfy nullability analysis
+                var temp = template!;
+
+                // Create a production batch record
+                var batch = new ProductionBatch(order.ProductName, order.Quantity, unitCost);
+                factory.AddBatch(batch);
+
+                AnsiConsole.Write(new Markup($"[cyan]Starting production for order {order.OrderId} - {order.ProductName} x{order.Quantity}[/]"));
+
+                // Iterate until order complete or machine trips
+                while (!order.IsComplete && selectedMachine.Status == MachineStatus.Running)
+                {
+                    // Instantiate a fresh product for each unit
+                    Product produced = order.ProductName switch
+                    {
+                        "Microprocessor" => new Microprocessor(temp.Name ?? "Batch Microprocessor", temp.ProductionCost, 0, 1, temp.Cores ?? 1, temp.ClockSpeed),
+                        "Motherboard" => new Motherboard(temp.Name ?? "Batch Motherboard", temp.ProductionCost, 0, 1, ((Motherboard)temp).SocketStandard ?? "-", ((Motherboard)temp).PhysicalForm ?? "-"),
+                        _ => template
+                    };
+
+                    // Request the machine to produce a unit
+                    selectedMachine.StartOrder(order);
+                    selectedMachine.Produce(produced);
+
+                    // Only add to inventory if machine still running after produce
+                    if (selectedMachine.Status == MachineStatus.Running)
+                    {
+                        // Increment order counter centrally
+                        order.CompletedCount++;
+                        factory.AddProduct(produced, batch.BatchId);
+                        AnsiConsole.MarkupLine($"[green]Produced 1 unit ({produced.Name}). Completed {order.CompletedCount}/{order.Quantity}[/]");
+                    }
+                    else
+                    {
+                        AnsiConsole.MarkupLine("[red]Machine tripped. Production paused.[/]");
+                        break;
+                    }
+                }
+
+                if (order.IsComplete)
+                {
+                    AnsiConsole.MarkupLine($"[green]Batch complete. Created batch {batch.BatchId} with {batch.InventoryIndexes.Count} items.[/]");
                 }
                 else
                 {
-                    AnsiConsole.Write(new Markup($"\n[red]❌ Production run aborted mid-cycle. Safety sensors isolated line status.[/]\n"));
+                    AnsiConsole.MarkupLine($"[yellow]Order incomplete. Produced {order.CompletedCount}/{order.Quantity} so far.[/]");
                 }
 
                 AnsiConsole.WriteLine();

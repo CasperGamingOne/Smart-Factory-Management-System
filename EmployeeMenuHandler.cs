@@ -15,11 +15,7 @@ namespace Smart_Factory_Management_System
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("[yellow]Select an administrative action:[/]")
-                        .AddChoices(new[] {
-                            "1. View All Registered Staff",
-                            "2. Add New Employee",
-                            "3. Return to Main Menu"
-                        }));
+                        .AddChoices(MenuOptions.EmployeeManagementMenu));
 
                 switch (choice)
                 {
@@ -64,7 +60,7 @@ namespace Smart_Factory_Management_System
             {
                 if (factory.Employees[i] != null)
                 {
-                    table.AddRow(factory.Employees[i].Id.ToString(), factory.Employees[i].Name, factory.Employees[i].Role.ToString());
+                    table.AddRow(factory.Employees[i].Id.ToString(), factory.Employees[i].Name ?? "-", factory.Employees[i].Role.ToString());
                 }
             }
 
@@ -79,7 +75,7 @@ namespace Smart_Factory_Management_System
             var role = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("Select Job Title:")
-                    .AddChoices(new[] { "Technician", "Sales Agent", "Accountant" }));
+                    .AddChoices(MenuOptions.EmployeeRoles));
 
             switch(role)
             {

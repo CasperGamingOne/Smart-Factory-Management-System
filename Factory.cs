@@ -8,7 +8,11 @@
         private int product_count = 0;
 
         public ProductionOrder[] PendingOrders { get; private set; } = new ProductionOrder[50];
-    public int OrderCount { get; private set; } = 0;
+        public int OrderCount { get; private set; } = 0;
+
+        // Track finished production batches for accounting and sales
+        public ProductionBatch[] Batches { get; private set; } = new ProductionBatch[100];
+        public int BatchCount { get; private set; } = 0;
 
         // Core bounded arrays
         public Employee[] Employees { get; private set; } = new Employee[100];
@@ -96,6 +100,30 @@
             }
         }
 
+        // Add product and track association with a production batch (optional)
+        public void AddProduct(Product product, string? batchId)
+        {
+            if (product_count < Inventory.Length)
+            {
+                Inventory[product_count] = product;
+
+                // If a batch id is provided, find the batch and record the inventory index
+                if (!string.IsNullOrEmpty(batchId))
+                {
+                    for (int i = 0; i < BatchCount; i++)
+                    {
+                        if (Batches[i] != null && Batches[i].BatchId == batchId)
+                        {
+                            Batches[i].InventoryIndexes.Add(product_count);
+                            break;
+                        }
+                    }
+                }
+
+                product_count++;
+            }
+        }
+
         public void AddOrder(ProductionOrder order)
         {
             if (OrderCount < PendingOrders.Length)
@@ -105,10 +133,16 @@
             }
         }
 
-        public void GenerateFactoryReport()
+        public void AddBatch(ProductionBatch batch)
         {
-            // Report tracking loops...
+            if (BatchCount < Batches.Length)
+            {
+                Batches[BatchCount] = batch;
+                BatchCount++;
+            }
         }
+
+        // Removed unused GenerateFactoryReport() helper — reporting handled in ReportMenuHandler.
 
     }
 }

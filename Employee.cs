@@ -21,6 +21,9 @@
         {
             Console.WriteLine("Angajatul " + Name + " (ID: " + Id + ") isi indeplineste sarcinile generale.");
         }
+
+        // Each concrete employee class should implement the role-specific menu/action entry point
+        internal abstract void OpenRoleMenu(Factory factory);
     }
     //clasele derivate pentru diferite tipuri de angajati
     public class Director : Employee
@@ -29,6 +32,11 @@
         public override void AfiseazaActivitate()
         {
             Console.WriteLine("Directorul " + Name + " stabileste strategia fabricii.");
+        }
+
+        internal override void OpenRoleMenu(Factory factory)
+        {
+            EmployeeMenuHandler.Run(factory, this);
         }
     }
 
@@ -39,6 +47,11 @@
         {
             Console.WriteLine("Tehnicianul " + Name + " repara echipamentele defecte.");
         }
+
+        internal override void OpenRoleMenu(Factory factory)
+        {
+            MachineMenuHandler.Run(factory, this);
+        }
     }
 
     public class SalesAgent : Employee
@@ -48,6 +61,11 @@
         {
             Console.WriteLine("Agentul de Vanzari " + Name + " negociaza contracte cu clientii.");
         }
+
+        internal override void OpenRoleMenu(Factory factory)
+        {
+            SalesMenuHandler.Run(factory, this);
+        }
     }
     public class Accountant : Employee
     {
@@ -55,6 +73,11 @@
         public override void AfiseazaActivitate()
         {
             Console.WriteLine("Contabilul " + Name + " calculeaza profitul si intocmeste facturile.");
+        }
+
+        internal override void OpenRoleMenu(Factory factory)
+        {
+            AccountingMenuHandler.Run(factory, this);
         }
     }
 

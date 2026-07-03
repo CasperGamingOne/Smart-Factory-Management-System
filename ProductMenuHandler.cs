@@ -29,12 +29,7 @@ namespace Smart_Factory_Management_System
                     new SelectionPrompt<string>()
                         .Title("[bold white]Navigate to an inventory operation:[/]")
                         .PageSize(10)
-                        .AddChoices(new[] {
-                            "1. View Finished Goods Stock",
-                            "2. View Inventory Financial & Capacity Analytics",
-                            "3. Manually Register/Seed Asset (Manager Override)",
-                            "4. Return to Main Menu"
-                        }));
+                        .AddChoices(MenuOptions.ProductMenu));
 
                 switch (choice)
                 {
@@ -47,7 +42,14 @@ namespace Smart_Factory_Management_System
                     case "3. Manually Register/Seed Asset (Manager Override)":
                         HandleManualProductRegistration(factory, currentUser);
                         break;
-                    case "4. Return to Main Menu":
+                    case "4. Sales & Orders":
+                        // Reuse Sales menu view; if user is SalesAgent, open full Sales UI
+                        if (currentUser is SalesAgent)
+                            SalesMenuHandler.Run(factory, currentUser);
+                        else
+                            SalesMenuHandler.ShowPendingOrders(factory);
+                        break;
+                    case "5. Return to Main Menu":
                         return;
                 }
             }
@@ -84,9 +86,9 @@ namespace Smart_Factory_Management_System
 
                     table.AddRow(
                         (i + 1).ToString(),
-                        product.Name,
-                        product.ProductionCost.ToString(),
-                        dynamicSpecs,
+                        product.Name ?? "-",
+                        product.ProductionCost.ToString("F2"),
+                        dynamicSpecs ?? "-",
                         $"${product.SellingPrice:F2}"
                     );
                 }
@@ -106,7 +108,6 @@ namespace Smart_Factory_Management_System
             double cumulativeValue = 0;
             int cpuCount = 0;
             int pcbCount = 0;
-            int opticsCount = 0;
 
             for (int i = 0; i < factory.ProductCount; i++)
             {
@@ -151,7 +152,7 @@ namespace Smart_Factory_Management_System
             AnsiConsole.MarkupLine("[bold white]Select specific product concrete class to initialize:[/]");
             var categorySelection = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .AddChoices(new[] { "Microprocessor", "Motherboard" }));
+                    .AddChoices(MenuOptions.ProductTypes));
 
             string baselineModelName = AnsiConsole.Ask<string>($"Enter common designation name for this [cyan]{categorySelection}[/]:");
             double financialValue = AnsiConsole.Ask<double>("Set baseline unit manufacturing cost value ($):");
@@ -161,7 +162,7 @@ namespace Smart_Factory_Management_System
             // string generatedSku = $"SKU-{DateTime.Now.Ticks.ToString().Substring(11)}-{preCode}";
 
             // Reference Variable initialization
-            Product specializedProduct = null;
+            Product? specializedProduct = null;
 
             // Conditional block branches based on target subclass parameters
             switch (categorySelection)
@@ -183,7 +184,7 @@ namespace Smart_Factory_Management_System
                     string physicalForm = AnsiConsole.Prompt(
                         new SelectionPrompt<string>()
                             .Title("Select board layout form standard dimension factor:")
-                            .AddChoices(new[] { "ATX", "Micro-ATX", "Mini-ITX", "E-ATX" }));
+                            .AddChoices(MenuOptions.FormFactors));
 
                     // Specific Concrete Instantiation
                     specializedProduct = new Motherboard(baselineModelName, financialValue, 0, 1, socket, physicalForm);
