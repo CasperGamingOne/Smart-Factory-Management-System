@@ -17,10 +17,7 @@
             Role = "Auxiliary";
          }
 
-        public virtual void AfiseazaActivitate()
-        {
-            Console.WriteLine("Angajatul " + Name + " (ID: " + Id + ") isi indeplineste sarcinile generale.");
-        }
+        public abstract void AfiseazaActivitate();
 
         // Each concrete employee class should implement the role-specific menu/action entry point
         internal abstract void OpenRoleMenu(Factory factory);
@@ -31,7 +28,7 @@
         public Director(string name) : base(name) { Role = "Director"; }
         public override void AfiseazaActivitate()
         {
-            Console.WriteLine("Directorul " + Name + " stabileste strategia fabricii.");
+            Console.WriteLine("The Director " + Name + " verifies employees and has access to all reports.");
         }
 
         internal override void OpenRoleMenu(Factory factory)
@@ -45,7 +42,7 @@
         public Technician(string name) : base(name) { Role = "Tehnician"; }
         public override void AfiseazaActivitate()
         {
-            Console.WriteLine("Tehnicianul " + Name + " repara echipamentele defecte.");
+            Console.WriteLine("Technician " + Name + " supervises equipment and repairs defective parts.");
         }
 
         internal override void OpenRoleMenu(Factory factory)
@@ -59,7 +56,7 @@
         public SalesAgent(string name) : base(name) { Role = "Agent Vanzari"; }
         public override void AfiseazaActivitate()
         {
-            Console.WriteLine("Agentul de Vanzari " + Name + " negociaza contracte cu clientii.");
+            Console.WriteLine("Sales Agent " + Name + " places orders, sets prices, and tracks sales.");
         }
 
         internal override void OpenRoleMenu(Factory factory)
@@ -72,7 +69,7 @@
         public Accountant(string name) : base(name) { Role = "Contabil"; }
         public override void AfiseazaActivitate()
         {
-            Console.WriteLine("Contabilul " + Name + " calculeaza profitul si intocmeste facturile.");
+            Console.WriteLine("Accountant " + Name + " makes financial reports and sets products sell price.");
         }
 
         internal override void OpenRoleMenu(Factory factory)
