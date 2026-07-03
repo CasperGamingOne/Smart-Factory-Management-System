@@ -22,7 +22,7 @@
         // Each concrete employee class should implement the role-specific menu/action entry point
         internal abstract void OpenRoleMenu(Factory factory);
     }
-    //clasele derivate pentru diferite tipuri de angajati
+
     public class Director : Employee
     {
         public Director(string name) : base(name) { Role = "Director"; }
