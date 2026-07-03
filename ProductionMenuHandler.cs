@@ -59,6 +59,15 @@ namespace Smart_Factory_Management_System
                     return;
                 }
 
+                if (order.ProductName == "Motherboard")
+                {
+                    RunMotherboardWorkflow(factory, order);
+                    AnsiConsole.WriteLine();
+                    AnsiConsole.Write(new Markup("[grey]Press any key to return to production deck...[/]"));
+                    Console.ReadKey(true);
+                    continue;
+                }
+
                 // Find a machine that supports the product type
                 Machine? selectedMachine = null;
                 for (int i = 0; i < factory.MachineCount; i++)
@@ -104,21 +113,13 @@ namespace Smart_Factory_Management_System
                     unitCost = order.ProductName == "Microprocessor" ? 50 : 20;
 
                 // Prepare a product template for instantiation per unit
-                Product? template = order.ProductName switch
-                {
-                    "Microprocessor" => new Microprocessor("Batch Microprocessor", unitCost, 0, 1, 4, 2.5),
-                    "Motherboard" => new Motherboard("Batch Motherboard", unitCost, 0, 1, "AM4", "ATX"),
-                    _ => null
-                };
+                Product? template = CreateProductTemplate(order.ProductName, unitCost);
 
                 if (template == null)
                 {
                     AnsiConsole.MarkupLine("[red]Unknown product type for this order.[/]");
                     continue;
                 }
-
-                // Non-null alias for template to satisfy nullability analysis
-                var temp = template!;
 
                 // Create a production batch record
                 var batch = new ProductionBatch(order.ProductName, order.Quantity, unitCost);
@@ -130,12 +131,7 @@ namespace Smart_Factory_Management_System
                 while (!order.IsComplete && selectedMachine.Status == MachineStatus.Running)
                 {
                     // Instantiate a fresh product for each unit
-                    Product produced = order.ProductName switch
-                    {
-                        "Microprocessor" => new Microprocessor(temp.Name ?? "Batch Microprocessor", temp.ProductionCost, 0, 1, temp.Cores ?? 1, temp.ClockSpeed),
-                        "Motherboard" => new Motherboard(temp.Name ?? "Batch Motherboard", temp.ProductionCost, 0, 1, ((Motherboard)temp).SocketStandard ?? "-", ((Motherboard)temp).PhysicalForm ?? "-"),
-                        _ => template
-                    };
+                    Product produced = CreateProducedProduct(template!);
 
                     // Request the machine to produce a unit
                     selectedMachine.StartOrder(order);
@@ -169,6 +165,107 @@ namespace Smart_Factory_Management_System
                 AnsiConsole.Write(new Markup("[grey]Press any key to return to production deck...[/]"));
                 Console.ReadKey(true);
             }
+        }
+
+        private static Product? CreateProductTemplate(string productName, double unitCost)
+        {
+            return productName switch
+            {
+                "Microprocessor" => new Microprocessor("Batch Microprocessor", unitCost, 0, 1, 4, 2.5),
+                "Motherboard" => new Motherboard("Batch Motherboard", unitCost, 0, 1, "AM4", "ATX"),
+                _ => null
+            };
+        }
+
+        private static Product CreateProducedProduct(Product template)
+        {
+            return template switch
+            {
+                Microprocessor microprocessor => new Microprocessor(microprocessor.Name ?? "Batch Microprocessor", microprocessor.ProductionCost, 0, 1, microprocessor.Cores ?? 1, microprocessor.ClockSpeed),
+                Motherboard motherboard => new Motherboard(motherboard.Name ?? "Batch Motherboard", motherboard.ProductionCost, 0, 1, motherboard.SocketStandard ?? "-", motherboard.PhysicalForm ?? "-"),
+                _ => template
+            };
+        }
+
+        private static void RunMotherboardWorkflow(Factory factory, ProductionOrder order)
+        {
+            var batch = new ProductionBatch(order.ProductName, order.Quantity, 20);
+            factory.AddBatch(batch);
+
+            var motherboardTemplate = new Motherboard("Batch Motherboard", 20, 0, 1, "AM4", "ATX");
+
+            var solderPrinter = FindMachine<SMT_Machine>(factory);
+            var pickAndPlace = FindMachine<PaP_Machine>(factory);
+            var reflowOven = FindMachine<Reflow_Oven>(factory);
+
+            if (solderPrinter == null || pickAndPlace == null || reflowOven == null)
+            {
+                AnsiConsole.MarkupLine("[red]Motherboard workflow requires SMT, Pick-and-Place, and Reflow machines to be registered.[/]");
+                return;
+            }
+
+            AnsiConsole.MarkupLine($"[cyan]Starting motherboard workflow for order {order.OrderId} - {order.ProductName} x{order.Quantity}[/]");
+
+            while (!order.IsComplete)
+            {
+                solderPrinter.StartOrder(order);
+                pickAndPlace.StartOrder(order);
+                reflowOven.StartOrder(order);
+
+                EnsureMachineReady(solderPrinter);
+                EnsureMachineReady(pickAndPlace);
+                EnsureMachineReady(reflowOven);
+
+                var board = (Motherboard)CreateProducedProduct(motherboardTemplate);
+
+                if (!solderPrinter.Produce(board))
+                {
+                    AnsiConsole.MarkupLine("[red]Motherboard workflow stopped during solder paste printing.[/]");
+                    break;
+                }
+
+                if (!pickAndPlace.Produce(board))
+                {
+                    AnsiConsole.MarkupLine("[red]Motherboard workflow stopped during pick-and-place assembly.[/]");
+                    break;
+                }
+
+                if (!reflowOven.Produce(board))
+                {
+                    AnsiConsole.MarkupLine("[red]Motherboard workflow stopped during reflow baking.[/]");
+                    break;
+                }
+
+                order.CompletedCount++;
+                factory.AddProduct(board, batch.BatchId);
+                AnsiConsole.MarkupLine($"[green]Motherboard completed {order.CompletedCount}/{order.Quantity}.[/]");
+            }
+
+            if (order.IsComplete)
+            {
+                AnsiConsole.MarkupLine($"[green]Batch complete. Created batch {batch.BatchId} with {batch.InventoryIndexes.Count} items.[/]");
+            }
+        }
+
+        private static void EnsureMachineReady(Machine machine)
+        {
+            if (machine.Status != MachineStatus.Running)
+            {
+                machine.StartMachine();
+            }
+        }
+
+        private static T? FindMachine<T>(Factory factory) where T : Machine
+        {
+            for (int i = 0; i < factory.MachineCount; i++)
+            {
+                if (factory.Machines[i] is T typedMachine)
+                {
+                    return typedMachine;
+                }
+            }
+
+            return null;
         }
     }
 }

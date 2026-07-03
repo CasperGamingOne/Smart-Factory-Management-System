@@ -29,8 +29,15 @@ namespace Smart_Factory_Management_System
         public static readonly string[] ProductMenu = new[] {
             "1. View Finished Goods Stock",
             "2. View Inventory Financial & Capacity Analytics",
-            "3. Manually Register/Seed Asset (Manager Override)",
-            "4. Sales & Orders",
+            "3. Sales & Orders",
+            "4. Return to Main Menu"
+        };
+
+        public static readonly string[] FactoryReportMenu = new[] {
+            "1. Factory Overview",
+            "2. Staffing Report",
+            "3. Machine Fleet Report",
+            "4. Inventory Report",
             "5. Return to Main Menu"
         };
 
@@ -50,14 +57,6 @@ namespace Smart_Factory_Management_System
             "1. View Batches",
             "2. Set Unit Sell Price for Batch",
             "3. Return to Main Menu"
-        };
-
-        public static readonly string[] EmployeeMainMenu = new[] {
-            "1. List Employees",
-            "2. Add Employee",
-            "3. Edit Employee",
-            "4. Remove Employee",
-            "5. Return to Main Menu"
         };
 
         public static readonly string[] EmployeeRoles = new[] { "Technician", "Sales Agent", "Accountant" };

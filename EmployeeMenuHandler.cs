@@ -48,19 +48,25 @@ namespace Smart_Factory_Management_System
             }
         }
 
-        private static void DisplayStaffTable(Factory factory)
+        internal static void DisplayStaffTable(Factory factory)
         {
             var table = new Table().Border(TableBorder.Rounded);
             table.AddColumn("[yellow]ID[/]");
             table.AddColumn("[yellow]Name[/]");
             table.AddColumn("[yellow]Assigned Role[/]");
+            table.AddColumn("[yellow]Activity[/]");
 
             // Safely loop up to employeeCount to prevent NullReferenceExceptions
             for (int i = 0; i < factory.EmployeeCount; i++)
             {
                 if (factory.Employees[i] != null)
                 {
-                    table.AddRow(factory.Employees[i].Id.ToString(), factory.Employees[i].Name ?? "-", factory.Employees[i].Role.ToString());
+                    table.AddRow(
+                        factory.Employees[i].Id.ToString(),
+                        factory.Employees[i].Name ?? "-",
+                        factory.Employees[i].Role.ToString(),
+                        factory.Employees[i].AfiseazaActivitate()
+                    );
                 }
             }
 

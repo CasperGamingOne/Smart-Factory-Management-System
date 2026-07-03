@@ -100,7 +100,7 @@
             }
         }
 
-        // Add product and track association with a production batch (optional)
+        // Add product and track association with a production batch
         public void AddProduct(Product product, string? batchId)
         {
             if (product_count < Inventory.Length)
@@ -141,8 +141,6 @@
                 BatchCount++;
             }
         }
-
-        // Removed unused GenerateFactoryReport() helper — reporting handled in ReportMenuHandler.
 
     }
 }

@@ -26,11 +26,6 @@ namespace Smart_Factory_Management_System
             set { sellingPrice = (value >= 0) ? value : 0; }
         }
  
-        public double CalculeazaMarjaProfit()
-        {
-            return SellingPrice - ProductionCost;
-        }
-
         public int Quantity { get { return quantity; }
             set
             {

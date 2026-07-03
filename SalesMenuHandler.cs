@@ -61,35 +61,23 @@ namespace Smart_Factory_Management_System
 
             var techChoice = AnsiConsole.Prompt(techSelector);
             int technicianId = -1;
+            var technicians = GetTechnicians(factory);
 
             if (techChoice == "Auto-assign (first available)")
             {
-                for (int i = 0; i < factory.EmployeeCount; i++)
-                {
-                    if (factory.Employees[i] is Technician)
-                    {
-                        technicianId = factory.Employees[i].Id;
-                        break;
-                    }
-                }
+                if (technicians.Count > 0)
+                    technicianId = technicians[0].Id;
             }
             else
             {
-                var techs = new System.Collections.Generic.List<Employee>();
-                for (int i = 0; i < factory.EmployeeCount; i++)
-                {
-                    if (factory.Employees[i] is Technician)
-                        techs.Add(factory.Employees[i]);
-                }
-
-                if (techs.Count == 0)
+                if (technicians.Count == 0)
                 {
                     AnsiConsole.MarkupLine("[red]No technicians registered. Ask an admin to add one.[/]");
                     return;
                 }
 
                 var techList = new SelectionPrompt<Employee>().Title("Select technician:");
-                foreach (var t in techs) techList.AddChoice(t);
+                foreach (var technician in technicians) techList.AddChoice(technician);
                 var chosen = AnsiConsole.Prompt(techList);
                 technicianId = chosen.Id;
             }
@@ -98,6 +86,19 @@ namespace Smart_Factory_Management_System
             factory.AddOrder(order);
 
             AnsiConsole.MarkupLine($"[green]✔ Order placed: {order.OrderId} - {order.ProductName} x{order.Quantity} assigned to tech #{order.AssignedTechnicianId}[/]");
+        }
+
+        private static System.Collections.Generic.List<Employee> GetTechnicians(Factory factory)
+        {
+            var technicians = new System.Collections.Generic.List<Employee>();
+
+            for (int i = 0; i < factory.EmployeeCount; i++)
+            {
+                if (factory.Employees[i] is Technician)
+                    technicians.Add(factory.Employees[i]);
+            }
+
+            return technicians;
         }
 
         public static void ShowPendingOrders(Factory factory)

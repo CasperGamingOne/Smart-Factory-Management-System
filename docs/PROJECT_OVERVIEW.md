@@ -29,7 +29,7 @@ This overview is generated from the repository and can be mirrored into a GitHub
 | PaP_Machine | class | Smart_Factory_Management_System | Machine.cs | Machine | PaP_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition); Produce(Product product): void | Concrete implementation used by the application runtime. |
 | PartCondition | enum | Smart_Factory_Management_System | MachinePart.cs | - | Excellent, Good, Critical | Enumeration used for state or category modeling. |
 | Power_Supply | class | Smart_Factory_Management_System | MachinePart.cs | MachinePart | Voltage: int; Power_Supply(string name, PartCondition? condition, int voltage); PrintPartInfo(): string | Concrete implementation used by the application runtime. |
-| Product | abstract class | Smart_Factory_Management_System | Product.cs | - | Name: string?; Cores: int?; ClockSpeed: double; ProductionDate: DateTime; CalculeazaMarjaProfit(): double; Quantity: int | Abstract base class that defines shared behavior. |
+| Product | abstract class | Smart_Factory_Management_System | Product.cs | - | Name: string?; Cores: int?; ClockSpeed: double; ProductionDate: DateTime; Quantity: int | Abstract base class that defines shared behavior. |
 | ProductionBatch | class | Smart_Factory_Management_System | ProductionBatch.cs | - | BatchId: string; ProductName: string; Quantity: int; UnitProductionCost: double; UnitSellPrice: double?; SoldUnitPrice: double? | Concrete implementation used by the application runtime. |
 | ProductionMenuHandler | class | Smart_Factory_Management_System | ProductionMenuHandler.cs | - | Run(Factory factory, Employee loggedInUser): void | Concrete implementation used by the application runtime. |
 | ProductionOrder | class | Smart_Factory_Management_System | ProductionOrder.cs | - | OrderId: string; ProductName: string; Quantity: int; CompletedCount: int; AssignedTechnicianId: int; ProductionOrder(string productName, int quantity, int technicianId) | Concrete implementation used by the application runtime. |
@@ -41,7 +41,7 @@ This overview is generated from the repository and can be mirrored into a GitHub
 | SalesMenuHandler | class | Smart_Factory_Management_System | SalesMenuHandler.cs | - | Run(Factory factory, Employee loggedInUser): void; PlaceOrder(Factory factory, SalesAgent sales): void; ShowPendingOrders(Factory factory): void; RecordSale(Factory factory): void | Concrete implementation used by the application runtime. |
 | SMT_Machine | class | Smart_Factory_Management_System | Machine.cs | Machine | SMT_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition); Produce(Product product): void | Concrete implementation used by the application runtime. |
 | Technician | class | Smart_Factory_Management_System | Employee.cs | Employee | Technician(string name); AfiseazaActivitate(): void; OpenRoleMenu(Factory factory): void | Concrete implementation used by the application runtime. |
-| UIHelpers | class | Smart_Factory_Management_System | UIHelpers.cs | - | RenderSessionHeader(Employee user, Factory factory): void | Concrete implementation used by the application runtime. |
+| TUIHelper | class | Smart_Factory_Management_System | UIHelpers.cs | - | RenderSessionHeader(Employee user, Factory factory): void | Concrete implementation used by the application runtime. |
 
 ## File Inventory
 
@@ -72,7 +72,7 @@ This overview is generated from the repository and can be mirrored into a GitHub
 | SalesMenuHandler.cs | Menu navigation and role-specific UI flow. | SalesMenuHandler |
 | Smart-Factory-Management-System.csproj | Project build definition and package references. | - |
 | Smart-Factory-Management-System.slnx | Solution file. | - |
-| UIHelpers.cs | Shared console rendering helpers. | UIHelpers |
+| UIHelpers.cs | Shared console rendering helpers. | TUIHelper |
 | global.json | Repository asset. | - |
 | index.html | Repository asset. | - |
 | docs/PROJECT_OVERVIEW.md | Repository documentation. | - |
@@ -221,7 +221,6 @@ class Product <<abstract>> {
   +Cores: int?
   +ClockSpeed: double
   +ProductionDate: DateTime
-  +CalculeazaMarjaProfit(): double
   +Quantity: int
   +Product(string name, double cost, double price, int quantity)
   +GetTechnicalSpecifications(): string
@@ -283,7 +282,7 @@ class Technician {
   +AfiseazaActivitate(): void
   +OpenRoleMenu(Factory factory): void
 }
-class UIHelpers {
+class TUIHelper {
   +RenderSessionHeader(Employee user, Factory factory): void
 }
 
@@ -351,6 +350,6 @@ SMT_Machine ..> MachinePart : uses
 SMT_Machine ..> Product : uses
 Technician --|> Employee
 Technician ..> Factory : uses
-UIHelpers ..> Employee : uses
-UIHelpers ..> Factory : uses
+TUIHelper ..> Employee : uses
+TUIHelper ..> Factory : uses
 ```

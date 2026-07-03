@@ -30,46 +30,10 @@ namespace Smart_Factory_Management_System
                 while (sessionActive)
                 {
                     // Render header and session info
-                    UIHelpers.RenderSessionHeader(loggedInUser, factory);
+                    TUIHelper.RenderSessionHeader(loggedInUser, factory);
 
                     // Build role-filtered main menu
-                    var available = new System.Collections.Generic.List<string>();
-                    if (loggedInUser is Director)
-                        available.AddRange(MenuOptions.MainMenu);
-                    else if (loggedInUser is Technician)
-                    {
-                        available.Add("1. Quick Actions");
-                        available.Add("3. Machine Management");
-                        available.Add("4. Product Management");
-                        available.Add("6. Reports");
-                        available.Add("7. Factory Information");
-                        available.Add("8. Log Out / Exit Session");
-                    }
-                    else if (loggedInUser is SalesAgent)
-                    {
-                        available.Add("1. Quick Actions");
-                        available.Add("4. Product Management");
-                        available.Add("5. Accounting");
-                        available.Add("6. Reports");
-                        available.Add("7. Factory Information");
-                        available.Add("8. Log Out / Exit Session");
-                    }
-                    else if (loggedInUser is Accountant)
-                    {
-                        available.Add("4. Product Management");
-                        available.Add("5. Accounting");
-                        available.Add("6. Reports");
-                        available.Add("7. Factory Information");
-                        available.Add("8. Log Out / Exit Session");
-                    }
-                    else
-                    {
-                        // Fallback to limited menu
-                        available.Add("4. Product Management");
-                        available.Add("6. Reports");
-                        available.Add("7. Factory Information");
-                        available.Add("8. Log Out / Exit Session");
-                    }
+                    var available = GetAvailableMainMenu(loggedInUser);
 
                     var choice = AnsiConsole.Prompt(
                         new SelectionPrompt<string>()
@@ -99,11 +63,7 @@ namespace Smart_Factory_Management_System
                             ReportMenuHandler.Run(factory, loggedInUser);
                             break;
                         case "7. Factory Information":
-                            AnsiConsole.MarkupLine($"[bold]Factory Capacity Metrics:[/]");
-                            AnsiConsole.MarkupLine($"Machines Configured: [cyan]{factory.MachineCount}[/]");
-                            AnsiConsole.MarkupLine($"Active Staff: [cyan]{factory.EmployeeCount}[/]");
-                            AnsiConsole.MarkupLine("\nPress any key to return...");
-                            Console.ReadKey();
+                            FactoryReportMenuHandler.Run(factory, loggedInUser);
                             break;
                         case "8. Log Out / Exit Session":
                             AnsiConsole.MarkupLine("[yellow]Logging out of current profile...[/]");
@@ -118,6 +78,51 @@ namespace Smart_Factory_Management_System
                     }
                 }
             }
+        }
+
+        private static System.Collections.Generic.List<string> GetAvailableMainMenu(Employee loggedInUser)
+        {
+            var available = new System.Collections.Generic.List<string>();
+
+            if (loggedInUser is Director)
+            {
+                available.AddRange(MenuOptions.MainMenu);
+            }
+            else if (loggedInUser is Technician)
+            {
+                available.Add("1. Quick Actions");
+                available.Add("3. Machine Management");
+                available.Add("4. Product Management");
+                available.Add("6. Reports");
+                available.Add("7. Factory Information");
+                available.Add("8. Log Out / Exit Session");
+            }
+            else if (loggedInUser is SalesAgent)
+            {
+                available.Add("1. Quick Actions");
+                available.Add("4. Product Management");
+                available.Add("5. Accounting");
+                available.Add("6. Reports");
+                available.Add("7. Factory Information");
+                available.Add("8. Log Out / Exit Session");
+            }
+            else if (loggedInUser is Accountant)
+            {
+                available.Add("4. Product Management");
+                available.Add("5. Accounting");
+                available.Add("6. Reports");
+                available.Add("7. Factory Information");
+                available.Add("8. Log Out / Exit Session");
+            }
+            else
+            {
+                available.Add("4. Product Management");
+                available.Add("6. Reports");
+                available.Add("7. Factory Information");
+                available.Add("8. Log Out / Exit Session");
+            }
+
+            return available;
         }
     }
 }

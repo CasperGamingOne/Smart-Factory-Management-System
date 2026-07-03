@@ -17,7 +17,7 @@
             Role = "Auxiliary";
          }
 
-        public abstract void AfiseazaActivitate();
+        public abstract string AfiseazaActivitate();
 
         // Each concrete employee class should implement the role-specific menu/action entry point
         internal abstract void OpenRoleMenu(Factory factory);
@@ -26,9 +26,9 @@
     public class Director : Employee
     {
         public Director(string name) : base(name) { Role = "Director"; }
-        public override void AfiseazaActivitate()
+        public override string AfiseazaActivitate()
         {
-            Console.WriteLine("The Director " + Name + " verifies employees and has access to all reports.");
+            return "The Director " + Name + " verifies employees and has access to all reports.";
         }
 
         internal override void OpenRoleMenu(Factory factory)
@@ -40,9 +40,9 @@
     public class Technician : Employee
     {
         public Technician(string name) : base(name) { Role = "Tehnician"; }
-        public override void AfiseazaActivitate()
+        public override string AfiseazaActivitate()
         {
-            Console.WriteLine("Technician " + Name + " supervises equipment and repairs defective parts.");
+            return "Technician " + Name + " supervises equipment and repairs defective parts.";
         }
 
         internal override void OpenRoleMenu(Factory factory)
@@ -54,9 +54,9 @@
     public class SalesAgent : Employee
     {
         public SalesAgent(string name) : base(name) { Role = "Agent Vanzari"; }
-        public override void AfiseazaActivitate()
+        public override string AfiseazaActivitate()
         {
-            Console.WriteLine("Sales Agent " + Name + " places orders, sets prices, and tracks sales.");
+            return "Sales Agent " + Name + " places orders, sets prices, and tracks sales.";
         }
 
         internal override void OpenRoleMenu(Factory factory)
@@ -67,9 +67,9 @@
     public class Accountant : Employee
     {
         public Accountant(string name) : base(name) { Role = "Contabil"; }
-        public override void AfiseazaActivitate()
+        public override string AfiseazaActivitate()
         {
-            Console.WriteLine("Accountant " + Name + " makes financial reports and sets products sell price.");
+            return "Accountant " + Name + " takes care of any type of reports and financial statements.";
         }
 
         internal override void OpenRoleMenu(Factory factory)
