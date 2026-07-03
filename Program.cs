@@ -70,11 +70,6 @@ namespace Smart_Factory_Management_System
                             System.Threading.Thread.Sleep(600);
                             sessionActive = false;
                             break;
-                        default:
-                            // Safety fallback — should not happen with SelectionPrompt choices
-                            AnsiConsole.MarkupLine("[red]Unknown selection — returning to main menu[/]");
-                            System.Threading.Thread.Sleep(500);
-                            break;
                     }
                 }
             }
