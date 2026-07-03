@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Factory Management System - Repository Map</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --bg-main: #0d1117;
+            --bg-surface: #161b22;
+            --bg-card: #21262d;
+            --border-color: #30363d;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #7ee787;
+            --accent-orange: #ffa657;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        header {
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 { margin: 0; font-size: 24px; color: #f0f6fc; }
+        header p { margin: 5px 0 0 0; color: var(--text-muted); font-size: 14px; }
+        .badge-repo {
+            background-color: rgba(88, 166, 255, 0.1);
+            color: var(--accent-blue);
+            border: 1px solid rgba(88, 166, 255, 0.2);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-family: monospace;
+        }
+        .main-container {
+            display: flex;
+            padding: 30px;
+            gap: 30px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        .sidebar {
+            flex: 1;
+            min-width: 320px;
+            max-width: 450px;
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 20px;
+            position: sticky;
+            top: 30px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .content-area {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .section-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 20px;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .summary-tile {
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 14px;
+        }
+        .summary-tile .label { color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+        .summary-tile .value { color: #f0f6fc; font-size: 24px; font-weight: 700; margin-top: 4px; }
+        table { width: 100%; border-collapse: collapse; overflow: hidden; }
+        th, td { border-bottom: 1px solid var(--border-color); padding: 10px 12px; text-align: left; vertical-align: top; font-size: 13px; }
+        th { color: #f0f6fc; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(255,255,255,0.02); }
+        .diagram { overflow-x: auto; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 6px; padding: 14px; }
+        .diagram .mermaid { min-width: 900px; }
+        .sidebar h2 { font-size: 18px; margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; color: #f0f6fc; }
+        
+        /* Interactive Tree CSS Design */
+        ul { list-style-type: none; padding-left: 20px; margin: 5px 0; }
+        li { margin: 6px 0; font-size: 14px; }
+        .folder-toggle { cursor: pointer; font-weight: 600; color: #e1b12c; user-select: none; }
+        .folder-toggle:hover { text-decoration: underline; }
+        .file-node a { text-decoration: none; color: var(--text-main); transition: color 0.2s; }
+        .file-node a:hover { color: var(--accent-blue); text-decoration: underline; }
+        .file-cs { color: #4cd137 !important; font-weight: 500; }
+        
+        /* Content Card Custom Modules */
+        .card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 20px;
+            scroll-margin-top: 30px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .card:target {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .card-header h3 { margin: 0; font-size: 20px; color: #f0f6fc; }
+        .path-badge { font-family: monospace; font-size: 12px; color: var(--text-muted); background: var(--bg-main); padding: 3px 8px; border-radius: 4px; border: 1px solid var(--border-color); }
+        .meta-row { font-size: 14px; color: var(--text-muted); margin-bottom: 15px; }
+        .type-highlight { color: #f0f6fc; font-weight: bold; }
+        .card h4 { font-size: 15px; margin: 15px 0 10px 0; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        /* OO Elements Badges Rules */
+        .element-list { padding-left: 0; }
+        .element-list li { display: flex; align-items: center; gap: 10px; background: var(--bg-main); padding: 8px 12px; margin: 6px 0; border-radius: 4px; border: 1px solid var(--border-color); font-family: monospace; font-size: 13px; overflow-x: auto; }
+        .badge { display: inline-block; padding: 2px 6px; font-size: 11px; font-weight: bold; border-radius: 3px; text-transform: uppercase; font-family: sans-serif; flex-shrink: 0; }
+        .badge-prop { background-color: rgba(255, 166, 87, 0.1); color: var(--accent-orange); border: 1px solid rgba(255, 166, 87, 0.2); }
+        .badge-method { background-color: rgba(126, 231, 135, 0.1); color: var(--accent-green); border: 1px solid rgba(126, 231, 135, 0.2); }
+        code { font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace; font-size: 13px; color: #ff79c6; }
+        .element-list code { color: #e6edf3; }
+        .no-elements { font-size: 14px; color: var(--text-muted); font-style: italic; margin: 10px 0 0 0; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>Smart Factory Management System</h1>
+        <p>Autogenerated Architectural Blueprints & Code Maps</p>
+    </div>
+    <div class="badge-repo">CasperGamingOne/Smart-Factory-Management-System</div>
+</header>
+
+<div class="main-container">
+    <div class="sidebar">
+        <h2>📁 Repository Map Tree</h2>
+        <ul>
+                <li class="folder-node"><span class="folder-toggle">📁 docs/</span>
+      <ul>
+        <li class="file-node"><a href="#PROJECT_OVERVIEW_md" class="file-generic">📄 PROJECT_OVERVIEW.md</a></li>
+      </ul>
+    </li>
+    <li class="folder-node"><span class="folder-toggle">📁 scripts/</span>
+      <ul>
+        <li class="file-node"><a href="#generate_repo_map_py" class="file-generic">📄 generate_repo_map.py</a></li>
+      </ul>
+    </li>
+    <li class="file-node"><a href="#_gitattributes" class="file-generic">📄 .gitattributes</a></li>
+    <li class="file-node"><a href="#_gitignore" class="file-generic">📄 .gitignore</a></li>
+    <li class="file-node"><a href="#AccountingMenuHandler_cs" class="file-cs">📄 AccountingMenuHandler.cs</a></li>
+    <li class="file-node"><a href="#CODE_OF_CONDUCT_md" class="file-generic">📄 CODE_OF_CONDUCT.md</a></li>
+    <li class="file-node"><a href="#Employee_cs" class="file-cs">📄 Employee.cs</a></li>
+    <li class="file-node"><a href="#EmployeeMenuHandler_cs" class="file-cs">📄 EmployeeMenuHandler.cs</a></li>
+    <li class="file-node"><a href="#Factory_cs" class="file-cs">📄 Factory.cs</a></li>
+    <li class="file-node"><a href="#global_json" class="file-generic">📄 global.json</a></li>
+    <li class="file-node"><a href="#index_html" class="file-generic">📄 index.html</a></li>
+    <li class="file-node"><a href="#LICENSE_txt" class="file-generic">📄 LICENSE.txt</a></li>
+    <li class="file-node"><a href="#LoginHandler_cs" class="file-cs">📄 LoginHandler.cs</a></li>
+    <li class="file-node"><a href="#Machine_cs" class="file-cs">📄 Machine.cs</a></li>
+    <li class="file-node"><a href="#MachineMenuHandler_cs" class="file-cs">📄 MachineMenuHandler.cs</a></li>
+    <li class="file-node"><a href="#MachinePart_cs" class="file-cs">📄 MachinePart.cs</a></li>
+    <li class="file-node"><a href="#MenuOptions_cs" class="file-cs">📄 MenuOptions.cs</a></li>
+    <li class="file-node"><a href="#Product_cs" class="file-cs">📄 Product.cs</a></li>
+    <li class="file-node"><a href="#ProductionBatch_cs" class="file-cs">📄 ProductionBatch.cs</a></li>
+    <li class="file-node"><a href="#ProductionMenuHandler_cs" class="file-cs">📄 ProductionMenuHandler.cs</a></li>
+    <li class="file-node"><a href="#ProductionOrder_cs" class="file-cs">📄 ProductionOrder.cs</a></li>
+    <li class="file-node"><a href="#ProductMenuHandler_cs" class="file-cs">📄 ProductMenuHandler.cs</a></li>
+    <li class="file-node"><a href="#Program_cs" class="file-cs">📄 Program.cs</a></li>
+    <li class="file-node"><a href="#README_md" class="file-generic">📄 README.md</a></li>
+    <li class="file-node"><a href="#ReportMenuHandler_cs" class="file-cs">📄 ReportMenuHandler.cs</a></li>
+    <li class="file-node"><a href="#SalesMenuHandler_cs" class="file-cs">📄 SalesMenuHandler.cs</a></li>
+    <li class="file-node"><a href="#SECURITY_md" class="file-generic">📄 SECURITY.md</a></li>
+    <li class="file-node"><a href="#Smart-Factory-Management-System_csproj" class="file-generic">📄 Smart-Factory-Management-System.csproj</a></li>
+    <li class="file-node"><a href="#Smart-Factory-Management-System_slnx" class="file-generic">📄 Smart-Factory-Management-System.slnx</a></li>
+    <li class="file-node"><a href="#UIHelpers_cs" class="file-cs">📄 UIHelpers.cs</a></li>
+
+        </ul>
+    </div>
+    
+    <div class="content-area">
+        <div class="section-card">
+            <h2>Repository Summary</h2>
+            <div class="summary-grid">
+                <div class="summary-tile"><div class="label">Files Scanned</div><div class="value">30</div></div>
+                <div class="summary-tile"><div class="label">C# Types</div><div class="value">36</div></div>
+                <div class="summary-tile"><div class="label">Markdown Docs</div><div class="value">4</div></div>
+                <div class="summary-tile"><div class="label">Generated Docs</div><div class="value">2</div></div>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>UML Class Table</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Kind</th>
+                        <th>Namespace</th>
+                        <th>File</th>
+                        <th>Base Types</th>
+                        <th>Key Members</th>
+                        <th>Summary</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Accountant</td><td>class</td><td>Smart_Factory_Management_System</td><td>Employee.cs</td><td>Employee</td><td>Accountant(string name); AfiseazaActivitate(): void; OpenRoleMenu(Factory factory): void</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>AccountingMenuHandler</td><td>class</td><td>Smart_Factory_Management_System</td><td>AccountingMenuHandler.cs</td><td>-</td><td>Run(Factory factory, Employee loggedInUser): void; ShowBatches(Factory factory): void; SetBatchPrice(Factory factory): void</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>AOI_System</td><td>class</td><td>Smart_Factory_Management_System</td><td>MachinePart.cs</td><td>MachinePart</td><td>SystemType: string; AOI_System(string name, PartCondition? condition, string systemType); PrintPartInfo(): string</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>BoardState</td><td>enum</td><td>Smart_Factory_Management_System</td><td>Product.cs</td><td>-</td><td>BlankBoard, SolderPrinted, ComponentsPlaced, BakedAndSoldered</td><td>Enumeration used for state or category modeling.</td></tr>
+<tr><td>Control_Unit</td><td>class</td><td>Smart_Factory_Management_System</td><td>MachinePart.cs</td><td>MachinePart</td><td>Processor: string; Control_Unit(string name, PartCondition? condition, string processor); PrintPartInfo(): string</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>Cooling_System</td><td>class</td><td>Smart_Factory_Management_System</td><td>MachinePart.cs</td><td>MachinePart</td><td>Type: string; Cooling_System(string name, PartCondition? condition, string type); PrintPartInfo(): string</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>Director</td><td>class</td><td>Smart_Factory_Management_System</td><td>Employee.cs</td><td>Employee</td><td>Director(string name); AfiseazaActivitate(): void; OpenRoleMenu(Factory factory): void</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>Employee</td><td>abstract class</td><td>Smart_Factory_Management_System</td><td>Employee.cs</td><td>-</td><td>Id: int; Name: string; Role: string; Employee(string name); AfiseazaActivitate(): void</td><td>Abstract base class that defines shared behavior.</td></tr>
+<tr><td>EmployeeMenuHandler</td><td>class</td><td>Smart_Factory_Management_System</td><td>EmployeeMenuHandler.cs</td><td>-</td><td>Run(Factory factory, Employee loggedInUser): void; DisplayStaffTable(Factory factory): void; AddNewEmployeeFlow(Factory factory): void</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>Factory</td><td>class</td><td>Smart_Factory_Management_System</td><td>Factory.cs</td><td>-</td><td>PendingOrders: ProductionOrder[]; OrderCount: int; Batches: ProductionBatch[]; BatchCount: int; Employees: Employee[]</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>Litography_Machine</td><td>class</td><td>Smart_Factory_Management_System</td><td>Machine.cs</td><td>Machine</td><td>Litography_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition); Produce(Product blueprint): void</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>LoginHandler</td><td>class</td><td>Smart_Factory_Management_System</td><td>LoginHandler.cs</td><td>-</td><td>ShowLoginScreen(Factory factory): Employee?</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>Machine</td><td>abstract class</td><td>Smart_Factory_Management_System</td><td>Machine.cs</td><td>-</td><td>Id: int; Name: string?; Manufacturer: string?; SerialNumber: string?; InstallationDate: DateTime</td><td>Abstract base class that defines shared behavior.</td></tr>
+<tr><td>MachineCondition</td><td>enum</td><td>Smart_Factory_Management_System</td><td>Machine.cs</td><td>-</td><td>Excellent, Good, Critical</td><td>Enumeration used for state or category modeling.</td></tr>
+<tr><td>MachineMenuHandler</td><td>class</td><td>Smart_Factory_Management_System</td><td>MachineMenuHandler.cs</td><td>-</td><td>Run(Factory factory, Employee loggedInUser): void; DisplayFleetOverview(Factory factory): void; RunInspection(Factory factory): void</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>MachinePart</td><td>abstract class</td><td>Smart_Factory_Management_System</td><td>MachinePart.cs</td><td>-</td><td>Name: string?; Condition: PartCondition?; MachinePart(string name, PartCondition? condition); BreakDown(): void; Repair(PartCondition restoredCondition): void</td><td>Abstract base class that defines shared behavior.</td></tr>
+<tr><td>MachineStatus</td><td>enum</td><td>Smart_Factory_Management_System</td><td>Machine.cs</td><td>-</td><td>Running, Stopped, Maintenance</td><td>Enumeration used for state or category modeling.</td></tr>
+<tr><td>MenuOptions</td><td>class</td><td>Smart_Factory_Management_System</td><td>MenuOptions.cs</td><td>-</td><td>No detected public members</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>Microprocessor</td><td>class</td><td>Smart_Factory_Management_System</td><td>Product.cs</td><td>Product</td><td>Architecture: string?; Microprocessor(string name, double cost, double price, int quantity, int cores, double clockSpeed); GetTechnicalSpecifications(): string</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>Motherboard</td><td>class</td><td>Smart_Factory_Management_System</td><td>Product.cs</td><td>Product</td><td>CurrentState: BoardState; TransitionTo(BoardState nextState): void; SocketStandard: string?; PhysicalForm: string?; Motherboard(string name, double cost, double price, int quantity, string socket, string type)</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>PaP_Machine</td><td>class</td><td>Smart_Factory_Management_System</td><td>Machine.cs</td><td>Machine</td><td>PaP_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition); Produce(Product product): void</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>PartCondition</td><td>enum</td><td>Smart_Factory_Management_System</td><td>MachinePart.cs</td><td>-</td><td>Excellent, Good, Critical</td><td>Enumeration used for state or category modeling.</td></tr>
+<tr><td>Power_Supply</td><td>class</td><td>Smart_Factory_Management_System</td><td>MachinePart.cs</td><td>MachinePart</td><td>Voltage: int; Power_Supply(string name, PartCondition? condition, int voltage); PrintPartInfo(): string</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>Product</td><td>abstract class</td><td>Smart_Factory_Management_System</td><td>Product.cs</td><td>-</td><td>Name: string?; Cores: int?; ClockSpeed: double; ProductionDate: DateTime; CalculeazaMarjaProfit(): double</td><td>Abstract base class that defines shared behavior.</td></tr>
+<tr><td>ProductionBatch</td><td>class</td><td>Smart_Factory_Management_System</td><td>ProductionBatch.cs</td><td>-</td><td>BatchId: string; ProductName: string; Quantity: int; UnitProductionCost: double; UnitSellPrice: double?</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>ProductionMenuHandler</td><td>class</td><td>Smart_Factory_Management_System</td><td>ProductionMenuHandler.cs</td><td>-</td><td>Run(Factory factory, Employee loggedInUser): void</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>ProductionOrder</td><td>class</td><td>Smart_Factory_Management_System</td><td>ProductionOrder.cs</td><td>-</td><td>OrderId: string; ProductName: string; Quantity: int; CompletedCount: int; AssignedTechnicianId: int</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>ProductMenuHandler</td><td>class</td><td>Smart_Factory_Management_System</td><td>ProductMenuHandler.cs</td><td>-</td><td>Run(Factory factory, Employee currentUser): void; DisplayInventoryTable(Factory factory): void; DisplayInventoryAnalytics(Factory factory): void; HandleManualProductRegistration(Factory factory, Employee currentUser): void</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>Program</td><td>class</td><td>Smart_Factory_Management_System</td><td>Program.cs</td><td>-</td><td>No detected public members</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>Reflow_Oven</td><td>class</td><td>Smart_Factory_Management_System</td><td>Machine.cs</td><td>Machine</td><td>Reflow_Oven(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition); Produce(Product product): void</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>ReportMenuHandler</td><td>class</td><td>Smart_Factory_Management_System</td><td>ReportMenuHandler.cs</td><td>-</td><td>Run(Factory factory, Employee loggedInUser): void</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>SalesAgent</td><td>class</td><td>Smart_Factory_Management_System</td><td>Employee.cs</td><td>Employee</td><td>SalesAgent(string name); AfiseazaActivitate(): void; OpenRoleMenu(Factory factory): void</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>SalesMenuHandler</td><td>class</td><td>Smart_Factory_Management_System</td><td>SalesMenuHandler.cs</td><td>-</td><td>Run(Factory factory, Employee loggedInUser): void; PlaceOrder(Factory factory, SalesAgent sales): void; ShowPendingOrders(Factory factory): void; RecordSale(Factory factory): void</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>SMT_Machine</td><td>class</td><td>Smart_Factory_Management_System</td><td>Machine.cs</td><td>Machine</td><td>SMT_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition); Produce(Product product): void</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>Technician</td><td>class</td><td>Smart_Factory_Management_System</td><td>Employee.cs</td><td>Employee</td><td>Technician(string name); AfiseazaActivitate(): void; OpenRoleMenu(Factory factory): void</td><td>Concrete implementation used by the application runtime.</td></tr>
+<tr><td>UIHelpers</td><td>class</td><td>Smart_Factory_Management_System</td><td>UIHelpers.cs</td><td>-</td><td>RenderSessionHeader(Employee user, Factory factory): void</td><td>Concrete implementation used by the application runtime.</td></tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section-card">
+            <h2>UML Relationships</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Relationship Summary</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Accountant</td><td>extends Employee; uses Employee, Factory</td></tr>
+<tr><td>AccountingMenuHandler</td><td>uses Employee, Factory</td></tr>
+<tr><td>AOI_System</td><td>extends MachinePart; uses MachinePart, PartCondition</td></tr>
+<tr><td>BoardState</td><td>No direct project-type relation detected</td></tr>
+<tr><td>Control_Unit</td><td>extends MachinePart; uses MachinePart, PartCondition</td></tr>
+<tr><td>Cooling_System</td><td>extends MachinePart; uses MachinePart, PartCondition</td></tr>
+<tr><td>Director</td><td>extends Employee; uses Employee, Factory</td></tr>
+<tr><td>Employee</td><td>uses Factory</td></tr>
+<tr><td>EmployeeMenuHandler</td><td>uses Employee, Factory</td></tr>
+<tr><td>Factory</td><td>uses Employee, Machine, Product, ProductionBatch, ProductionOrder</td></tr>
+<tr><td>Litography_Machine</td><td>extends Machine; uses Machine, MachineCondition, MachinePart, Product</td></tr>
+<tr><td>LoginHandler</td><td>uses Employee, Factory</td></tr>
+<tr><td>Machine</td><td>uses MachineCondition, MachinePart, MachineStatus, Product, ProductionOrder</td></tr>
+<tr><td>MachineCondition</td><td>No direct project-type relation detected</td></tr>
+<tr><td>MachineMenuHandler</td><td>uses Employee, Factory</td></tr>
+<tr><td>MachinePart</td><td>uses PartCondition</td></tr>
+<tr><td>MachineStatus</td><td>No direct project-type relation detected</td></tr>
+<tr><td>MenuOptions</td><td>No direct project-type relation detected</td></tr>
+<tr><td>Microprocessor</td><td>extends Product; uses Product</td></tr>
+<tr><td>Motherboard</td><td>extends Product; uses BoardState, Product</td></tr>
+<tr><td>PaP_Machine</td><td>extends Machine; uses Machine, MachineCondition, MachinePart, Product</td></tr>
+<tr><td>PartCondition</td><td>No direct project-type relation detected</td></tr>
+<tr><td>Power_Supply</td><td>extends MachinePart; uses MachinePart, PartCondition</td></tr>
+<tr><td>Product</td><td>No direct project-type relation detected</td></tr>
+<tr><td>ProductionBatch</td><td>No direct project-type relation detected</td></tr>
+<tr><td>ProductionMenuHandler</td><td>uses Employee, Factory</td></tr>
+<tr><td>ProductionOrder</td><td>No direct project-type relation detected</td></tr>
+<tr><td>ProductMenuHandler</td><td>uses Employee, Factory</td></tr>
+<tr><td>Program</td><td>No direct project-type relation detected</td></tr>
+<tr><td>Reflow_Oven</td><td>extends Machine; uses Machine, MachineCondition, MachinePart, Product</td></tr>
+<tr><td>ReportMenuHandler</td><td>uses Employee, Factory</td></tr>
+<tr><td>SalesAgent</td><td>extends Employee; uses Employee, Factory</td></tr>
+<tr><td>SalesMenuHandler</td><td>uses Employee, Factory, SalesAgent</td></tr>
+<tr><td>SMT_Machine</td><td>extends Machine; uses Machine, MachineCondition, MachinePart, Product</td></tr>
+<tr><td>Technician</td><td>extends Employee; uses Employee, Factory</td></tr>
+<tr><td>UIHelpers</td><td>uses Employee, Factory</td></tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section-card">
+            <h2>Mermaid UML Diagram</h2>
+            <div class="diagram">
+                <div class="mermaid">
+classDiagram
+direction LR
+
+class Accountant {
+  +Accountant(string name)
+  +AfiseazaActivitate(): void
+  +OpenRoleMenu(Factory factory): void
+}
+class AccountingMenuHandler {
+  +Run(Factory factory, Employee loggedInUser): void
+  +ShowBatches(Factory factory): void
+  +SetBatchPrice(Factory factory): void
+}
+class AOI_System {
+  +SystemType: string
+  +AOI_System(string name, PartCondition? condition, string systemType)
+  +PrintPartInfo(): string
+}
+class BoardState <<enumeration>> {
+  +BlankBoard, SolderPrinted, ComponentsPlaced, BakedAndSoldered
+}
+class Control_Unit {
+  +Processor: string
+  +Control_Unit(string name, PartCondition? condition, string processor)
+  +PrintPartInfo(): string
+}
+class Cooling_System {
+  +Type: string
+  +Cooling_System(string name, PartCondition? condition, string type)
+  +PrintPartInfo(): string
+}
+class Director {
+  +Director(string name)
+  +AfiseazaActivitate(): void
+  +OpenRoleMenu(Factory factory): void
+}
+class Employee <<abstract>> {
+  +Id: int
+  +Name: string
+  +Role: string
+  +Employee(string name)
+  +AfiseazaActivitate(): void
+  +OpenRoleMenu(Factory factory): void
+}
+class EmployeeMenuHandler {
+  +Run(Factory factory, Employee loggedInUser): void
+  +DisplayStaffTable(Factory factory): void
+  +AddNewEmployeeFlow(Factory factory): void
+}
+class Factory {
+  +PendingOrders: ProductionOrder[]
+  +OrderCount: int
+  +Batches: ProductionBatch[]
+  +BatchCount: int
+  +Employees: Employee[]
+  +Machines: Machine[]
+  +Inventory: Product[]
+  +Factory()
+  +SeedInitialData(): void
+  +AddEmployee(Employee employee): void
+  +AddMachine(Machine machine): void
+  +AddProduct(Product product): void
+  +AddProduct(Product product, string? batchId): void
+  +AddOrder(ProductionOrder order): void
+}
+class Litography_Machine {
+  +Litography_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
+  +Produce(Product blueprint): void
+}
+class LoginHandler {
+  +ShowLoginScreen(Factory factory): Employee?
+}
+class Machine <<abstract>> {
+  +Id: int
+  +Name: string?
+  +Manufacturer: string?
+  +SerialNumber: string?
+  +InstallationDate: DateTime
+  +Parts: MachinePart[]?
+  +Status: MachineStatus
+  +Condition: MachineCondition
+  +SupportedProductType: Type
+  +ActiveOrder: ProductionOrder?
+  +Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
+  +GetMachineAge(): TimeSpan
+  +StartOrder(ProductionOrder order): void
+  +StartMachine(): bool
+}
+class MachineCondition <<enumeration>> {
+  +Excellent, Good, Critical
+}
+class MachineMenuHandler {
+  +Run(Factory factory, Employee loggedInUser): void
+  +DisplayFleetOverview(Factory factory): void
+  +RunInspection(Factory factory): void
+}
+class MachinePart <<abstract>> {
+  +Name: string?
+  +Condition: PartCondition?
+  +MachinePart(string name, PartCondition? condition)
+  +BreakDown(): void
+  +Repair(PartCondition restoredCondition): void
+  +DegradeStep(): void
+  +PrintPartInfo(): string
+}
+class MachineStatus <<enumeration>> {
+  +Running, Stopped, Maintenance
+}
+class MenuOptions {
+}
+class Microprocessor {
+  +Architecture: string?
+  +Microprocessor(string name, double cost, double price, int quantity, int cores, double clockSpeed)
+  +GetTechnicalSpecifications(): string
+}
+class Motherboard {
+  +CurrentState: BoardState
+  +TransitionTo(BoardState nextState): void
+  +SocketStandard: string?
+  +PhysicalForm: string?
+  +Motherboard(string name, double cost, double price, int quantity, string socket, string type)
+  +GetTechnicalSpecifications(): string
+}
+class PaP_Machine {
+  +PaP_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
+  +Produce(Product product): void
+}
+class PartCondition <<enumeration>> {
+  +Excellent, Good, Critical
+}
+class Power_Supply {
+  +Voltage: int
+  +Power_Supply(string name, PartCondition? condition, int voltage)
+  +PrintPartInfo(): string
+}
+class Product <<abstract>> {
+  +Name: string?
+  +Cores: int?
+  +ClockSpeed: double
+  +ProductionDate: DateTime
+  +CalculeazaMarjaProfit(): double
+  +Quantity: int
+  +Product(string name, double cost, double price, int quantity)
+  +GetTechnicalSpecifications(): string
+}
+class ProductionBatch {
+  +BatchId: string
+  +ProductName: string
+  +Quantity: int
+  +UnitProductionCost: double
+  +UnitSellPrice: double?
+  +SoldUnitPrice: double?
+  +IsSold: bool
+  +InventoryIndexes: List<int>
+  +ProductionBatch(string productName, int quantity, double unitCost)
+}
+class ProductionMenuHandler {
+  +Run(Factory factory, Employee loggedInUser): void
+}
+class ProductionOrder {
+  +OrderId: string
+  +ProductName: string
+  +Quantity: int
+  +CompletedCount: int
+  +AssignedTechnicianId: int
+  +ProductionOrder(string productName, int quantity, int technicianId)
+}
+class ProductMenuHandler {
+  +Run(Factory factory, Employee currentUser): void
+  +DisplayInventoryTable(Factory factory): void
+  +DisplayInventoryAnalytics(Factory factory): void
+  +HandleManualProductRegistration(Factory factory, Employee currentUser): void
+}
+class Program {
+}
+class Reflow_Oven {
+  +Reflow_Oven(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
+  +Produce(Product product): void
+}
+class ReportMenuHandler {
+  +Run(Factory factory, Employee loggedInUser): void
+}
+class SalesAgent {
+  +SalesAgent(string name)
+  +AfiseazaActivitate(): void
+  +OpenRoleMenu(Factory factory): void
+}
+class SalesMenuHandler {
+  +Run(Factory factory, Employee loggedInUser): void
+  +PlaceOrder(Factory factory, SalesAgent sales): void
+  +ShowPendingOrders(Factory factory): void
+  +RecordSale(Factory factory): void
+}
+class SMT_Machine {
+  +SMT_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
+  +Produce(Product product): void
+}
+class Technician {
+  +Technician(string name)
+  +AfiseazaActivitate(): void
+  +OpenRoleMenu(Factory factory): void
+}
+class UIHelpers {
+  +RenderSessionHeader(Employee user, Factory factory): void
+}
+
+Accountant --|> Employee
+Accountant ..> Factory : uses
+AccountingMenuHandler ..> Employee : uses
+AccountingMenuHandler ..> Factory : uses
+AOI_System --|> MachinePart
+AOI_System ..> PartCondition : uses
+Control_Unit --|> MachinePart
+Control_Unit ..> PartCondition : uses
+Cooling_System --|> MachinePart
+Cooling_System ..> PartCondition : uses
+Director --|> Employee
+Director ..> Factory : uses
+Employee ..> Factory : uses
+EmployeeMenuHandler ..> Employee : uses
+EmployeeMenuHandler ..> Factory : uses
+Factory ..> Employee : uses
+Factory ..> Machine : uses
+Factory ..> Product : uses
+Factory ..> ProductionBatch : uses
+Factory ..> ProductionOrder : uses
+Litography_Machine --|> Machine
+Litography_Machine ..> MachineCondition : uses
+Litography_Machine ..> MachinePart : uses
+Litography_Machine ..> Product : uses
+LoginHandler ..> Employee : uses
+LoginHandler ..> Factory : uses
+Machine ..> MachineCondition : uses
+Machine ..> MachinePart : uses
+Machine ..> MachineStatus : uses
+Machine ..> Product : uses
+Machine ..> ProductionOrder : uses
+MachineMenuHandler ..> Employee : uses
+MachineMenuHandler ..> Factory : uses
+MachinePart ..> PartCondition : uses
+Microprocessor --|> Product
+Motherboard --|> Product
+Motherboard ..> BoardState : uses
+PaP_Machine --|> Machine
+PaP_Machine ..> MachineCondition : uses
+PaP_Machine ..> MachinePart : uses
+PaP_Machine ..> Product : uses
+Power_Supply --|> MachinePart
+Power_Supply ..> PartCondition : uses
+ProductionMenuHandler ..> Employee : uses
+ProductionMenuHandler ..> Factory : uses
+ProductMenuHandler ..> Employee : uses
+ProductMenuHandler ..> Factory : uses
+Reflow_Oven --|> Machine
+Reflow_Oven ..> MachineCondition : uses
+Reflow_Oven ..> MachinePart : uses
+Reflow_Oven ..> Product : uses
+ReportMenuHandler ..> Employee : uses
+ReportMenuHandler ..> Factory : uses
+SalesAgent --|> Employee
+SalesAgent ..> Factory : uses
+SalesMenuHandler ..> Employee : uses
+SalesMenuHandler ..> Factory : uses
+SalesMenuHandler ..> SalesAgent : uses
+SMT_Machine --|> Machine
+SMT_Machine ..> MachineCondition : uses
+SMT_Machine ..> MachinePart : uses
+SMT_Machine ..> Product : uses
+Technician --|> Employee
+Technician ..> Factory : uses
+UIHelpers ..> Employee : uses
+UIHelpers ..> Factory : uses
+                </div>
+            </div>
+        </div>
+
+        <h2>⚙️ Source Component Specifications</h2>
+        <div class="card" id="_gitattributes">
+  <div class="card-header"><h3>.gitattributes</h3><span class="path-badge">.gitattributes</span></div>
+  <div class="meta-row"><strong>Type:</strong> Repository Infrastructure File 🛠️</div>
+  <p class="no-elements">Configuration file or configuration framework block.</p>
+</div>
+
+<div class="card" id="_gitignore">
+  <div class="card-header"><h3>.gitignore</h3><span class="path-badge">.gitignore</span></div>
+  <div class="meta-row"><strong>Type:</strong> Repository Infrastructure File 🛠️</div>
+  <p class="no-elements">Configuration file or configuration framework block.</p>
+</div>
+
+<div class="card" id="AccountingMenuHandler_cs">
+  <div class="card-header"><h3>AccountingMenuHandler.cs</h3><span class="path-badge">AccountingMenuHandler.cs</span></div>
+  <div class="meta-row"><strong>Type:</strong> <span class="type-highlight">Concrete Logic Class ⚙️</span> | <strong>Namespace:</strong> <code>Smart_Factory_Management_System</code></div>
+  <p class="no-elements">No public OOP properties or method matrices exposed in this file layer.</p>
+</div>
+
+<div class="card" id="CODE_OF_CONDUCT_md">
+  <div class="card-header"><h3>CODE_OF_CONDUCT.md</h3><span class="path-badge">CODE_OF_CONDUCT.md</span></div>
+  <div class="meta-row"><strong>Type:</strong> Documentation Base Resource File 📄</div>
+  <p class="no-elements">Markdown technical documentation file containing structural context guidelines.</p>
+</div>
+
+<div class="card" id="Employee_cs">
+  <div class="card-header"><h3>Employee.cs</h3><span class="path-badge">Employee.cs</span></div>
+  <div class="meta-row"><strong>Type:</strong> <span class="type-highlight">Abstract Base Class 🏛️</span> | <strong>Namespace:</strong> <code>Smart_Factory_Management_System</code></div>
+  <h4>Architectural Structural Elements:</h4>
+  <ul class="element-list">
+    <li><span class="badge badge-prop">Property</span> <code>public int Id { get; private set; }</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public string Name { get; set; }</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public string Role { get; protected set;  }</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public override void AfiseazaActivitate()</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public override void AfiseazaActivitate()</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public override void AfiseazaActivitate()</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public override void AfiseazaActivitate()</code></li>
+  </ul>
+</div>
+
+<div class="card" id="EmployeeMenuHandler_cs">
+  <div class="card-header"><h3>EmployeeMenuHandler.cs</h3><span class="path-badge">EmployeeMenuHandler.cs</span></div>
+  <div class="meta-row"><strong>Type:</strong> <span class="type-highlight">Concrete Logic Class ⚙️</span> | <strong>Namespace:</strong> <code>Smart_Factory_Management_System</code></div>
+  <p class="no-elements">No public OOP properties or method matrices exposed in this file layer.</p>
+</div>
+
+<div class="card" id="Factory_cs">
+  <div class="card-header"><h3>Factory.cs</h3><span class="path-badge">Factory.cs</span></div>
+  <div class="meta-row"><strong>Type:</strong> <span class="type-highlight">Concrete Logic Class ⚙️</span> | <strong>Namespace:</strong> <code>Smart_Factory_Management_System</code></div>
+  <h4>Architectural Structural Elements:</h4>
+  <ul class="element-list">
+    <li><span class="badge badge-prop">Property</span> <code>public ProductionOrder[] PendingOrders { get; private set; } = new ProductionOrder[50];</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public int OrderCount { get; private set; } = 0;</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public ProductionBatch[] Batches { get; private set; } = new ProductionBatch[100];</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public int BatchCount { get; private set; } = 0;</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public Employee[] Employees { get; private set; } = new Employee[100];</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public Machine[] Machines { get; private set; } = new Machine[50];</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public Product[] Inventory { get; private set; } = new Product[200];</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public void AddEmployee(Employee employee)</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public void AddMachine(Machine machine)</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public void AddProduct(Product product)</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public void AddProduct(Product product, string? batchId)</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public void AddOrder(ProductionOrder order)</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public void AddBatch(ProductionBatch batch)</code></li>
+  </ul>
+</div>
+
+<div class="card" id="LICENSE_txt">
+  <div class="card-header"><h3>LICENSE.txt</h3><span class="path-badge">LICENSE.txt</span></div>
+  <div class="meta-row"><strong>Type:</strong> Repository Infrastructure File 🛠️</div>
+  <p class="no-elements">Configuration file or configuration framework block.</p>
+</div>
+
+<div class="card" id="LoginHandler_cs">
+  <div class="card-header"><h3>LoginHandler.cs</h3><span class="path-badge">LoginHandler.cs</span></div>
+  <div class="meta-row"><strong>Type:</strong> <span class="type-highlight">Concrete Logic Class ⚙️</span> | <strong>Namespace:</strong> <code>Smart_Factory_Management_System</code></div>
+  <p class="no-elements">No public OOP properties or method matrices exposed in this file layer.</p>
+</div>
+
+<div class="card" id="Machine_cs">
+  <div class="card-header"><h3>Machine.cs</h3><span class="path-badge">Machine.cs</span></div>
+  <div class="meta-row"><strong>Type:</strong> <span class="type-highlight">Abstract Base Class 🏛️</span> | <strong>Namespace:</strong> <code>Smart_Factory_Management_System</code></div>
+  <h4>Architectural Structural Elements:</h4>
+  <ul class="element-list">
+    <li><span class="badge badge-prop">Property</span> <code>public int Id { get; private protected set; }</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public string? Name { get; private protected set; }</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public string? Manufacturer { get; private protected set; }</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public string? SerialNumber { get; private protected set; }</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public DateTime InstallationDate { get; private protected set; }</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public MachinePart[]? Parts { get; private protected set; }</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public MachineStatus Status { get; private protected set; } = MachineStatus.Stopped;</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public MachineCondition Condition { get; private protected set; }</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public Type SupportedProductType { get; private protected set; }</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public ProductionOrder? ActiveOrder { get; private protected set; }</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public TimeSpan GetMachineAge()</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public void StartOrder(ProductionOrder order)</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public bool StartMachine()</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public void StopMachine()</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public void RepairMachine()</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public void InspectMachine()</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public override void Produce(Product blueprint)</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public override void Produce(Product product)</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public override void Produce(Product product)</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public override void Produce(Product product)</code></li>
+  </ul>
+</div>
+
+<div class="card" id="MachineMenuHandler_cs">
+  <div class="card-header"><h3>MachineMenuHandler.cs</h3><span class="path-badge">MachineMenuHandler.cs</span></div>
+  <div class="meta-row"><strong>Type:</strong> <span class="type-highlight">Concrete Logic Class ⚙️</span> | <strong>Namespace:</strong> <code>Smart_Factory_Management_System</code></div>
+  <p class="no-elements">No public OOP properties or method matrices exposed in this file layer.</p>
+</div>
+
+<div class="card" id="MachinePart_cs">
+  <div class="card-header"><h3>MachinePart.cs</h3><span class="path-badge">MachinePart.cs</span></div>
+  <div class="meta-row"><strong>Type:</strong> <span class="type-highlight">Abstract Base Class 🏛️</span> | <strong>Namespace:</strong> <code>Smart_Factory_Management_System</code></div>
+  <h4>Architectural Structural Elements:</h4>
+  <ul class="element-list">
+    <li><span class="badge badge-prop">Property</span> <code>public string? Name { get; private protected set; }</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public PartCondition? Condition { get; private protected set; }</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public void BreakDown()</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public void Repair(PartCondition restoredCondition)</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public void DegradeStep()</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public int Voltage { get; }</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public override string PrintPartInfo()</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public string Type { get; private protected set; }</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public override string PrintPartInfo()</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public string Processor { get; private protected set; }</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public override string PrintPartInfo()</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public string SystemType { get; private protected set; }</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public override string PrintPartInfo()</code></li>
+  </ul>
+</div>
+
+<div class="card" id="MenuOptions_cs">
+  <div class="card-header"><h3>MenuOptions.cs</h3><span class="path-badge">MenuOptions.cs</span></div>
+  <div class="meta-row"><strong>Type:</strong> <span class="type-highlight">Concrete Logic Class ⚙️</span> | <strong>Namespace:</strong> <code>Smart_Factory_Management_System</code></div>
+  <p class="no-elements">No public OOP properties or method matrices exposed in this file layer.</p>
+</div>
+
+<div class="card" id="Product_cs">
+  <div class="card-header"><h3>Product.cs</h3><span class="path-badge">Product.cs</span></div>
+  <div class="meta-row"><strong>Type:</strong> <span class="type-highlight">Abstract Base Class 🏛️</span> | <strong>Namespace:</strong> <code>Smart_Factory_Management_System</code></div>
+  <h4>Architectural Structural Elements:</h4>
+  <ul class="element-list">
+    <li><span class="badge badge-prop">Property</span> <code>public string? Name { get; set; }</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public int? Cores { get; protected set; }</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public double ClockSpeed { get; protected set; }</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public DateTime ProductionDate { get; private set; }</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public double CalculeazaMarjaProfit()</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public string? Architecture { get; set; }</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public override string GetTechnicalSpecifications()</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public BoardState CurrentState { get; private set; } = BoardState.BlankBoard;</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public void TransitionTo(BoardState nextState) =&gt; CurrentState = nextState</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public string? SocketStandard { get; set; }</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public string? PhysicalForm { get; set; }</code></li>
+    <li><span class="badge badge-method">Method</span> <code>public override string GetTechnicalSpecifications()</code></li>
+  </ul>
+</div>
+
+<div class="card" id="ProductMenuHandler_cs">
+  <div class="card-header"><h3>ProductMenuHandler.cs</h3><span class="path-badge">ProductMenuHandler.cs</span></div>
+  <div class="meta-row"><strong>Type:</strong> <span class="type-highlight">Concrete Logic Class ⚙️</span> | <strong>Namespace:</strong> <code>Smart_Factory_Management_System</code></div>
+  <p class="no-elements">No public OOP properties or method matrices exposed in this file layer.</p>
+</div>
+
+<div class="card" id="ProductionBatch_cs">
+  <div class="card-header"><h3>ProductionBatch.cs</h3><span class="path-badge">ProductionBatch.cs</span></div>
+  <div class="meta-row"><strong>Type:</strong> <span class="type-highlight">Concrete Logic Class ⚙️</span> | <strong>Namespace:</strong> <code>Smart_Factory_Management_System</code></div>
+  <h4>Architectural Structural Elements:</h4>
+  <ul class="element-list">
+    <li><span class="badge badge-prop">Property</span> <code>public string BatchId { get; } = Guid.NewGuid().ToString().Substring(0, 8);</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public string ProductName { get; set; }</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public int Quantity { get; set; }</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public double UnitProductionCost { get; set; }</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public double? UnitSellPrice { get; set; }</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public double? SoldUnitPrice { get; set; }</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public bool IsSold { get; set; } = false;</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public List&lt;int&gt; InventoryIndexes { get; } = new List&lt;int&gt;();</code></li>
+  </ul>
+</div>
+
+<div class="card" id="ProductionMenuHandler_cs">
+  <div class="card-header"><h3>ProductionMenuHandler.cs</h3><span class="path-badge">ProductionMenuHandler.cs</span></div>
+  <div class="meta-row"><strong>Type:</strong> <span class="type-highlight">Concrete Logic Class ⚙️</span> | <strong>Namespace:</strong> <code>Smart_Factory_Management_System</code></div>
+  <p class="no-elements">No public OOP properties or method matrices exposed in this file layer.</p>
+</div>
+
+<div class="card" id="ProductionOrder_cs">
+  <div class="card-header"><h3>ProductionOrder.cs</h3><span class="path-badge">ProductionOrder.cs</span></div>
+  <div class="meta-row"><strong>Type:</strong> <span class="type-highlight">Concrete Logic Class ⚙️</span> | <strong>Namespace:</strong> <code>Smart_Factory_Management_System</code></div>
+  <h4>Architectural Structural Elements:</h4>
+  <ul class="element-list">
+    <li><span class="badge badge-prop">Property</span> <code>public string OrderId { get; } = Guid.NewGuid().ToString().Substring(0, 8);</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public string ProductName { get; set; }</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public int Quantity { get; set; }</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public int CompletedCount { get; set; } = 0;</code></li>
+    <li><span class="badge badge-prop">Property</span> <code>public int AssignedTechnicianId { get; set; }</code></li>
+  </ul>
+</div>
+
+<div class="card" id="Program_cs">
+  <div class="card-header"><h3>Program.cs</h3><span class="path-badge">Program.cs</span></div>
+  <div class="meta-row"><strong>Type:</strong> <span class="type-highlight">Concrete Logic Class ⚙️</span> | <strong>Namespace:</strong> <code>Smart_Factory_Management_System</code></div>
+  <p class="no-elements">No public OOP properties or method matrices exposed in this file layer.</p>
+</div>
+
+<div class="card" id="README_md">
+  <div class="card-header"><h3>README.md</h3><span class="path-badge">README.md</span></div>
+  <div class="meta-row"><strong>Type:</strong> Documentation Base Resource File 📄</div>
+  <p class="no-elements">Markdown technical documentation file containing structural context guidelines.</p>
+</div>
+
+<div class="card" id="ReportMenuHandler_cs">
+  <div class="card-header"><h3>ReportMenuHandler.cs</h3><span class="path-badge">ReportMenuHandler.cs</span></div>
+  <div class="meta-row"><strong>Type:</strong> <span class="type-highlight">Concrete Logic Class ⚙️</span> | <strong>Namespace:</strong> <code>Smart_Factory_Management_System</code></div>
+  <p class="no-elements">No public OOP properties or method matrices exposed in this file layer.</p>
+</div>
+
+<div class="card" id="SECURITY_md">
+  <div class="card-header"><h3>SECURITY.md</h3><span class="path-badge">SECURITY.md</span></div>
+  <div class="meta-row"><strong>Type:</strong> Documentation Base Resource File 📄</div>
+  <p class="no-elements">Markdown technical documentation file containing structural context guidelines.</p>
+</div>
+
+<div class="card" id="SalesMenuHandler_cs">
+  <div class="card-header"><h3>SalesMenuHandler.cs</h3><span class="path-badge">SalesMenuHandler.cs</span></div>
+  <div class="meta-row"><strong>Type:</strong> <span class="type-highlight">Concrete Logic Class ⚙️</span> | <strong>Namespace:</strong> <code>Smart_Factory_Management_System</code></div>
+  <p class="no-elements">No public OOP properties or method matrices exposed in this file layer.</p>
+</div>
+
+<div class="card" id="Smart-Factory-Management-System_csproj">
+  <div class="card-header"><h3>Smart-Factory-Management-System.csproj</h3><span class="path-badge">Smart-Factory-Management-System.csproj</span></div>
+  <div class="meta-row"><strong>Type:</strong> Repository Infrastructure File 🛠️</div>
+  <p class="no-elements">Configuration file or configuration framework block.</p>
+</div>
+
+<div class="card" id="Smart-Factory-Management-System_slnx">
+  <div class="card-header"><h3>Smart-Factory-Management-System.slnx</h3><span class="path-badge">Smart-Factory-Management-System.slnx</span></div>
+  <div class="meta-row"><strong>Type:</strong> Repository Infrastructure File 🛠️</div>
+  <p class="no-elements">Configuration file or configuration framework block.</p>
+</div>
+
+<div class="card" id="UIHelpers_cs">
+  <div class="card-header"><h3>UIHelpers.cs</h3><span class="path-badge">UIHelpers.cs</span></div>
+  <div class="meta-row"><strong>Type:</strong> <span class="type-highlight">Concrete Logic Class ⚙️</span> | <strong>Namespace:</strong> <code>Smart_Factory_Management_System</code></div>
+  <p class="no-elements">No public OOP properties or method matrices exposed in this file layer.</p>
+</div>
+
+<div class="card" id="global_json">
+  <div class="card-header"><h3>global.json</h3><span class="path-badge">global.json</span></div>
+  <div class="meta-row"><strong>Type:</strong> Repository Infrastructure File 🛠️</div>
+  <p class="no-elements">Configuration file or configuration framework block.</p>
+</div>
+
+<div class="card" id="index_html">
+  <div class="card-header"><h3>index.html</h3><span class="path-badge">index.html</span></div>
+  <div class="meta-row"><strong>Type:</strong> Repository Infrastructure File 🛠️</div>
+  <p class="no-elements">Configuration file or configuration framework block.</p>
+</div>
+
+<div class="card" id="PROJECT_OVERVIEW_md">
+  <div class="card-header"><h3>PROJECT_OVERVIEW.md</h3><span class="path-badge">docs/PROJECT_OVERVIEW.md</span></div>
+  <div class="meta-row"><strong>Type:</strong> Documentation Base Resource File 📄</div>
+  <p class="no-elements">Markdown technical documentation file containing structural context guidelines.</p>
+</div>
+
+<div class="card" id="generate_repo_map_py">
+  <div class="card-header"><h3>generate_repo_map.py</h3><span class="path-badge">scripts/generate_repo_map.py</span></div>
+  <div class="meta-row"><strong>Type:</strong> Repository Infrastructure File 🛠️</div>
+  <p class="no-elements">Configuration file or configuration framework block.</p>
+</div>
+
+
+    </div>
+</div>
+
+<script>
+    mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    // Expand/Collapse script handling logic for interactive folders
+    document.querySelectorAll('.folder-toggle').forEach(folder => {
+        folder.addEventListener('click', () => {
+            const childList = folder.nextElementSibling;
+            if (childList.style.display === 'none') {
+                childList.style.display = 'block';
+                folder.textContent = folder.textContent.replace('📁', '📂');
+            } else {
+                childList.style.display = 'none';
+                folder.textContent = folder.textContent.replace('📂', '📁');
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

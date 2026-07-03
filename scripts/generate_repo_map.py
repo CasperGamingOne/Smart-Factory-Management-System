@@ -1,10 +1,50 @@
 import os
 import re
 import html
+from dataclasses import dataclass, field
 
 # Directories to exclude from the visual tree map and architectural scan
 EXCLUDED_DIRS = {'.git', '.github', 'bin', 'obj', '.vs', 'packages', 'TestResults'}
 EXCLUDED_FILES = {'.DS_Store', 'Smart-Factory-Management-System.sln.DotSettings.user'}
+
+TYPE_DECLARATION_RE = re.compile(
+    r'(?m)^\s*(?:public|internal|private|protected)?\s*'
+    r'(?P<modifiers>(?:(?:abstract|static|partial|sealed)\s+)*)'
+    r'(?P<kind>class|interface|struct|enum)\s+'
+    r'(?P<name>\w+)'
+    r'(?:\s*:\s*(?P<bases>[^\{]+))?\s*\{'
+)
+PROPERTY_RE = re.compile(
+    r'^\s*(?:public|internal|protected|private)\s+'
+    r'(?P<modifiers>(?:(?:static|virtual|override|new|readonly|required|unsafe|sealed)\s+)*)'
+    r'(?P<type>[\w<>,\[\]\?\.\s]+?)\s+'
+    r'(?P<name>\w+)\s*\{\s*get'
+)
+METHOD_RE = re.compile(
+    r'^\s*(?:public|internal|protected|private)\s+'
+    r'(?P<modifiers>(?:(?:static|virtual|override|async|new|abstract|sealed|unsafe)\s+)*)'
+    r'(?:(?P<return>[\w<>,\[\]\?\.]+)\s+)?'
+    r'(?P<name>\w+)\s*\((?P<params>[^\)]*)\)'
+)
+ENUM_VALUE_RE = re.compile(r'\b([A-Za-z_]\w*)\b')
+
+
+@dataclass
+class MemberInfo:
+    kind: str
+    signature: str
+    referenced_types: set[str] = field(default_factory=set)
+
+
+@dataclass
+class TypeInfo:
+    name: str
+    kind: str
+    namespace: str
+    file_path: str
+    base_types: list[str] = field(default_factory=list)
+    members: list[MemberInfo] = field(default_factory=list)
+    dependencies: set[str] = field(default_factory=set)
 
 def build_project_tree(root_dir):
     """Generates a nested dictionary representation of the repository folder structure."""
@@ -47,6 +87,253 @@ def generate_tree_html(node, name="", depth=0):
         html_out += f'{indent}<li class="file-node"><a href="#{anchor}" class="{ext_class}">📄 {html.escape(name)}</a></li>\n'
         
     return html_out
+
+def scan_repository_files(root_dir):
+    files = []
+    for root, dirs, filenames in os.walk(root_dir):
+        dirs[:] = [d for d in dirs if d not in EXCLUDED_DIRS]
+        for filename in sorted(filenames):
+            if filename in EXCLUDED_FILES:
+                continue
+            file_path = os.path.join(root, filename)
+            files.append({
+                'name': filename,
+                'path': file_path,
+                'rel_path': os.path.relpath(file_path, root_dir),
+            })
+    return files
+
+def get_namespace(content):
+    ns_match = re.search(r'namespace\s+([\w\.]+)', content)
+    return ns_match.group(1) if ns_match else 'Global Namespace'
+
+def split_project_type_name(raw_name):
+    return raw_name.split('<', 1)[0].strip()
+
+def split_base_types(base_text):
+    if not base_text:
+        return []
+    bases = []
+    for base in base_text.split(','):
+        cleaned = split_project_type_name(base.split('//', 1)[0].strip())
+        if cleaned:
+            bases.append(cleaned)
+    return bases
+
+def extract_referenced_types(text, known_type_names):
+    references = set()
+    for type_name in sorted(known_type_names, key=len, reverse=True):
+        if re.search(rf'\b{re.escape(type_name)}\b', text):
+            references.add(type_name)
+    return references
+
+def parse_type_members(type_kind, type_name, body_text, known_type_names):
+    members = []
+    lines = [line.rstrip() for line in body_text.splitlines()]
+
+    if type_kind == 'enum':
+        values = []
+        for line in lines:
+            stripped = line.strip().replace('{', ' ').replace('}', ' ').rstrip(',')
+            if not stripped or stripped.startswith('//') or stripped in {'{', '}'} or stripped.startswith('['):
+                continue
+            for value in [part.strip() for part in stripped.split(',') if part.strip()]:
+                if ENUM_VALUE_RE.fullmatch(value):
+                    values.append(value)
+        if values:
+            members.append(MemberInfo('Enum Values', ', '.join(values)))
+        return members
+
+    for line in lines:
+        stripped = line.strip()
+        if not stripped or stripped.startswith('//') or stripped.startswith('/*') or stripped.startswith('*'):
+            continue
+        if stripped in {'{', '}', 'else', 'else {', 'public:', 'private:'}:
+            continue
+
+        property_match = PROPERTY_RE.match(stripped)
+        if property_match:
+            property_type = ' '.join(property_match.group('type').split())
+            property_name = property_match.group('name')
+            members.append(MemberInfo('Property', f'{property_name}: {property_type}', extract_referenced_types(property_type, known_type_names)))
+            continue
+
+        method_match = METHOD_RE.match(stripped)
+        if method_match:
+            method_name = method_match.group('name')
+            return_type = method_match.group('return')
+            params = method_match.group('params').strip()
+            signature = f'{method_name}({params})'
+            if return_type:
+                signature = f'{signature}: {return_type}'
+            kind = 'Constructor' if method_name == type_name else 'Method'
+            members.append(MemberInfo(kind, signature, extract_referenced_types(stripped, known_type_names)))
+
+    return members
+
+def parse_repository_types(root_dir):
+    scanned_files = scan_repository_files(root_dir)
+    known_type_names = set()
+
+    for entry in scanned_files:
+        if not entry['name'].endswith('.cs'):
+            continue
+        with open(entry['path'], 'r', encoding='utf-8') as f:
+            content = f.read()
+        for match in TYPE_DECLARATION_RE.finditer(content):
+            known_type_names.add(split_project_type_name(match.group('name')))
+
+    types = []
+    for entry in scanned_files:
+        if not entry['name'].endswith('.cs'):
+            continue
+        with open(entry['path'], 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        matches = list(TYPE_DECLARATION_RE.finditer(content))
+        namespace = get_namespace(content)
+        for index, match in enumerate(matches):
+            name = split_project_type_name(match.group('name'))
+            modifiers = (match.group('modifiers') or '').lower()
+            kind = match.group('kind')
+            if kind == 'class' and 'abstract' in modifiers:
+                kind_label = 'abstract class'
+            elif kind == 'interface':
+                kind_label = 'interface'
+            elif kind == 'enum':
+                kind_label = 'enum'
+            elif kind == 'struct':
+                kind_label = 'struct'
+            else:
+                kind_label = 'class'
+
+            next_start = matches[index + 1].start() if index + 1 < len(matches) else len(content)
+            body_text = content[match.end():next_start]
+            base_types = split_base_types(match.group('bases'))
+            members = parse_type_members(kind_label, name, body_text, known_type_names)
+            types.append(TypeInfo(name=name, kind=kind_label, namespace=namespace, file_path=entry['path'], base_types=base_types, members=members))
+
+    type_lookup = {type_info.name: type_info for type_info in types}
+    for type_info in types:
+        for base_type in type_info.base_types:
+            if base_type in type_lookup and base_type != type_info.name:
+                type_info.dependencies.add(base_type)
+        for member in type_info.members:
+            type_info.dependencies.update(type_name for type_name in member.referenced_types if type_name != type_info.name)
+
+    return scanned_files, types, type_lookup
+
+def summarize_type(type_info):
+    if type_info.kind == 'abstract class':
+        return 'Abstract base class that defines shared behavior.'
+    if type_info.kind == 'interface':
+        return 'Contract surface for collaborating code.'
+    if type_info.kind == 'enum':
+        return 'Enumeration used for state or category modeling.'
+    if type_info.kind == 'struct':
+        return 'Value type used for compact data grouping.'
+    return 'Concrete implementation used by the application runtime.'
+
+def build_mermaid_diagram(types):
+    lines = ['classDiagram', 'direction LR', '']
+    for type_info in sorted(types, key=lambda item: item.name.lower()):
+        stereotype = ''
+        if type_info.kind == 'enum':
+            stereotype = ' <<enumeration>>'
+        elif type_info.kind == 'interface':
+            stereotype = ' <<interface>>'
+        elif type_info.kind == 'abstract class':
+            stereotype = ' <<abstract>>'
+
+        lines.append(f'class {type_info.name}{stereotype} {{')
+        for member in type_info.members[:14]:
+            lines.append(f'  +{member.signature}')
+        lines.append('}')
+
+    lines.append('')
+    type_lookup = {type_info.name: type_info for type_info in types}
+    for type_info in sorted(types, key=lambda item: item.name.lower()):
+        for base_type in type_info.base_types:
+            if base_type in type_lookup and base_type != type_info.name:
+                lines.append(f'{type_info.name} --|> {base_type}')
+        for dependency in sorted(type_info.dependencies):
+            if dependency in type_lookup and dependency not in type_info.base_types and dependency != type_info.name:
+                lines.append(f'{type_info.name} ..> {dependency} : uses')
+
+    return '\n'.join(lines)
+
+def build_markdown_overview(root_dir, scanned_files, types):
+    lines = [
+        '# Smart Factory Management System Project Overview',
+        '',
+        'This overview is generated from the repository and can be mirrored into a GitHub wiki if needed.',
+        '',
+        '## UML Class Inventory',
+        '',
+        '| Type | Kind | Namespace | File | Base Types | Key Members | Summary |',
+        '| --- | --- | --- | --- | --- | --- | --- |',
+    ]
+
+    for type_info in sorted(types, key=lambda item: item.name.lower()):
+        members = '; '.join(member.signature for member in type_info.members[:6]) or 'No detected public members'
+        base_types = ', '.join(type_info.base_types) if type_info.base_types else '-'
+        lines.append(
+            f'| {type_info.name} | {type_info.kind} | {type_info.namespace} | {os.path.relpath(type_info.file_path, root_dir)} | {base_types} | {members} | {summarize_type(type_info)} |'
+        )
+
+    lines.extend([
+        '',
+        '## File Inventory',
+        '',
+        '| Path | Role | Parsed Types |',
+        '| --- | --- | --- |',
+    ])
+
+    type_locations = {}
+    for type_info in types:
+        type_locations.setdefault(type_info.file_path, []).append(type_info.name)
+
+    for entry in scanned_files:
+        if entry['name'].endswith('.cs'):
+            if entry['name'] == 'Program.cs':
+                role = 'Application entry point and session loop.'
+            elif entry['name'].endswith('MenuHandler.cs'):
+                role = 'Menu navigation and role-specific UI flow.'
+            elif entry['name'] in {'Factory.cs', 'Employee.cs', 'Product.cs', 'Machine.cs', 'MachinePart.cs', 'ProductionOrder.cs', 'ProductionBatch.cs'}:
+                role = 'Core domain model and supporting entities.'
+            elif entry['name'] == 'UIHelpers.cs':
+                role = 'Shared console rendering helpers.'
+            elif entry['name'] == 'LoginHandler.cs':
+                role = 'Authentication and login flow.'
+            elif entry['name'] == 'MenuOptions.cs':
+                role = 'Shared menu labels and command lists.'
+            else:
+                role = 'C# source file.'
+        elif entry['name'].endswith('.md'):
+            role = 'Repository documentation.'
+        elif entry['name'].endswith('.csproj'):
+            role = 'Project build definition and package references.'
+        elif entry['name'].endswith('.slnx'):
+            role = 'Solution file.'
+        elif entry['name'].endswith('.py'):
+            role = 'Documentation generator script.'
+        else:
+            role = 'Repository asset.'
+
+        parsed_types = ', '.join(sorted(type_locations.get(entry['path'], []))) or '-'
+        lines.append(f'| {entry["rel_path"]} | {role} | {parsed_types} |')
+
+    lines.extend([
+        '',
+        '## Mermaid UML',
+        '',
+        '```mermaid',
+        build_mermaid_diagram(types),
+        '```',
+        '',
+    ])
+
+    return '\n'.join(lines)
 
 def parse_cs_file_details(file_path):
     """Parses a C# source file to extract high-level metadata (Namespace, Class/Enum, Methods, Properties)."""
@@ -104,6 +391,35 @@ def build_documentation_dashboard(root_dir, output_html_file):
     """Orchestrates filesystem mappings and parses files to compile a unified interactive HTML file."""
     project_tree = build_project_tree(root_dir)
     tree_interface_html = generate_tree_html(project_tree)
+    scanned_files, types, _ = parse_repository_types(root_dir)
+
+    docs_dir = os.path.join(root_dir, 'docs')
+    os.makedirs(docs_dir, exist_ok=True)
+    overview_path = os.path.join(docs_dir, 'PROJECT_OVERVIEW.md')
+    with open(overview_path, 'w', encoding='utf-8') as overview_handle:
+        overview_handle.write(build_markdown_overview(root_dir, scanned_files, types))
+
+    uml_rows_html = ''
+    for type_info in sorted(types, key=lambda item: item.name.lower()):
+        key_members = '; '.join(member.signature for member in type_info.members[:5]) if type_info.members else 'No detected public members'
+        base_types = ', '.join(type_info.base_types) if type_info.base_types else '-'
+        uml_rows_html += (
+            f'<tr><td>{html.escape(type_info.name)}</td><td>{html.escape(type_info.kind)}</td>'
+            f'<td>{html.escape(type_info.namespace)}</td><td>{html.escape(os.path.relpath(type_info.file_path, root_dir))}</td>'
+            f'<td>{html.escape(base_types)}</td><td>{html.escape(key_members)}</td><td>{html.escape(summarize_type(type_info))}</td></tr>\n'
+        )
+
+    relationship_rows_html = ''
+    for type_info in sorted(types, key=lambda item: item.name.lower()):
+        relationships = []
+        if type_info.base_types:
+            relationships.append('extends ' + ', '.join(type_info.base_types))
+        if type_info.dependencies:
+            relationships.append('uses ' + ', '.join(sorted(type_info.dependencies)))
+        relation_text = '; '.join(relationships) if relationships else 'No direct project-type relation detected'
+        relationship_rows_html += f'<tr><td>{html.escape(type_info.name)}</td><td>{html.escape(relation_text)}</td></tr>\n'
+
+    mermaid_diagram = build_mermaid_diagram(types)
     
     file_details_html = ""
     
@@ -149,6 +465,7 @@ def build_documentation_dashboard(root_dir, output_html_file):
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Factory Management System - Repository Map</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <style>
         :root {{
             --bg-main: #0d1117;
@@ -214,6 +531,31 @@ def build_documentation_dashboard(root_dir, output_html_file):
             flex-direction: column;
             gap: 20px;
         }}
+        .section-card {{
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 20px;
+        }}
+        .summary-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }}
+        .summary-tile {{
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 14px;
+        }}
+        .summary-tile .label {{ color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }}
+        .summary-tile .value {{ color: #f0f6fc; font-size: 24px; font-weight: 700; margin-top: 4px; }}
+        table {{ width: 100%; border-collapse: collapse; overflow: hidden; }}
+        th, td {{ border-bottom: 1px solid var(--border-color); padding: 10px 12px; text-align: left; vertical-align: top; font-size: 13px; }}
+        th {{ color: #f0f6fc; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(255,255,255,0.02); }}
+        .diagram {{ overflow-x: auto; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 6px; padding: 14px; }}
+        .diagram .mermaid {{ min-width: 900px; }}
         .sidebar h2 {{ font-size: 18px; margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; color: #f0f6fc; }}
         
         /* Interactive Tree CSS Design */
@@ -282,12 +624,67 @@ def build_documentation_dashboard(root_dir, output_html_file):
     </div>
     
     <div class="content-area">
+        <div class="section-card">
+            <h2>Repository Summary</h2>
+            <div class="summary-grid">
+                <div class="summary-tile"><div class="label">Files Scanned</div><div class="value">{len(scanned_files)}</div></div>
+                <div class="summary-tile"><div class="label">C# Types</div><div class="value">{len(types)}</div></div>
+                <div class="summary-tile"><div class="label">Markdown Docs</div><div class="value">{sum(1 for file in scanned_files if file['name'].endswith('.md'))}</div></div>
+                <div class="summary-tile"><div class="label">Generated Docs</div><div class="value">2</div></div>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>UML Class Table</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Kind</th>
+                        <th>Namespace</th>
+                        <th>File</th>
+                        <th>Base Types</th>
+                        <th>Key Members</th>
+                        <th>Summary</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {uml_rows_html}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section-card">
+            <h2>UML Relationships</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Relationship Summary</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {relationship_rows_html}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section-card">
+            <h2>Mermaid UML Diagram</h2>
+            <div class="diagram">
+                <div class="mermaid">
+{mermaid_diagram}
+                </div>
+            </div>
+        </div>
+
         <h2>⚙️ Source Component Specifications</h2>
         {file_details_html}
     </div>
 </div>
 
 <script>
+    mermaid.initialize({{ startOnLoad: true, theme: 'dark' }});
     // Expand/Collapse script handling logic for interactive folders
     document.querySelectorAll('.folder-toggle').forEach(folder => {{
         folder.addEventListener('click', () => {{
@@ -314,6 +711,6 @@ if __name__ == '__main__':
     # Determine local execution pathways safely across platform environments
     root_workspace = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     output_target = os.path.join(root_workspace, 'index.html')
-    print(f"Initializing documentation generation mapping out root: {{root_workspace}}")
+    print(f"Initializing documentation generation mapping out root: {root_workspace}")
     build_documentation_dashboard(root_workspace, output_target)
-    print(f"Dashboard mapping built successfully -> Target output: {{output_target}}")
+    print(f"Dashboard mapping built successfully -> Target output: {output_target}")
