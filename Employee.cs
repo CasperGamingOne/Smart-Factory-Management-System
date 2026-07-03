@@ -38,7 +38,8 @@
     
     public class Technician : Employee
     {
-        public Technician(string name) : base(name) { Role = "Tehnician"; }
+        public bool IsCertifiedInspector { get; set; }
+        public Technician(int id, string name, bool isCertified = false) : base(id, name) { Role = "Tehnician"; IsCertifiedInspector = isCertified; }
         public override void AfiseazaActivitate()
         {
             Console.WriteLine("Tehnicianul " + Name + " repara echipamentele defecte.");
