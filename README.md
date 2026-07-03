@@ -38,3 +38,6 @@ The generated overview includes a detailed UML class table, relationship summary
 - [x] LoginHandler.cs                | @CasperGamingOne
 - [x] *MenuHandler.cs* not Final     | @CasperGamingOne & @ganeaandreea701-crypto
 
+-[ ] to revise code                  | @CasperGamingOne
+-[ ] to make dynamic menus           | @CasperGamingOne
+-[ ] to add menu restrictions        | @CasperGamingOne
