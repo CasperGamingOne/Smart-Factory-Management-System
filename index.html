@@ -372,13 +372,13 @@ class EmployeeMenuHandler {
   +AddNewEmployeeFlow(Factory factory): void
 }
 class Factory {
-  +PendingOrders: ProductionOrder[]
+  +PendingOrders: ProductionOrder
   +OrderCount: int
-  +Batches: ProductionBatch[]
+  +Batches: ProductionBatch
   +BatchCount: int
-  +Employees: Employee[]
-  +Machines: Machine[]
-  +Inventory: Product[]
+  +Employees: Employee
+  +Machines: Machine
+  +Inventory: Product
   +Factory()
   +SeedInitialData(): void
   +AddEmployee(Employee employee): void
@@ -388,7 +388,7 @@ class Factory {
   +AddOrder(ProductionOrder order): void
 }
 class Litography_Machine {
-  +Litography_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
+  +Litography_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart parts, MachineCondition condition)
   +Produce(Product blueprint): void
 }
 class LoginHandler {
@@ -400,12 +400,12 @@ class Machine <<abstract>> {
   +Manufacturer: string?
   +SerialNumber: string?
   +InstallationDate: DateTime
-  +Parts: MachinePart[]?
+  +Parts: MachinePart?
   +Status: MachineStatus
   +Condition: MachineCondition
   +SupportedProductType: Type
   +ActiveOrder: ProductionOrder?
-  +Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
+  +Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart parts, MachineCondition condition)
   +GetMachineAge(): TimeSpan
   +StartOrder(ProductionOrder order): void
   +StartMachine(): bool
@@ -446,7 +446,7 @@ class Motherboard {
   +GetTechnicalSpecifications(): string
 }
 class PaP_Machine {
-  +PaP_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
+  +PaP_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart parts, MachineCondition condition)
   +Produce(Product product): void
 }
 class PartCondition <<enumeration>> {
@@ -475,7 +475,7 @@ class ProductionBatch {
   +UnitSellPrice: double?
   +SoldUnitPrice: double?
   +IsSold: bool
-  +InventoryIndexes: List<int>
+  +InventoryIndexes: List~int~
   +ProductionBatch(string productName, int quantity, double unitCost)
 }
 class ProductionMenuHandler {
@@ -498,7 +498,7 @@ class ProductMenuHandler {
 class Program {
 }
 class Reflow_Oven {
-  +Reflow_Oven(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
+  +Reflow_Oven(string machine_name, string machine_manufacturer, string machine_serial, MachinePart parts, MachineCondition condition)
   +Produce(Product product): void
 }
 class ReportMenuHandler {
@@ -516,7 +516,7 @@ class SalesMenuHandler {
   +RecordSale(Factory factory): void
 }
 class SMT_Machine {
-  +SMT_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
+  +SMT_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart parts, MachineCondition condition)
   +Produce(Product product): void
 }
 class Technician {

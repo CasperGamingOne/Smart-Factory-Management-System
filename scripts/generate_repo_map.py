@@ -110,6 +110,9 @@ def get_namespace(content):
 def split_project_type_name(raw_name):
     return raw_name.split('<', 1)[0].strip()
 
+def sanitize_mermaid_type_name(raw_name):
+    return raw_name.replace('[]', '').replace('<', '~').replace('>', '~').strip()
+
 def split_base_types(base_text):
     if not base_text:
         return []
@@ -245,9 +248,9 @@ def build_mermaid_diagram(types):
         elif type_info.kind == 'abstract class':
             stereotype = ' <<abstract>>'
 
-        lines.append(f'class {type_info.name}{stereotype} {{')
+        lines.append(f'class {sanitize_mermaid_type_name(type_info.name)}{stereotype} {{')
         for member in type_info.members[:14]:
-            lines.append(f'  +{member.signature}')
+            lines.append(f'  +{sanitize_mermaid_type_name(member.signature)}')
         lines.append('}')
 
     lines.append('')
@@ -255,10 +258,10 @@ def build_mermaid_diagram(types):
     for type_info in sorted(types, key=lambda item: item.name.lower()):
         for base_type in type_info.base_types:
             if base_type in type_lookup and base_type != type_info.name:
-                lines.append(f'{type_info.name} --|> {base_type}')
+                lines.append(f'{sanitize_mermaid_type_name(type_info.name)} --|> {sanitize_mermaid_type_name(base_type)}')
         for dependency in sorted(type_info.dependencies):
             if dependency in type_lookup and dependency not in type_info.base_types and dependency != type_info.name:
-                lines.append(f'{type_info.name} ..> {dependency} : uses')
+                lines.append(f'{sanitize_mermaid_type_name(type_info.name)} ..> {sanitize_mermaid_type_name(dependency)} : uses')
 
     return '\n'.join(lines)
 
