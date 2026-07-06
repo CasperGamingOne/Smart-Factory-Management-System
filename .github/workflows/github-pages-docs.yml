@@ -35,7 +35,7 @@ jobs:
           python scripts/generate_repo_map.py
 
       - name: Initialize Pages Artifact Staging Area
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v6
 
       - name: Upload Finished Static Documentation Dashboard
         uses: actions/upload-pages-artifact@v3
