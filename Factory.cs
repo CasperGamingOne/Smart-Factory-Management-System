@@ -3,9 +3,9 @@
     internal class Factory
     {
         // Tracking counters stay private and safe
-        private int employee_count = 0;
-        private int machine_count = 0;
-        private int product_count = 0;
+        private int employee_count;
+        private int machine_count;
+        private int product_count;
 
         // --- 1. THE CONSTRUCTOR HANDLES INITIAL DATA SEEDING ---
         public Factory()
@@ -14,11 +14,11 @@
         }
 
         public ProductionOrder[] PendingOrders { get; private set; } = new ProductionOrder[50];
-        public int OrderCount { get; private set; } = 0;
+        public int OrderCount { get; private set; }
 
         // Track finished production batches for accounting and sales
         public ProductionBatch[] Batches { get; private set; } = new ProductionBatch[100];
-        public int BatchCount { get; private set; } = 0;
+        public int BatchCount { get; private set; }
 
         // Core bounded arrays
         public Employee[] Employees { get; private set; } = new Employee[100];
@@ -79,13 +79,13 @@
 
             MachinePart[] oven_parts = { oven_power, oven_cooling, oven_control, oven_AOI };
 
-            AddMachine(new Litography_Machine("LithoScan EUV-3600", "ASML", "SN-ASML-2024-88A9", lito_parts,
+            AddMachine(new LitographyMachine("LithoScan EUV-3600", "ASML", "SN-ASML-2024-88A9", lito_parts,
                 MachineCondition.Excellent));
-            AddMachine(new SMT_Machine("Horizon SolderPrinter X5", "DEK International", "SN-DEK-77492-B7",
+            AddMachine(new SmtMachine("Horizon SolderPrinter X5", "DEK International", "SN-DEK-77492-B7",
                 printer_parts, MachineCondition.Excellent));
-            AddMachine(new PaP_Machine("NXT-III High-Speed Mounter", "Fuji Corporation", "SN-FUJI-991A-040", pap_parts,
+            AddMachine(new PaPMachine("NXT-III High-Speed Mounter", "Fuji Corporation", "SN-FUJI-991A-040", pap_parts,
                 MachineCondition.Excellent));
-            AddMachine(new Reflow_Oven("OmniMax Thermal Tunnel", "Heller Industries", "SN-HLR-5542-Z9", oven_parts,
+            AddMachine(new ReflowOven("OmniMax Thermal Tunnel", "Heller Industries", "SN-HLR-5542-Z9", oven_parts,
                 MachineCondition.Critical));
         }
 

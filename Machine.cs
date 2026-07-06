@@ -18,18 +18,18 @@ namespace Smart_Factory_Management_System
 
     internal abstract class Machine
     {
-        private static int idCounter = 0;
+        private static int _idCounter;
 
-        private static readonly Random _random = new();
+        private static readonly Random Random = new();
 
-        public Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts,
+        protected Machine(string machineName, string machineManufacturer, string machineSerial, MachinePart[] parts,
             MachineCondition condition)
         {
-            idCounter++;
-            Id = idCounter;
-            Name = machine_name;
-            Manufacturer = machine_manufacturer;
-            SerialNumber = machine_serial;
+            _idCounter++;
+            Id = _idCounter;
+            Name = machineName;
+            Manufacturer = machineManufacturer;
+            SerialNumber = machineSerial;
             InstallationDate = DateTime.Now.AddYears(-7);
             Parts = parts;
             Condition = condition;
@@ -43,19 +43,19 @@ namespace Smart_Factory_Management_System
 
         public string? Manufacturer { get; private protected set; }
 
-        public string? SerialNumber { get; private protected set; }
+        private string? SerialNumber { get; }
 
-        public DateTime InstallationDate { get; private protected set; }
+        private DateTime InstallationDate { get; }
 
-        public MachinePart[]? Parts { get; private protected set; }
+        private MachinePart[]? Parts { get; }
 
         public MachineStatus Status { get; private protected set; } = MachineStatus.Stopped;
 
-        public MachineCondition Condition { get; private protected set; }
+        public MachineCondition Condition { get; private set; }
 
-        public Type SupportedProductType { get; private protected set; }
+        public Type SupportedProductType { get; private protected init; }
 
-        public ProductionOrder? ActiveOrder { get; private protected set; }
+        protected ProductionOrder? ActiveOrder { get; private set; }
 
         public TimeSpan GetMachineAge()
         {
@@ -177,7 +177,7 @@ namespace Smart_Factory_Management_System
         {
             // 1. Filter instantiated parts into a clean tracking bucket
             int activePartsCount = 0;
-            foreach (var part in Parts ?? Array.Empty<MachinePart>())
+            foreach (var unused in Parts ?? Array.Empty<MachinePart>())
             {
                 activePartsCount++;
             }
@@ -185,7 +185,7 @@ namespace Smart_Factory_Management_System
             if (activePartsCount == 0) return;
 
             // 2. Select a single random active part from the array
-            int randomIndex = _random.Next(0, activePartsCount);
+            var randomIndex = Random.Next(0, activePartsCount);
             int currentStep = 0;
             MachinePart? selectedPart = null;
 
@@ -203,7 +203,7 @@ namespace Smart_Factory_Management_System
             if (selectedPart == null) return;
 
             // 3. Roll a completely random chance for damage (e.g., 20% chance to accumulate wear per product cycle)
-            if (_random.Next(0, 100) < 20)
+            if (Random.Next(0, 100) < 20)
             {
                 var oldCondition = selectedPart.Condition;
                 selectedPart.DegradeStep();
@@ -312,11 +312,11 @@ namespace Smart_Factory_Management_System
         public abstract bool Produce(Product product);
     }
 
-    internal class Litography_Machine : Machine
+    internal class LitographyMachine : Machine
     {
-        public Litography_Machine(string machine_name, string machine_manufacturer, string machine_serial,
+        public LitographyMachine(string machineName, string machineManufacturer, string machineSerial,
             MachinePart[] parts, MachineCondition condition)
-            : base(machine_name, machine_manufacturer, machine_serial, parts, condition)
+            : base(machineName, machineManufacturer, machineSerial, parts, condition)
         {
             SupportedProductType = typeof(Microprocessor);
         }
@@ -350,18 +350,18 @@ namespace Smart_Factory_Management_System
             AnsiConsole.Status()
                 .Spinner(Spinner.Known.BouncingBar)
                 .SpinnerStyle(Style.Parse("cyan bold"))
-                .Start("Exposing wafer structure using optical masks...", ctx => { Thread.Sleep(800); });
+                .Start("Exposing wafer structure using optical masks...", _ => { Thread.Sleep(800); });
             // Triggers completely random simulation tracking chance for part failure
             ApplyProductionWearAndTear();
             return true;
         }
     }
 
-    internal class SMT_Machine : Machine // Solder Paste Printer
+    internal class SmtMachine : Machine // Solder Paste Printer
     {
-        public SMT_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts,
+        public SmtMachine(string machineName, string machineManufacturer, string machineSerial, MachinePart[] parts,
             MachineCondition condition)
-            : base(machine_name, machine_manufacturer, machine_serial, parts, condition)
+            : base(machineName, machineManufacturer, machineSerial, parts, condition)
         {
             SupportedProductType = typeof(Motherboard);
         }
@@ -373,11 +373,11 @@ namespace Smart_Factory_Management_System
         }
     }
 
-    internal class PaP_Machine : Machine // Pick and Place
+    internal class PaPMachine : Machine // Pick and Place
     {
-        public PaP_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts,
+        public PaPMachine(string machineName, string machineManufacturer, string machineSerial, MachinePart[] parts,
             MachineCondition condition)
-            : base(machine_name, machine_manufacturer, machine_serial, parts, condition)
+            : base(machineName, machineManufacturer, machineSerial, parts, condition)
         {
         }
 
@@ -388,11 +388,11 @@ namespace Smart_Factory_Management_System
         }
     }
 
-    internal class Reflow_Oven : Machine
+    internal class ReflowOven : Machine
     {
-        public Reflow_Oven(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts,
+        public ReflowOven(string machineName, string machineManufacturer, string machineSerial, MachinePart[] parts,
             MachineCondition condition)
-            : base(machine_name, machine_manufacturer, machine_serial, parts, condition)
+            : base(machineName, machineManufacturer, machineSerial, parts, condition)
         {
         }
 

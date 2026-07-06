@@ -52,7 +52,7 @@ namespace Smart_Factory_Management_System
                 var order = AnsiConsole.Prompt(orderSelector);
 
                 // Ensure the logged-in technician is assigned
-                if (loggedInUser is Technician == false && order.AssignedTechnicianId != loggedInUser.Id)
+                if (!(loggedInUser is Technician) && order.AssignedTechnicianId != loggedInUser.Id)
                 {
                     AnsiConsole.MarkupLine("[red]Only the assigned technician can start this order.[/]");
                     AnsiConsole.WriteLine("\nPress any key to return...");
@@ -133,7 +133,7 @@ namespace Smart_Factory_Management_System
                 while (!order.IsComplete && selectedMachine.Status == MachineStatus.Running)
                 {
                     // Instantiate a fresh product for each unit
-                    Product produced = CreateProducedProduct(template!);
+                    var produced = CreateProducedProduct(template);
 
                     // Request the machine to produce a unit
                     selectedMachine.StartOrder(order);
@@ -155,16 +155,10 @@ namespace Smart_Factory_Management_System
                     }
                 }
 
-                if (order.IsComplete)
-                {
-                    AnsiConsole.MarkupLine(
-                        $"[green]Batch complete. Created batch {batch.BatchId} with {batch.InventoryIndexes.Count} items.[/]");
-                }
-                else
-                {
-                    AnsiConsole.MarkupLine(
-                        $"[yellow]Order incomplete. Produced {order.CompletedCount}/{order.Quantity} so far.[/]");
-                }
+                AnsiConsole.MarkupLine(
+                    order.IsComplete
+                        ? $"[green]Batch complete. Created batch {batch.BatchId} with {batch.InventoryIndexes.Count} items.[/]"
+                        : $"[yellow]Order incomplete. Produced {order.CompletedCount}/{order.Quantity} so far.[/]");
 
                 AnsiConsole.WriteLine();
                 AnsiConsole.Write(new Markup("[grey]Press any key to return to production deck...[/]"));
@@ -202,9 +196,9 @@ namespace Smart_Factory_Management_System
 
             var motherboardTemplate = new Motherboard("Batch Motherboard", 20, 0, 1, "AM4", "ATX");
 
-            var solderPrinter = FindMachine<SMT_Machine>(factory);
-            var pickAndPlace = FindMachine<PaP_Machine>(factory);
-            var reflowOven = FindMachine<Reflow_Oven>(factory);
+            var solderPrinter = FindMachine<SmtMachine>(factory);
+            var pickAndPlace = FindMachine<PaPMachine>(factory);
+            var reflowOven = FindMachine<ReflowOven>(factory);
 
             if (solderPrinter == null || pickAndPlace == null || reflowOven == null)
             {

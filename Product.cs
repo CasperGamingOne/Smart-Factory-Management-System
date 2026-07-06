@@ -13,13 +13,11 @@
             ProductionCost = cost;
             SellingPrice = price;
             Quantity = quantity;
-            ProductionDate = DateTime.Now;
         }
 
         public string? Name { get; protected set; }
         public int? Cores { get; protected set; }
         public double ClockSpeed { get; protected set; }
-        public DateTime ProductionDate { get; set; }
 
         public double ProductionCost
         {

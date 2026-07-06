@@ -27,7 +27,7 @@ namespace Smart_Factory_Management_System
                 switch (choice)
                 {
                     case "1. Place Production Order":
-                        PlaceOrder(factory, (SalesAgent)loggedInUser);
+                        PlaceOrder(factory);
                         break;
                     case "2. View Pending Orders":
                         ShowPendingOrders(factory);
@@ -44,7 +44,7 @@ namespace Smart_Factory_Management_System
             }
         }
 
-        private static void PlaceOrder(Factory factory, SalesAgent sales)
+        private static void PlaceOrder(Factory factory)
         {
             AnsiConsole.WriteLine();
             var productChoice = AnsiConsole.Prompt(
@@ -85,12 +85,13 @@ namespace Smart_Factory_Management_System
             var order = new ProductionOrder(productChoice, quantity, technicianId);
             factory.AddOrder(order);
 
-            AnsiConsole.MarkupLine($"[green]✔ Order placed: {order.OrderId} - {order.ProductName} x{order.Quantity} assigned to tech #{order.AssignedTechnicianId}[/]");
+            AnsiConsole.MarkupLine(
+                $"[green]✔ Order placed: {order.OrderId} - {order.ProductName} x{order.Quantity} assigned to tech #{order.AssignedTechnicianId}[/]");
         }
 
-        private static System.Collections.Generic.List<Employee> GetTechnicians(Factory factory)
+        private static List<Employee> GetTechnicians(Factory factory)
         {
-            var technicians = new System.Collections.Generic.List<Employee>();
+            var technicians = new List<Employee>();
 
             for (int i = 0; i < factory.EmployeeCount; i++)
             {
@@ -110,11 +111,13 @@ namespace Smart_Factory_Management_System
                 return;
             }
 
-            var table = new Table().AddColumn("Order").AddColumn("Product").AddColumn("Qty").AddColumn("Done").AddColumn("TechId");
+            var table = new Table().AddColumn("Order").AddColumn("Product").AddColumn("Qty").AddColumn("Done")
+                .AddColumn("TechId");
             for (int i = 0; i < factory.OrderCount; i++)
             {
                 var o = factory.PendingOrders[i];
-                table.AddRow(o.OrderId, o.ProductName, o.Quantity.ToString(), o.CompletedCount.ToString(), o.AssignedTechnicianId.ToString());
+                table.AddRow(o.OrderId, o.ProductName, o.Quantity.ToString(), o.CompletedCount.ToString(),
+                    o.AssignedTechnicianId.ToString());
             }
 
             AnsiConsole.Write(table);
@@ -123,7 +126,7 @@ namespace Smart_Factory_Management_System
         private static void RecordSale(Factory factory)
         {
             // Offer selling either from completed batches or from existing inventory
-            var options = new System.Collections.Generic.List<string>();
+            var options = new List<string>();
             if (factory.BatchCount > 0) options.Add("Sell from Batch");
             if (factory.ProductCount > 0) options.Add("Sell from Inventory");
             if (options.Count == 0)
@@ -132,7 +135,8 @@ namespace Smart_Factory_Management_System
                 return;
             }
 
-            var pickContext = AnsiConsole.Prompt(new SelectionPrompt<string>().Title("Choose sale source:").AddChoices(options));
+            var pickContext =
+                AnsiConsole.Prompt(new SelectionPrompt<string>().Title("Choose sale source:").AddChoices(options));
 
             if (pickContext == "Sell from Batch")
             {
@@ -147,18 +151,18 @@ namespace Smart_Factory_Management_System
                 }
 
                 double soldPrice = AnsiConsole.Ask<double>("Enter unit sold price ($):");
-                chosen.SoldUnitPrice = soldPrice;
                 chosen.IsSold = true;
 
-                AnsiConsole.MarkupLine($"[green]✔ Recorded sale for batch {chosen.BatchId} at ${soldPrice:F2} per unit.[/]");
+                AnsiConsole.MarkupLine(
+                    $"[green]✔ Recorded sale for batch {chosen.BatchId} at ${soldPrice:F2} per unit.[/]");
             }
             else if (pickContext == "Sell from Inventory")
             {
-                var products = new System.Collections.Generic.List<Product>();
+                var products = new List<Product>();
                 for (int i = 0; i < factory.ProductCount; i++)
                 {
                     var p = factory.Inventory[i];
-                    if (p != null && p.Quantity > 0)
+                    if (p.Quantity > 0)
                         products.Add(p);
                 }
 
@@ -168,7 +172,8 @@ namespace Smart_Factory_Management_System
                     return;
                 }
 
-                var prodSelector = new SelectionPrompt<Product>().Title("Select product to sell:").UseConverter(p => $"{p.Name} (stock: {p.Quantity})");
+                var prodSelector = new SelectionPrompt<Product>().Title("Select product to sell:")
+                    .UseConverter(p => $"{p.Name} (stock: {p.Quantity})");
                 foreach (var pr in products) prodSelector.AddChoice(pr);
 
                 var chosen = AnsiConsole.Prompt(prodSelector);
@@ -184,11 +189,11 @@ namespace Smart_Factory_Management_System
                 // Decrease stock and create a record batch for accounting
                 chosen.Quantity -= qty;
                 var batch = new ProductionBatch(chosen.Name ?? "Inventory Sale", qty, chosen.ProductionCost);
-                batch.SoldUnitPrice = soldPrice;
                 batch.IsSold = true;
                 factory.AddBatch(batch);
 
-                AnsiConsole.MarkupLine($"[green]✔ Sold {qty} units of {chosen.Name} at ${soldPrice:F2} per unit. Batch {batch.BatchId} recorded.[/]");
+                AnsiConsole.MarkupLine(
+                    $"[green]✔ Sold {qty} units of {chosen.Name} at ${soldPrice:F2} per unit. Batch {batch.BatchId} recorded.[/]");
             }
         }
     }

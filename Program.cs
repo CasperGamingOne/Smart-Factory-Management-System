@@ -1,12 +1,13 @@
+using System.Text;
 using Spectre.Console;
 
 namespace Smart_Factory_Management_System
 {
     internal class Program
     {
-        static void Main(string[] args)
+        private static void Main()
         {
-            Console.OutputEncoding = System.Text.Encoding.UTF8;
+            Console.OutputEncoding = Encoding.UTF8;
 
             // Initialize core factory and seed data
             Factory factory = new Factory();
@@ -24,7 +25,7 @@ namespace Smart_Factory_Management_System
                 }
 
                 AnsiConsole.MarkupLine($"[green]Welcome back, {loggedInUser.Name} ({loggedInUser.Role})![/]");
-                AnsiConsole.Status().Start("Booting production environment...", ctx => { System.Threading.Thread.Sleep(800); });
+                AnsiConsole.Status().Start("Booting production environment...", _ => { Thread.Sleep(800); });
 
                 bool sessionActive = true;
                 while (sessionActive)
@@ -67,7 +68,7 @@ namespace Smart_Factory_Management_System
                             break;
                         case "8. Log Out / Exit Session":
                             AnsiConsole.MarkupLine("[yellow]Logging out of current profile...[/]");
-                            System.Threading.Thread.Sleep(600);
+                            Thread.Sleep(600);
                             sessionActive = false;
                             break;
                     }
@@ -75,9 +76,9 @@ namespace Smart_Factory_Management_System
             }
         }
 
-        private static System.Collections.Generic.List<string> GetAvailableMainMenu(Employee loggedInUser)
+        private static List<string> GetAvailableMainMenu(Employee loggedInUser)
         {
-            var available = new System.Collections.Generic.List<string>();
+            var available = new List<string>();
 
             if (loggedInUser is Director)
             {
