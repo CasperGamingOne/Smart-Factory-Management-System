@@ -18,9 +18,7 @@ The codebase is organized into a few clear layers:
 
 The generated overview includes a detailed UML class table, relationship summary, Mermaid diagram, and a file-by-file inventory of the repository.
 
-## Quick Status View
-
-[![.NET Basic Autotest](https://github.com/CasperGamingOne/Smart-Factory-Management-System/actions/workflows/dotnet.yml/badge.svg)](https://github.com/CasperGamingOne/Smart-Factory-Management-System/actions/workflows/dotnet.yml)
+## Quick Status View for dependencies
 
 [![Dependabot Updates](https://github.com/CasperGamingOne/Smart-Factory-Management-System/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/CasperGamingOne/Smart-Factory-Management-System/actions/workflows/dependabot/dependabot-updates)
 
@@ -38,6 +36,6 @@ The generated overview includes a detailed UML class table, relationship summary
 - [x] LoginHandler.cs                | @CasperGamingOne
 - [x] *MenuHandler.cs* not Final     | @CasperGamingOne & @ganeaandreea701-crypto
 
--[ ] to revise code                  | @CasperGamingOne
--[ ] to make dynamic menus           | @CasperGamingOne
--[ ] to add menu restrictions        | @CasperGamingOne
+- [ ] to revise code                  | @CasperGamingOne
+- [ ] to make dynamic menus           | @CasperGamingOne
+- [ ] to add menu restrictions        | @CasperGamingOne
