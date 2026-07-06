@@ -33,8 +33,7 @@ namespace Smart_Factory_Management_System
             InstallationDate = DateTime.Now.AddYears(-7);
             Parts = parts;
             Condition = condition;
-            SupportedProductType =
-                typeof(Product); // Default to base Product type; override in derived classes as needed
+            SupportedProductType = typeof(Product);
         }
 
         public int Id { get; private protected set; }
@@ -84,7 +83,6 @@ namespace Smart_Factory_Management_System
                     Thread.Sleep(500);
                 });
 
-            // Null-checked safety verification over the array loop
             foreach (var part in Parts ?? Array.Empty<MachinePart>())
             {
                 if (part.Condition == PartCondition.Critical)
@@ -108,6 +106,7 @@ namespace Smart_Factory_Management_System
                 }
             }
 
+            Condition = GetMachineCondition();
             Status = MachineStatus.Running;
 
             var successPanel = new Panel(
@@ -129,7 +128,6 @@ namespace Smart_Factory_Management_System
             AnsiConsole.Write(Align.Left(new Rule($"[red]System Shutdown Sequence: {Name}[/]")));
             AnsiConsole.WriteLine();
 
-            // Safe State Guard: If it's already stopped, exit cleanly without blinking animations
             if (Status == MachineStatus.Stopped)
             {
                 var alreadyStoppedPanel = new Panel(
@@ -144,7 +142,6 @@ namespace Smart_Factory_Management_System
                 return;
             }
 
-            // High-precision simulated spin down sequence
             AnsiConsole.Status()
                 .Spinner(Spinner.Known.Dots)
                 .SpinnerStyle(Style.Parse("red bold"))
@@ -157,7 +154,6 @@ namespace Smart_Factory_Management_System
                     Thread.Sleep(500);
                 });
 
-            // Commit State Change
             Status = MachineStatus.Stopped;
 
             var stopPanel = new Panel(
@@ -175,7 +171,6 @@ namespace Smart_Factory_Management_System
 
         protected void ApplyProductionWearAndTear()
         {
-            // 1. Filter instantiated parts into a clean tracking bucket
             int activePartsCount = 0;
             foreach (var unused in Parts ?? Array.Empty<MachinePart>())
             {
@@ -184,7 +179,6 @@ namespace Smart_Factory_Management_System
 
             if (activePartsCount == 0) return;
 
-            // 2. Select a single random active part from the array
             var randomIndex = Random.Next(0, activePartsCount);
             int currentStep = 0;
             MachinePart? selectedPart = null;
@@ -202,7 +196,6 @@ namespace Smart_Factory_Management_System
 
             if (selectedPart == null) return;
 
-            // 3. Roll a completely random chance for damage (e.g., 20% chance to accumulate wear per product cycle)
             if (Random.Next(0, 100) < 20)
             {
                 var oldCondition = selectedPart.Condition;
@@ -234,14 +227,12 @@ namespace Smart_Factory_Management_System
             AnsiConsole.Write(Align.Left(new Rule($"[cyan]Diagnostics Hub: {Name}[/]")));
             AnsiConsole.WriteLine();
 
-            // 1. Identity Profile Table
             var profileTable = new Table();
             profileTable.Border(TableBorder.Minimal);
 
             profileTable.AddColumn("[grey]Hardware Property[/]");
             profileTable.AddColumn("[grey]Assigned Value[/]");
 
-            // Ensure all secondary parameters evaluate explicitly to strings
             profileTable.AddRow("Manufacturer Identity", Manufacturer ?? "-");
             profileTable.AddRow("Factory Serial Reference", SerialNumber ?? "-");
             profileTable.AddRow("Asset Total Life Age", $"{GetMachineAge()} Years Old");
@@ -257,7 +248,6 @@ namespace Smart_Factory_Management_System
                 { Header = new PanelHeader("[bold cyan] Asset Identity Profile [/]"), Border = BoxBorder.Rounded });
             AnsiConsole.WriteLine();
 
-            // 2. Component Health Table
             var componentTable = new Table().Border(TableBorder.Rounded);
             componentTable.AddColumn("[bold]Tracked Component Item[/]");
             componentTable.AddColumn(new TableColumn("[bold]Health Status[/]").Centered());
@@ -276,7 +266,6 @@ namespace Smart_Factory_Management_System
                     _ => "white"
                 };
 
-                // All three arguments here are guaranteed to be strings, resolving the error completely
                 componentTable.AddRow(
                     p.Name ?? "-",
                     $"[{partColor}]{(p.Condition?.ToString().ToUpper() ?? "UNKNOWN")}[/]",
@@ -286,6 +275,65 @@ namespace Smart_Factory_Management_System
 
             AnsiConsole.Write(componentTable);
             AnsiConsole.WriteLine();
+        }
+
+        public bool NeedsRepair()
+        {
+            if (Condition == MachineCondition.Critical) return true;
+
+            foreach (var part in Parts ?? Array.Empty<MachinePart>())
+                if (part.Condition != PartCondition.Excellent)
+                    return true;
+
+            return false;
+        }
+
+        public bool RepairMachine()
+        {
+            if (!NeedsRepair())
+            {
+                AnsiConsole.MarkupLine($"[green]{Name} does not need repairs right now.[/]");
+                return false;
+            }
+
+            AnsiConsole.Clear();
+            AnsiConsole.Write(Align.Left(new Rule($"[yellow]Maintenance Bay: {Name}[/]")));
+            AnsiConsole.WriteLine();
+
+            var repairedParts = 0;
+            foreach (var part in Parts ?? Array.Empty<MachinePart>())
+                if (part.Condition != PartCondition.Excellent)
+                {
+                    part.Repair(PartCondition.Excellent);
+                    repairedParts++;
+                }
+
+            Condition = GetMachineCondition();
+            Status = MachineStatus.Stopped;
+
+            var panel = new Panel(new Markup(
+                $"[green]✔ Repair complete for [bold]{Name}[/].[/]\n" +
+                $"[grey]Parts restored:[/] {repairedParts}\n" +
+                $"[grey]Machine state:[/] {Condition} / {Status}"))
+            {
+                Border = BoxBorder.Rounded,
+                Header = new PanelHeader("[bold green] REPAIR COMPLETE [/]")
+            };
+
+            AnsiConsole.Write(panel);
+            return true;
+        }
+
+        private MachineCondition GetMachineCondition()
+        {
+            foreach (var part in Parts ?? Array.Empty<MachinePart>())
+            {
+                if (part.Condition == PartCondition.Good) return MachineCondition.Good;
+
+                if (part.Condition == PartCondition.Critical) return MachineCondition.Critical;
+            }
+
+            return MachineCondition.Excellent;
         }
 
         protected static bool TryProcessMotherboard(Product product, BoardState requiredInputState,
@@ -335,7 +383,6 @@ namespace Smart_Factory_Management_System
                 throw new InvalidOperationException($"This machine only produces {SupportedProductType.Name}!");
             }
 
-            // Block production if machine is stopped or broken
             if (Status != MachineStatus.Running)
             {
                 AnsiConsole.Write(new Markup(
@@ -346,12 +393,10 @@ namespace Smart_Factory_Management_System
             AnsiConsole.Write(
                 new Markup($"[cyan]🏭 Starting processing sequence for: [underline]{blueprint.Name}[/][/]\n"));
 
-            // Output progress bar or loading spinner
             AnsiConsole.Status()
                 .Spinner(Spinner.Known.BouncingBar)
                 .SpinnerStyle(Style.Parse("cyan bold"))
                 .Start("Exposing wafer structure using optical masks...", _ => { Thread.Sleep(800); });
-            // Triggers completely random simulation tracking chance for part failure
             ApplyProductionWearAndTear();
             return true;
         }

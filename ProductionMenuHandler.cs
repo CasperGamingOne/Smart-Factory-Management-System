@@ -6,164 +6,132 @@ namespace Smart_Factory_Management_System
     {
         public static void Run(Factory factory, Employee loggedInUser)
         {
-            while (true)
+            AnsiConsole.Clear();
+            AnsiConsole.Write(Align.Left(new Rule("[yellow]🏭 Active Production Control Deck[/]")));
+            AnsiConsole.WriteLine();
+
+            if (factory.MachineCount == 0)
             {
-                AnsiConsole.Clear();
-                AnsiConsole.Write(Align.Left(new Rule("[yellow]🏭 Active Production Control Deck[/]")));
-                AnsiConsole.WriteLine();
-
-                // 1. Safeguard: Ensure there are machines registered in the factory database
-                if (factory.MachineCount == 0)
-                {
-                    AnsiConsole.Write(new Markup(
-                        "[yellow]⚠ No production machinery has been seeded in the factory layout yet.[/]\n"));
-                    AnsiConsole.Write(new Markup("[grey]Press any key to go back...[/]"));
-                    Console.ReadKey(true);
-                    return;
-                }
-
-                // 2. Offer two main actions: choose pending order or return
-                var action = AnsiConsole.Prompt(new SelectionPrompt<string>()
-                    .Title("Choose production action:")
-                    .AddChoices(MenuOptions.ProductionActions));
-
-                if (action.StartsWith("2") || action.Contains("Return", StringComparison.OrdinalIgnoreCase))
-                    return;
-
-                // Show pending orders
-                if (factory.OrderCount == 0)
-                {
-                    AnsiConsole.MarkupLine("[yellow]No pending production orders to fulfill.[/]");
-                    AnsiConsole.WriteLine("\nPress any key to return...");
-                    Console.ReadKey(true);
-                    return;
-                }
-
-                var orderSelector = new SelectionPrompt<ProductionOrder>().Title("Select a pending order to process:")
-                    .UseConverter(o =>
-                        $"{o.OrderId} - {o.ProductName} x{o.Quantity} ({o.CompletedCount}/{o.Quantity}) assigned to #{o.AssignedTechnicianId}");
-                for (int i = 0; i < factory.OrderCount; i++)
-                {
-                    var o = factory.PendingOrders[i];
-                    if (!o.IsComplete)
-                        orderSelector.AddChoice(o);
-                }
-
-                var order = AnsiConsole.Prompt(orderSelector);
-
-                // Ensure the logged-in technician is assigned
-                if (!(loggedInUser is Technician) && order.AssignedTechnicianId != loggedInUser.Id)
-                {
-                    AnsiConsole.MarkupLine("[red]Only the assigned technician can start this order.[/]");
-                    AnsiConsole.WriteLine("\nPress any key to return...");
-                    Console.ReadKey(true);
-                    return;
-                }
-
-                if (order.ProductName == "Motherboard")
-                {
-                    RunMotherboardWorkflow(factory, order);
-                    AnsiConsole.WriteLine();
-                    AnsiConsole.Write(new Markup("[grey]Press any key to return to production deck...[/]"));
-                    Console.ReadKey(true);
-                    continue;
-                }
-
-                // Find a machine that supports the product type
-                Machine? selectedMachine = null;
-                for (int i = 0; i < factory.MachineCount; i++)
-                {
-                    var mach = factory.Machines[i];
-                    if (mach.SupportedProductType.Name.Contains(order.ProductName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        selectedMachine = mach;
-                        break;
-                    }
-                }
-
-                // If not found, allow user to pick any machine
-                if (selectedMachine == null)
-                {
-                    var machineSelector = new SelectionPrompt<Machine>().Title("Select machine to use:");
-                    for (int i = 0; i < factory.MachineCount; i++) machineSelector.AddChoice(factory.Machines[i]);
-                    selectedMachine = AnsiConsole.Prompt(machineSelector);
-                }
-
-                // Boot machine if needed
-                if (selectedMachine.Status != MachineStatus.Running)
-                {
-                    bool bootChoice = AnsiConsole.Confirm($"Machine {selectedMachine.Name} is not running. Boot it?");
-                    if (!bootChoice) continue;
-                    if (!selectedMachine.StartMachine()) continue;
-                }
-
-                // Determine a realistic unit production cost by checking seeded inventory
-                double unitCost = 0;
-                for (int i = 0; i < factory.ProductCount; i++)
-                {
-                    var p = factory.Inventory[i];
-                    if (p.Name != null && p.Name.Contains(order.ProductName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        unitCost = p.ProductionCost;
-                        break;
-                    }
-                }
-
-                // Fallback to small defaults if not found
-                if (unitCost <= 0)
-                    unitCost = order.ProductName == "Microprocessor" ? 50 : 20;
-
-                // Prepare a product template for instantiation per unit
-                Product? template = CreateProductTemplate(order.ProductName, unitCost);
-
-                if (template == null)
-                {
-                    AnsiConsole.MarkupLine("[red]Unknown product type for this order.[/]");
-                    continue;
-                }
-
-                // Create a production batch record
-                var batch = new ProductionBatch(order.ProductName, order.Quantity, unitCost);
-                factory.AddBatch(batch);
-
                 AnsiConsole.Write(new Markup(
-                    $"[cyan]Starting production for order {order.OrderId} - {order.ProductName} x{order.Quantity}[/]"));
+                    "[yellow]⚠ No production machinery has been seeded in the factory layout yet.[/]\n"));
+                AnsiConsole.Write(new Markup("[grey]Press any key to go back...[/]"));
+                Console.ReadKey(true);
+                return;
+            }
 
-                // Iterate until order complete or machine trips
-                while (!order.IsComplete && selectedMachine.Status == MachineStatus.Running)
-                {
-                    // Instantiate a fresh product for each unit
-                    var produced = CreateProducedProduct(template);
+            var pendingOrders = GetPendingOrders(factory);
+            if (pendingOrders.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[yellow]No production orders are currently pending.[/]");
+                AnsiConsole.WriteLine("\nPress any key to return...");
+                Console.ReadKey(true);
+                return;
+            }
 
-                    // Request the machine to produce a unit
-                    selectedMachine.StartOrder(order);
-                    selectedMachine.Produce(produced);
+            var orderSelector = new SelectionPrompt<ProductionOrder>().Title("Select a pending order to process:")
+                .UseConverter(o =>
+                    $"{o.OrderId} - {o.ProductName} x{o.Quantity} ({o.CompletedCount}/{o.Quantity}) assigned to #{o.AssignedTechnicianId}");
+            foreach (var o in pendingOrders) orderSelector.AddChoice(o);
 
-                    // Only add to inventory if machine still running after produce
-                    if (selectedMachine.Status == MachineStatus.Running)
-                    {
-                        // Increment order counter centrally
-                        order.CompletedCount++;
-                        factory.AddProduct(produced, batch.BatchId);
-                        AnsiConsole.MarkupLine(
-                            $"[green]Produced 1 unit ({produced.Name}). Completed {order.CompletedCount}/{order.Quantity}[/]");
-                    }
-                    else
-                    {
-                        AnsiConsole.MarkupLine("[red]Machine tripped. Production paused.[/]");
-                        break;
-                    }
-                }
+            var order = AnsiConsole.Prompt(orderSelector);
 
-                AnsiConsole.MarkupLine(
-                    order.IsComplete
-                        ? $"[green]Batch complete. Created batch {batch.BatchId} with {batch.InventoryIndexes.Count} items.[/]"
-                        : $"[yellow]Order incomplete. Produced {order.CompletedCount}/{order.Quantity} so far.[/]");
+            if (!(loggedInUser is Technician) && order.AssignedTechnicianId != loggedInUser.Id)
+            {
+                AnsiConsole.MarkupLine("[red]Only the assigned technician can start this order.[/]");
+                AnsiConsole.WriteLine("\nPress any key to return...");
+                Console.ReadKey(true);
+                return;
+            }
 
+            if (order.ProductName == "Motherboard")
+            {
+                RunMotherboardWorkflow(factory, order);
                 AnsiConsole.WriteLine();
                 AnsiConsole.Write(new Markup("[grey]Press any key to return to production deck...[/]"));
                 Console.ReadKey(true);
+                return;
             }
+
+            Machine? selectedMachine = null;
+            for (var i = 0; i < factory.MachineCount; i++)
+            {
+                var mach = factory.Machines[i];
+                if (mach.SupportedProductType.Name.Contains(order.ProductName, StringComparison.OrdinalIgnoreCase))
+                {
+                    selectedMachine = mach;
+                    break;
+                }
+            }
+
+            if (selectedMachine == null)
+            {
+                var machineSelector = new SelectionPrompt<Machine>().Title("Select machine to use:");
+                for (var i = 0; i < factory.MachineCount; i++) machineSelector.AddChoice(factory.Machines[i]);
+                selectedMachine = AnsiConsole.Prompt(machineSelector);
+            }
+
+            if (selectedMachine.Status != MachineStatus.Running)
+            {
+                var bootChoice = AnsiConsole.Confirm($"Machine {selectedMachine.Name} is not running. Boot it?");
+                if (!bootChoice) return;
+                if (!selectedMachine.StartMachine()) return;
+            }
+
+            double unitCost = 0;
+            for (var i = 0; i < factory.ProductCount; i++)
+            {
+                var p = factory.Inventory[i];
+                if (p.Name != null && p.Name.Contains(order.ProductName, StringComparison.OrdinalIgnoreCase))
+                {
+                    unitCost = p.ProductionCost;
+                    break;
+                }
+            }
+
+            if (unitCost <= 0)
+                unitCost = order.ProductName == "Microprocessor" ? 50 : 20;
+
+            var template = CreateProductTemplate(order.ProductName, unitCost);
+
+            if (template == null)
+            {
+                AnsiConsole.MarkupLine("[red]Unknown product type for this order.[/]");
+                return;
+            }
+
+            var batch = StartProductionBatch(factory, order, unitCost);
+
+            AnsiConsole.Write(new Markup(
+                $"[cyan]Starting production for order {order.OrderId} - {order.ProductName} x{order.Quantity}[/]"));
+
+            while (!order.IsComplete && selectedMachine.Status == MachineStatus.Running)
+            {
+                var produced = CreateProducedProduct(template);
+
+                selectedMachine.StartOrder(order);
+                selectedMachine.Produce(produced);
+
+                if (selectedMachine.Status == MachineStatus.Running)
+                {
+                    var completedCount = CommitProducedUnit(factory, order, batch, produced);
+                    AnsiConsole.MarkupLine(
+                        $"[green]Produced 1 unit ({produced.Name}). Completed {completedCount}/{order.Quantity}[/]");
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine("[red]Machine tripped. Production paused.[/]");
+                    break;
+                }
+            }
+
+            AnsiConsole.MarkupLine(
+                order.IsComplete
+                    ? $"[green]Batch complete. Created batch {batch.BatchId} with {batch.InventoryIndexes.Count} items.[/]"
+                    : $"[yellow]Order incomplete. Produced {order.CompletedCount}/{order.Quantity} so far.[/]");
+
+            AnsiConsole.WriteLine();
+            AnsiConsole.Write(new Markup("[grey]Press any key to return to production deck...[/]"));
+            Console.ReadKey(true);
         }
 
         private static Product? CreateProductTemplate(string productName, double unitCost)
@@ -191,10 +159,7 @@ namespace Smart_Factory_Management_System
 
         private static void RunMotherboardWorkflow(Factory factory, ProductionOrder order)
         {
-            var batch = new ProductionBatch(order.ProductName, order.Quantity, 20);
-            factory.AddBatch(batch);
-
-            var motherboardTemplate = new Motherboard("Batch Motherboard", 20, 0, 1, "AM4", "ATX");
+            var batch = StartProductionBatch(factory, order, 20);
 
             var solderPrinter = FindMachine<SmtMachine>(factory);
             var pickAndPlace = FindMachine<PaPMachine>(factory);
@@ -210,39 +175,47 @@ namespace Smart_Factory_Management_System
             AnsiConsole.MarkupLine(
                 $"[cyan]Starting motherboard workflow for order {order.OrderId} - {order.ProductName} x{order.Quantity}[/]");
 
+            var motherboardTemplate = new Motherboard("Batch Motherboard", 20, 0, 1, "AM4", "ATX");
+
             while (!order.IsComplete)
             {
-                solderPrinter.StartOrder(order);
-                pickAndPlace.StartOrder(order);
-                reflowOven.StartOrder(order);
-
-                EnsureMachineReady(solderPrinter);
-                EnsureMachineReady(pickAndPlace);
-                EnsureMachineReady(reflowOven);
-
                 var board = (Motherboard)CreateProducedProduct(motherboardTemplate);
 
-                if (!solderPrinter.Produce(board))
+                if (!RunMotherboardStage(
+                        solderPrinter,
+                        order,
+                        board,
+                        "Solder Paste Printing",
+                        "Exposing board to solder paste mesh...",
+                        "Motherboard workflow stopped during solder paste printing."))
                 {
-                    AnsiConsole.MarkupLine("[red]Motherboard workflow stopped during solder paste printing.[/]");
                     break;
                 }
 
-                if (!pickAndPlace.Produce(board))
+                if (!RunMotherboardStage(
+                        pickAndPlace,
+                        order,
+                        board,
+                        "Pick and Place Assembly",
+                        "Aligning and mounting components...",
+                        "Motherboard workflow stopped during pick-and-place assembly."))
                 {
-                    AnsiConsole.MarkupLine("[red]Motherboard workflow stopped during pick-and-place assembly.[/]");
                     break;
                 }
 
-                if (!reflowOven.Produce(board))
+                if (!RunMotherboardStage(
+                        reflowOven,
+                        order,
+                        board,
+                        "Reflow Baking",
+                        "Heating solder joints to fuse the board...",
+                        "Motherboard workflow stopped during reflow baking."))
                 {
-                    AnsiConsole.MarkupLine("[red]Motherboard workflow stopped during reflow baking.[/]");
                     break;
                 }
 
-                order.CompletedCount++;
-                factory.AddProduct(board, batch.BatchId);
-                AnsiConsole.MarkupLine($"[green]Motherboard completed {order.CompletedCount}/{order.Quantity}.[/]");
+                var completedCount = CommitProducedUnit(factory, order, batch, board);
+                AnsiConsole.MarkupLine($"[green]Motherboard completed {completedCount}/{order.Quantity}.[/]");
             }
 
             if (order.IsComplete)
@@ -252,12 +225,72 @@ namespace Smart_Factory_Management_System
             }
         }
 
+        private static bool RunMotherboardStage(
+            Machine machine,
+            ProductionOrder order,
+            Motherboard board,
+            string stageName,
+            string spinnerText,
+            string failureMessage)
+        {
+            machine.StartOrder(order);
+            EnsureMachineReady(machine);
+
+            if (machine.Status != MachineStatus.Running)
+            {
+                AnsiConsole.MarkupLine($"[red]{failureMessage}[/]");
+                return false;
+            }
+
+            AnsiConsole.Write(new Rule($"[cyan]{stageName}[/]").Centered());
+            AnsiConsole.Status()
+                .Spinner(Spinner.Known.BouncingBar)
+                .SpinnerStyle(Style.Parse("cyan bold"))
+                .Start(spinnerText, _ => { Thread.Sleep(700); });
+
+            if (!machine.Produce(board))
+            {
+                AnsiConsole.MarkupLine($"[red]{failureMessage}[/]");
+                return false;
+            }
+
+            return true;
+        }
+
         private static void EnsureMachineReady(Machine machine)
         {
             if (machine.Status != MachineStatus.Running)
             {
                 machine.StartMachine();
             }
+        }
+
+        private static List<ProductionOrder> GetPendingOrders(Factory factory)
+        {
+            var pendingOrders = new List<ProductionOrder>();
+
+            for (var i = 0; i < factory.OrderCount; i++)
+            {
+                var order = factory.PendingOrders[i];
+                if (!order.IsComplete) pendingOrders.Add(order);
+            }
+
+            return pendingOrders;
+        }
+
+        private static ProductionBatch StartProductionBatch(Factory factory, ProductionOrder order, double unitCost)
+        {
+            var batch = new ProductionBatch(order.ProductName, order.Quantity, unitCost);
+            factory.AddBatch(batch);
+            return batch;
+        }
+
+        private static int CommitProducedUnit(Factory factory, ProductionOrder order, ProductionBatch batch,
+            Product produced)
+        {
+            order.CompletedCount++;
+            factory.AddProduct(produced, batch.BatchId);
+            return order.CompletedCount;
         }
 
         private static T? FindMachine<T>(Factory factory) where T : Machine

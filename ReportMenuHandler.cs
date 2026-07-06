@@ -14,14 +14,7 @@ namespace Smart_Factory_Management_System
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("Choose a report:")
-                        .AddChoices(new[]
-                        {
-                            "1. Production Summary",
-                            "2. Employee Report",
-                            "3. Batch Revenue Summary",
-                            "4. Order Backlog Summary",
-                            "5. Return to Main Menu"
-                        }));
+                        .AddChoices(MenuOptions.ReportMenu));
 
                 switch (choice)
                 {

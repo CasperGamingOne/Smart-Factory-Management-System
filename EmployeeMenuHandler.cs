@@ -24,7 +24,6 @@ namespace Smart_Factory_Management_System
                         break;
 
                     case "2. Add New Employee":
-                        // Restrict execution based on roles if your design calls for it
                         if (loggedInUser is not Director)
                         {
                             AnsiConsole.MarkupLine(
@@ -38,7 +37,7 @@ namespace Smart_Factory_Management_System
                         break;
 
                     case "3. Return to Main Menu":
-                        inRoom = false; // Collapses this room's context frame naturally
+                        inRoom = false;
                         break;
                 }
 
@@ -58,7 +57,6 @@ namespace Smart_Factory_Management_System
             table.AddColumn("[yellow]Assigned Role[/]");
             table.AddColumn("[yellow]Activity[/]");
 
-            // Safely loop up to employeeCount to prevent NullReferenceExceptions
             for (int i = 0; i < factory.EmployeeCount; i++)
             {
                 table.AddRow(
@@ -76,7 +74,6 @@ namespace Smart_Factory_Management_System
         {
             string name = AnsiConsole.Ask<string>("Enter Employee Full Name:");
 
-            // Assuming standard system roles
             var role = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("Select Job Title:")
@@ -97,8 +94,6 @@ namespace Smart_Factory_Management_System
                     AnsiConsole.MarkupLine("[red]❌ Invalid role selection. Operation aborted.[/]");
                     return;
             }
-
-            // Add back into your underlying factory system safely
 
             AnsiConsole.MarkupLine($"[green]✔ Employee '{name}' registered successfully![/]");
         }

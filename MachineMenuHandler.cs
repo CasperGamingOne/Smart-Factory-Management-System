@@ -24,7 +24,6 @@ namespace Smart_Factory_Management_System
                         break;
 
                     case "2. Run Deep Component Inspection":
-                        // Restrict execution based on roles if your design calls for it
                         if (loggedInUser is not Technician)
                             AnsiConsole.MarkupLine(
                                 $"[red]❌ Access Denied: {loggedInUser.Role} cannot perform this action.[/]");
@@ -33,7 +32,6 @@ namespace Smart_Factory_Management_System
                         break;
 
                     case "3. Fulfill Pending Orders":
-                        // Allow technicians to fulfill orders from within the machine menu
                         ProductionMenuHandler.Run(factory, loggedInUser);
                         break;
                     case "4. Return to Main Menu":
@@ -75,11 +73,9 @@ namespace Smart_Factory_Management_System
                 return;
             }
 
-            // Let the user choose exactly which machine they wish to audit
             var selector = new SelectionPrompt<Machine>()
                 .Title("Select a machine to manage:")
                 .PageSize(10)
-                // This converts the machine object into the display string
                 .UseConverter(m =>
                 {
                     string statusColor = m.Condition == MachineCondition.Critical ? "red" : "green";
@@ -94,9 +90,18 @@ namespace Smart_Factory_Management_System
 
             AnsiConsole.MarkupLine($"\n[bold underline]Auditing Component Stack for: {chosenMachine.Name}[/]");
 
-            // Polymorphically prints component logs cleanly via composition arrays
-            // based on our electronic factory design specs
             chosenMachine.InspectMachine();
+
+            if (chosenMachine.NeedsRepair())
+            {
+                AnsiConsole.MarkupLine("[yellow]This machine has parts that are not in excellent condition.[/]");
+
+                if (AnsiConsole.Confirm("Repair this machine now?")) chosenMachine.RepairMachine();
+            }
+            else
+            {
+                AnsiConsole.MarkupLine("[green]This machine does not currently need repairs.[/]");
+            }
         }
     }
 }
