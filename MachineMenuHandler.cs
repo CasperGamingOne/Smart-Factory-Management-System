@@ -1,5 +1,4 @@
 ﻿using Spectre.Console;
-using System.Security.Principal;
 
 namespace Smart_Factory_Management_System
 {
@@ -26,8 +25,9 @@ namespace Smart_Factory_Management_System
 
                     case "2. Run Deep Component Inspection":
                         // Restrict execution based on roles if your design calls for it
-                        if (loggedInUser is not Technician)  /// better handling for role check
-                            AnsiConsole.MarkupLine($"[red]❌ Access Denied: {loggedInUser.Role} cannot perform this action.[/]");
+                        if (loggedInUser is not Technician)
+                            AnsiConsole.MarkupLine(
+                                $"[red]❌ Access Denied: {loggedInUser.Role} cannot perform this action.[/]");
                         else
                             RunInspection(factory);
                         break;
@@ -57,14 +57,13 @@ namespace Smart_Factory_Management_System
             table.AddColumn("[cyan]Operational Status[/]");
             table.AddColumn("[cyan]Structural Condition[/]");
 
-                for (int i = 0; i < factory.MachineCount; i++)
-                {
-                    var mach = factory.Machines[i];
-                    if (mach != null)
-                    {
-                        table.AddRow(mach.Name ?? "-", mach.Manufacturer ?? "-", mach.Status.ToString(), mach.Condition.ToString());
-                    }
-                }
+            for (var i = 0; i < factory.MachineCount; i++)
+            {
+                var mach = factory.Machines[i];
+                table.AddRow(mach.Name ?? "-", mach.Manufacturer ?? "-", mach.Status.ToString(),
+                    mach.Condition.ToString());
+            }
+
             AnsiConsole.Write(table);
         }
 

@@ -27,12 +27,14 @@ namespace Smart_Factory_Management_System
                         // Restrict execution based on roles if your design calls for it
                         if (loggedInUser is not Director)
                         {
-                            AnsiConsole.MarkupLine($"[red]❌ Access Denied: {loggedInUser.Role} cannot perform this action.[/]");
+                            AnsiConsole.MarkupLine(
+                                $"[red]❌ Access Denied: {loggedInUser.Role} cannot perform this action.[/]");
                         }
                         else
                         {
                             AddNewEmployeeFlow(factory);
                         }
+
                         break;
 
                     case "3. Return to Main Menu":
@@ -59,15 +61,12 @@ namespace Smart_Factory_Management_System
             // Safely loop up to employeeCount to prevent NullReferenceExceptions
             for (int i = 0; i < factory.EmployeeCount; i++)
             {
-                if (factory.Employees[i] != null)
-                {
-                    table.AddRow(
-                        factory.Employees[i].Id.ToString(),
-                        factory.Employees[i].Name ?? "-",
-                        factory.Employees[i].Role.ToString(),
-                        factory.Employees[i].AfiseazaActivitate()
-                    );
-                }
+                table.AddRow(
+                    factory.Employees[i].Id.ToString(),
+                    factory.Employees[i].Name,
+                    factory.Employees[i].Role,
+                    factory.Employees[i].AfiseazaActivitate()
+                );
             }
 
             AnsiConsole.Write(table);
@@ -83,7 +82,7 @@ namespace Smart_Factory_Management_System
                     .Title("Select Job Title:")
                     .AddChoices(MenuOptions.EmployeeRoles));
 
-            switch(role)
+            switch (role)
             {
                 case "Technician":
                     factory.AddEmployee(new Technician(name));
@@ -100,7 +99,7 @@ namespace Smart_Factory_Management_System
             }
 
             // Add back into your underlying factory system safely
-            
+
             AnsiConsole.MarkupLine($"[green]✔ Employee '{name}' registered successfully![/]");
         }
     }

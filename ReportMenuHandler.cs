@@ -60,10 +60,7 @@ namespace Smart_Factory_Management_System
             for (int i = 0; i < factory.ProductCount; i++)
             {
                 var product = factory.Inventory[i];
-                if (product != null)
-                {
-                    inventoryValue += product.SellingPrice * product.Quantity;
-                }
+                inventoryValue += product.SellingPrice * product.Quantity;
             }
 
             var grid = new Grid().AddColumns(2);
@@ -105,10 +102,6 @@ namespace Smart_Factory_Management_System
             for (int i = 0; i < factory.BatchCount; i++)
             {
                 var batch = factory.Batches[i];
-                if (batch == null)
-                {
-                    continue;
-                }
 
                 totalCost += batch.TotalCost;
                 if (batch.UnitSellPrice.HasValue)
@@ -157,10 +150,6 @@ namespace Smart_Factory_Management_System
             for (int i = 0; i < factory.OrderCount; i++)
             {
                 var order = factory.PendingOrders[i];
-                if (order == null)
-                {
-                    continue;
-                }
 
                 table.AddRow(
                     order.OrderId,
@@ -183,10 +172,7 @@ namespace Smart_Factory_Management_System
             for (int i = 0; i < factory.ProductCount; i++)
             {
                 var product = factory.Inventory[i];
-                if (product != null)
-                {
-                    totalUnits += product.Quantity;
-                }
+                totalUnits += product.Quantity;
             }
 
             return totalUnits;

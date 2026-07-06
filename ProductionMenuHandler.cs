@@ -1,5 +1,4 @@
 ﻿using Spectre.Console;
-using System;
 
 namespace Smart_Factory_Management_System
 {
@@ -16,7 +15,8 @@ namespace Smart_Factory_Management_System
                 // 1. Safeguard: Ensure there are machines registered in the factory database
                 if (factory.MachineCount == 0)
                 {
-                    AnsiConsole.Write(new Markup("[yellow]⚠ No production machinery has been seeded in the factory layout yet.[/]\n"));
+                    AnsiConsole.Write(new Markup(
+                        "[yellow]⚠ No production machinery has been seeded in the factory layout yet.[/]\n"));
                     AnsiConsole.Write(new Markup("[grey]Press any key to go back...[/]"));
                     Console.ReadKey(true);
                     return;
@@ -27,7 +27,7 @@ namespace Smart_Factory_Management_System
                     .Title("Choose production action:")
                     .AddChoices(MenuOptions.ProductionActions));
 
-                if (action != null && (action.StartsWith("2") || action.Contains("Return", StringComparison.OrdinalIgnoreCase)))
+                if (action.StartsWith("2") || action.Contains("Return", StringComparison.OrdinalIgnoreCase))
                     return;
 
                 // Show pending orders
@@ -40,11 +40,12 @@ namespace Smart_Factory_Management_System
                 }
 
                 var orderSelector = new SelectionPrompt<ProductionOrder>().Title("Select a pending order to process:")
-                    .UseConverter(o => $"{o.OrderId} - {o.ProductName} x{o.Quantity} ({o.CompletedCount}/{o.Quantity}) assigned to #{o.AssignedTechnicianId}");
+                    .UseConverter(o =>
+                        $"{o.OrderId} - {o.ProductName} x{o.Quantity} ({o.CompletedCount}/{o.Quantity}) assigned to #{o.AssignedTechnicianId}");
                 for (int i = 0; i < factory.OrderCount; i++)
                 {
                     var o = factory.PendingOrders[i];
-                    if (o != null && !o.IsComplete)
+                    if (!o.IsComplete)
                         orderSelector.AddChoice(o);
                 }
 
@@ -73,7 +74,7 @@ namespace Smart_Factory_Management_System
                 for (int i = 0; i < factory.MachineCount; i++)
                 {
                     var mach = factory.Machines[i];
-                    if (mach != null && mach.SupportedProductType.Name.Contains(order.ProductName, StringComparison.OrdinalIgnoreCase))
+                    if (mach.SupportedProductType.Name.Contains(order.ProductName, StringComparison.OrdinalIgnoreCase))
                     {
                         selectedMachine = mach;
                         break;
@@ -101,7 +102,7 @@ namespace Smart_Factory_Management_System
                 for (int i = 0; i < factory.ProductCount; i++)
                 {
                     var p = factory.Inventory[i];
-                    if (p != null && p.Name != null && p.Name.Contains(order.ProductName, StringComparison.OrdinalIgnoreCase))
+                    if (p.Name != null && p.Name.Contains(order.ProductName, StringComparison.OrdinalIgnoreCase))
                     {
                         unitCost = p.ProductionCost;
                         break;
@@ -125,7 +126,8 @@ namespace Smart_Factory_Management_System
                 var batch = new ProductionBatch(order.ProductName, order.Quantity, unitCost);
                 factory.AddBatch(batch);
 
-                AnsiConsole.Write(new Markup($"[cyan]Starting production for order {order.OrderId} - {order.ProductName} x{order.Quantity}[/]"));
+                AnsiConsole.Write(new Markup(
+                    $"[cyan]Starting production for order {order.OrderId} - {order.ProductName} x{order.Quantity}[/]"));
 
                 // Iterate until order complete or machine trips
                 while (!order.IsComplete && selectedMachine.Status == MachineStatus.Running)
@@ -143,7 +145,8 @@ namespace Smart_Factory_Management_System
                         // Increment order counter centrally
                         order.CompletedCount++;
                         factory.AddProduct(produced, batch.BatchId);
-                        AnsiConsole.MarkupLine($"[green]Produced 1 unit ({produced.Name}). Completed {order.CompletedCount}/{order.Quantity}[/]");
+                        AnsiConsole.MarkupLine(
+                            $"[green]Produced 1 unit ({produced.Name}). Completed {order.CompletedCount}/{order.Quantity}[/]");
                     }
                     else
                     {
@@ -154,11 +157,13 @@ namespace Smart_Factory_Management_System
 
                 if (order.IsComplete)
                 {
-                    AnsiConsole.MarkupLine($"[green]Batch complete. Created batch {batch.BatchId} with {batch.InventoryIndexes.Count} items.[/]");
+                    AnsiConsole.MarkupLine(
+                        $"[green]Batch complete. Created batch {batch.BatchId} with {batch.InventoryIndexes.Count} items.[/]");
                 }
                 else
                 {
-                    AnsiConsole.MarkupLine($"[yellow]Order incomplete. Produced {order.CompletedCount}/{order.Quantity} so far.[/]");
+                    AnsiConsole.MarkupLine(
+                        $"[yellow]Order incomplete. Produced {order.CompletedCount}/{order.Quantity} so far.[/]");
                 }
 
                 AnsiConsole.WriteLine();
@@ -181,8 +186,11 @@ namespace Smart_Factory_Management_System
         {
             return template switch
             {
-                Microprocessor microprocessor => new Microprocessor(microprocessor.Name ?? "Batch Microprocessor", microprocessor.ProductionCost, 0, 1, microprocessor.Cores ?? 1, microprocessor.ClockSpeed),
-                Motherboard motherboard => new Motherboard(motherboard.Name ?? "Batch Motherboard", motherboard.ProductionCost, 0, 1, motherboard.SocketStandard ?? "-", motherboard.PhysicalForm ?? "-"),
+                Microprocessor microprocessor => new Microprocessor(microprocessor.Name ?? "Batch Microprocessor",
+                    microprocessor.ProductionCost, 0, 1, microprocessor.Cores ?? 1, microprocessor.ClockSpeed),
+                Motherboard motherboard => new Motherboard(motherboard.Name ?? "Batch Motherboard",
+                    motherboard.ProductionCost, 0, 1, motherboard.SocketStandard ?? "-",
+                    motherboard.PhysicalForm ?? "-"),
                 _ => template
             };
         }
@@ -200,11 +208,13 @@ namespace Smart_Factory_Management_System
 
             if (solderPrinter == null || pickAndPlace == null || reflowOven == null)
             {
-                AnsiConsole.MarkupLine("[red]Motherboard workflow requires SMT, Pick-and-Place, and Reflow machines to be registered.[/]");
+                AnsiConsole.MarkupLine(
+                    "[red]Motherboard workflow requires SMT, Pick-and-Place, and Reflow machines to be registered.[/]");
                 return;
             }
 
-            AnsiConsole.MarkupLine($"[cyan]Starting motherboard workflow for order {order.OrderId} - {order.ProductName} x{order.Quantity}[/]");
+            AnsiConsole.MarkupLine(
+                $"[cyan]Starting motherboard workflow for order {order.OrderId} - {order.ProductName} x{order.Quantity}[/]");
 
             while (!order.IsComplete)
             {
@@ -243,7 +253,8 @@ namespace Smart_Factory_Management_System
 
             if (order.IsComplete)
             {
-                AnsiConsole.MarkupLine($"[green]Batch complete. Created batch {batch.BatchId} with {batch.InventoryIndexes.Count} items.[/]");
+                AnsiConsole.MarkupLine(
+                    $"[green]Batch complete. Created batch {batch.BatchId} with {batch.InventoryIndexes.Count} items.[/]");
             }
         }
 

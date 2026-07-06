@@ -92,17 +92,14 @@ namespace Smart_Factory_Management_System
             for (int i = 0; i < factory.MachineCount; i++)
             {
                 var machine = factory.Machines[i];
-                if (machine != null)
-                {
-                    table.AddRow(
-                        machine.Id.ToString(),
-                        machine.Name ?? "-",
-                        machine.Manufacturer ?? "-",
-                        machine.Condition.ToString(),
-                        machine.Status.ToString(),
-                        ((int)machine.GetMachineAge().TotalDays).ToString()
-                    );
-                }
+                table.AddRow(
+                    machine.Id.ToString(),
+                    machine.Name ?? "-",
+                    machine.Manufacturer ?? "-",
+                    machine.Condition.ToString(),
+                    machine.Status.ToString(),
+                    ((int)machine.GetMachineAge().TotalDays).ToString()
+                );
             }
 
             AnsiConsole.Write(table);
@@ -134,7 +131,6 @@ namespace Smart_Factory_Management_System
             for (int i = 0; i < factory.ProductCount; i++)
             {
                 var product = factory.Inventory[i];
-                if (product != null)
                 {
                     double itemValue = product.SellingPrice * product.Quantity;
                     totalValue += itemValue;

@@ -2,13 +2,40 @@
 
 namespace Smart_Factory_Management_System
 {
-    public enum MachineStatus { Running, Stopped, Maintenance }
+    public enum MachineStatus
+    {
+        Running,
+        Stopped,
+        Maintenance
+    }
 
-    public enum MachineCondition { Excellent, Good, Critical }
+    public enum MachineCondition
+    {
+        Excellent,
+        Good,
+        Critical
+    }
 
     internal abstract class Machine
     {
         private static int idCounter = 0;
+
+        private static readonly Random _random = new();
+
+        public Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts,
+            MachineCondition condition)
+        {
+            idCounter++;
+            Id = idCounter;
+            Name = machine_name;
+            Manufacturer = machine_manufacturer;
+            SerialNumber = machine_serial;
+            InstallationDate = DateTime.Now.AddYears(-7);
+            Parts = parts;
+            Condition = condition;
+            SupportedProductType =
+                typeof(Product); // Default to base Product type; override in derived classes as needed
+        }
 
         public int Id { get; private protected set; }
 
@@ -30,21 +57,6 @@ namespace Smart_Factory_Management_System
 
         public ProductionOrder? ActiveOrder { get; private protected set; }
 
-        public Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
-        {
-            idCounter++;
-            Id = idCounter;
-            Name = machine_name;
-            Manufacturer = machine_manufacturer;
-            SerialNumber = machine_serial;
-            InstallationDate = DateTime.Now.AddYears(-7);
-            Parts = parts;
-            Condition = condition;
-            SupportedProductType = typeof(Product); // Default to base Product type; override in derived classes as needed
-        }
-
-        private static readonly Random _random = new Random();
-
         public TimeSpan GetMachineAge()
         {
             return TimeSpan.FromDays((DateTime.Now - InstallationDate).TotalDays);
@@ -55,6 +67,7 @@ namespace Smart_Factory_Management_System
             ActiveOrder = order;
             Status = MachineStatus.Running;
         }
+
         public bool StartMachine()
         {
             AnsiConsole.Clear();
@@ -72,16 +85,17 @@ namespace Smart_Factory_Management_System
                 });
 
             // Null-checked safety verification over the array loop
-            foreach (var part in Parts ?? System.Array.Empty<MachinePart>())
+            foreach (var part in Parts ?? Array.Empty<MachinePart>())
             {
-                if (part != null && part.Condition == PartCondition.Critical)
+                if (part.Condition == PartCondition.Critical)
                 {
                     Status = MachineStatus.Stopped;
                     Condition = MachineCondition.Critical;
 
                     var errorPanel = new Panel(
-                        new Markup($"[red]❌ [bold]CRITICAL INITIALIZATION ERROR:[/] Component [underline]{part.Name}[/] has suffered a complete breakdown!\n" +
-                                   $"[grey]Action Required:[/] Dispatch an authorized engineer to run maintenance protocols.[/]")
+                        new Markup(
+                            $"[red]❌ [bold]CRITICAL INITIALIZATION ERROR:[/] Component [underline]{part.Name}[/] has suffered a complete breakdown!\n" +
+                            $"[grey]Action Required:[/] Dispatch an authorized engineer to run maintenance protocols.[/]")
                     )
                     {
                         Border = BoxBorder.Rounded,
@@ -97,7 +111,8 @@ namespace Smart_Factory_Management_System
             Status = MachineStatus.Running;
 
             var successPanel = new Panel(
-                new Markup($"[green]✔ [bold]ONLINE:[/] {Name} is fully calibrated and processing manufacturing lines.[/]")
+                new Markup(
+                    $"[green]✔ [bold]ONLINE:[/] {Name} is fully calibrated and processing manufacturing lines.[/]")
             )
             {
                 Border = BoxBorder.Rounded,
@@ -118,7 +133,8 @@ namespace Smart_Factory_Management_System
             if (Status == MachineStatus.Stopped)
             {
                 var alreadyStoppedPanel = new Panel(
-                    new Markup($"[yellow]⚠ [bold]SYSTEM IDLE:[/] [underline]{Name}[/] is already stopped and sitting securely in standby mode.[/]")
+                    new Markup(
+                        $"[yellow]⚠ [bold]SYSTEM IDLE:[/] [underline]{Name}[/] is already stopped and sitting securely in standby mode.[/]")
                 )
                 {
                     Border = BoxBorder.Rounded,
@@ -161,9 +177,9 @@ namespace Smart_Factory_Management_System
         {
             // 1. Filter instantiated parts into a clean tracking bucket
             int activePartsCount = 0;
-            foreach (var part in Parts ?? System.Array.Empty<MachinePart>())
+            foreach (var part in Parts ?? Array.Empty<MachinePart>())
             {
-                if (part != null) activePartsCount++;
+                activePartsCount++;
             }
 
             if (activePartsCount == 0) return;
@@ -173,17 +189,15 @@ namespace Smart_Factory_Management_System
             int currentStep = 0;
             MachinePart? selectedPart = null;
 
-            foreach (var part in Parts ?? System.Array.Empty<MachinePart>())
+            foreach (var part in Parts ?? Array.Empty<MachinePart>())
             {
-                if (part != null)
+                if (currentStep == randomIndex)
                 {
-                    if (currentStep == randomIndex)
-                    {
-                        selectedPart = part;
-                        break;
-                    }
-                    currentStep++;
+                    selectedPart = part;
+                    break;
                 }
+
+                currentStep++;
             }
 
             if (selectedPart == null) return;
@@ -199,13 +213,15 @@ namespace Smart_Factory_Management_System
                     AnsiConsole.WriteLine();
                     if (selectedPart.Condition == PartCondition.Critical)
                     {
-                        AnsiConsole.Write(new Markup($"[red bold]⚡ALERT:[/] [underline]{selectedPart.Name}[/] has suffered a total breakdown! Machine safety override has been tripped!\n"));
+                        AnsiConsole.Write(new Markup(
+                            $"[red bold]⚡ALERT:[/] [underline]{selectedPart.Name}[/] has suffered a total breakdown! Machine safety override has been tripped!\n"));
                         Status = MachineStatus.Stopped;
                         Condition = MachineCondition.Critical;
                     }
                     else
                     {
-                        AnsiConsole.Write(new Markup($"[yellow]⚠ SYSTEM NOTICE:[/] [underline]{selectedPart.Name}[/] showing performance degradation (Moved to {selectedPart.Condition} condition).\n"));
+                        AnsiConsole.Write(new Markup(
+                            $"[yellow]⚠ SYSTEM NOTICE:[/] [underline]{selectedPart.Name}[/] showing performance degradation (Moved to {selectedPart.Condition} condition).\n"));
                         Condition = MachineCondition.Good;
                     }
                 }
@@ -230,10 +246,15 @@ namespace Smart_Factory_Management_System
             profileTable.AddRow("Factory Serial Reference", SerialNumber ?? "-");
             profileTable.AddRow("Asset Total Life Age", $"{GetMachineAge()} Years Old");
 
-            string statusColor = Status == MachineStatus.Running ? "green" : (Status == MachineStatus.Stopped ? "yellow" : "orange3");
+            var statusColor = Status == MachineStatus.Running
+                ? "green"
+                : Status == MachineStatus.Stopped
+                    ? "yellow"
+                    : "orange3";
             profileTable.AddRow("Current Asset State", $"[{statusColor} bold]{Status.ToString().ToUpper()}[/]");
 
-            AnsiConsole.Write(new Panel(profileTable) { Header = new PanelHeader("[bold cyan] Asset Identity Profile [/]"), Border = BoxBorder.Rounded });
+            AnsiConsole.Write(new Panel(profileTable)
+                { Header = new PanelHeader("[bold cyan] Asset Identity Profile [/]"), Border = BoxBorder.Rounded });
             AnsiConsole.WriteLine();
 
             // 2. Component Health Table
@@ -242,10 +263,8 @@ namespace Smart_Factory_Management_System
             componentTable.AddColumn(new TableColumn("[bold]Health Status[/]").Centered());
             componentTable.AddColumn("[bold]Technical Specifications & Diagnostics[/]");
 
-                    foreach (var part in Parts ?? System.Array.Empty<MachinePart>())
+            foreach (var part in Parts ?? Array.Empty<MachinePart>())
             {
-                if (part == null) continue;
-
                 var p = part;
 
                 var condVal = p.Condition.GetValueOrDefault();
@@ -261,7 +280,7 @@ namespace Smart_Factory_Management_System
                 componentTable.AddRow(
                     p.Name ?? "-",
                     $"[{partColor}]{(p.Condition?.ToString().ToUpper() ?? "UNKNOWN")}[/]",
-                    p.PrintPartInfo() ?? "-"
+                    p.PrintPartInfo()
                 );
             }
 
@@ -269,7 +288,8 @@ namespace Smart_Factory_Management_System
             AnsiConsole.WriteLine();
         }
 
-        protected static bool TryProcessMotherboard(Product product, BoardState requiredInputState, BoardState nextState, string stageName)
+        protected static bool TryProcessMotherboard(Product product, BoardState requiredInputState,
+            BoardState nextState, string stageName)
         {
             if (product is not Motherboard board)
             {
@@ -279,7 +299,8 @@ namespace Smart_Factory_Management_System
 
             if (board.CurrentState != requiredInputState)
             {
-                Console.WriteLine($"[yellow]Warning: {board.Name} is not in the expected {requiredInputState} state for {stageName}.[/]");
+                Console.WriteLine(
+                    $"[yellow]Warning: {board.Name} is not in the expected {requiredInputState} state for {stageName}.[/]");
                 return false;
             }
 
@@ -288,12 +309,13 @@ namespace Smart_Factory_Management_System
             return true;
         }
 
-        public abstract bool Produce(Product product);       
+        public abstract bool Produce(Product product);
     }
 
     internal class Litography_Machine : Machine
     {
-        public Litography_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
+        public Litography_Machine(string machine_name, string machine_manufacturer, string machine_serial,
+            MachinePart[] parts, MachineCondition condition)
             : base(machine_name, machine_manufacturer, machine_serial, parts, condition)
         {
             SupportedProductType = typeof(Microprocessor);
@@ -312,32 +334,33 @@ namespace Smart_Factory_Management_System
             {
                 throw new InvalidOperationException($"This machine only produces {SupportedProductType.Name}!");
             }
+
             // Block production if machine is stopped or broken
             if (Status != MachineStatus.Running)
             {
-                AnsiConsole.Write(new Markup($"[red]❌ Cannot produce {blueprint.Name}. Machine is offline. Please boot or repair it first.[/]\n"));
+                AnsiConsole.Write(new Markup(
+                    $"[red]❌ Cannot produce {blueprint.Name}. Machine is offline. Please boot or repair it first.[/]\n"));
                 return false;
             }
 
-            AnsiConsole.Write(new Markup($"[cyan]🏭 Starting processing sequence for: [underline]{blueprint.Name}[/][/]\n"));
+            AnsiConsole.Write(
+                new Markup($"[cyan]🏭 Starting processing sequence for: [underline]{blueprint.Name}[/][/]\n"));
 
             // Output progress bar or loading spinner
             AnsiConsole.Status()
                 .Spinner(Spinner.Known.BouncingBar)
                 .SpinnerStyle(Style.Parse("cyan bold"))
-                .Start("Exposing wafer structure using optical masks...", ctx =>
-                {
-                    Thread.Sleep(800);
-                });
+                .Start("Exposing wafer structure using optical masks...", ctx => { Thread.Sleep(800); });
             // Triggers completely random simulation tracking chance for part failure
             ApplyProductionWearAndTear();
             return true;
         }
     }
 
-    internal class SMT_Machine : Machine  // Solder Paste Printer
+    internal class SMT_Machine : Machine // Solder Paste Printer
     {
-        public SMT_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
+        public SMT_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts,
+            MachineCondition condition)
             : base(machine_name, machine_manufacturer, machine_serial, parts, condition)
         {
             SupportedProductType = typeof(Motherboard);
@@ -345,31 +368,38 @@ namespace Smart_Factory_Management_System
 
         public override bool Produce(Product product)
         {
-            return TryProcessMotherboard(product, BoardState.BlankBoard, BoardState.SolderPrinted, "Solder Paste Printing");
+            return TryProcessMotherboard(product, BoardState.BlankBoard, BoardState.SolderPrinted,
+                "Solder Paste Printing");
         }
     }
 
-    internal class PaP_Machine : Machine  // Pick and Place
+    internal class PaP_Machine : Machine // Pick and Place
     {
-        public PaP_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
+        public PaP_Machine(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts,
+            MachineCondition condition)
             : base(machine_name, machine_manufacturer, machine_serial, parts, condition)
         {
         }
+
         public override bool Produce(Product product)
         {
-            return TryProcessMotherboard(product, BoardState.SolderPrinted, BoardState.ComponentsPlaced, "Pick and Place Assembly");
+            return TryProcessMotherboard(product, BoardState.SolderPrinted, BoardState.ComponentsPlaced,
+                "Pick and Place Assembly");
         }
     }
 
     internal class Reflow_Oven : Machine
     {
-        public Reflow_Oven(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts, MachineCondition condition)
+        public Reflow_Oven(string machine_name, string machine_manufacturer, string machine_serial, MachinePart[] parts,
+            MachineCondition condition)
             : base(machine_name, machine_manufacturer, machine_serial, parts, condition)
         {
         }
+
         public override bool Produce(Product product)
         {
-            return TryProcessMotherboard(product, BoardState.ComponentsPlaced, BoardState.BakedAndSoldered, "Reflow Baking");
+            return TryProcessMotherboard(product, BoardState.ComponentsPlaced, BoardState.BakedAndSoldered,
+                "Reflow Baking");
         }
     }
 }
