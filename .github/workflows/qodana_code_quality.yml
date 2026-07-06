@@ -37,6 +37,3 @@ jobs:
           upload-result: false
           # quick-fixes available in Ultimate and Ultimate Plus plans
           push-fixes: 'none'
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: ${{ runner.temp }}/qodana/results/qodana.sarif.json
