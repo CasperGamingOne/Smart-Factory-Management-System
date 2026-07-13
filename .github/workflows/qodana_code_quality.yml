@@ -30,6 +30,8 @@ jobs:
         with:
           args: |
             --linter qodana-cdnet
+            --solution Smart-Factory-Management-System.slnx
+          solution: 
           # When pr-mode is set to true, Qodana analyzes only the files that have been changed
           pr-mode: false
           use-caches: true
