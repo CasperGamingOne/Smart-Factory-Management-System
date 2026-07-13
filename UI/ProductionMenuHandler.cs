@@ -35,7 +35,7 @@ internal static class ProductionMenuHandler
 
         var order = AnsiConsole.Prompt(orderSelector);
 
-        if (!(loggedInUser is Technician) && order.AssignedTechnicianId != loggedInUser.Id)
+        if (!(loggedInUser is Technician) || order.AssignedTechnicianId != loggedInUser.Id)
         {
             AnsiConsole.MarkupLine("[red]Only the assigned technician can start this order.[/]");
             AnsiConsole.WriteLine("\nPress any key to return...");
