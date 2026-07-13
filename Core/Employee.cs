@@ -2,22 +2,24 @@
 
 public abstract class Employee
 {
-    private static int idCounter;
+    private static int _idCounter;
 
 
     protected Employee(string name)
     {
-        idCounter++;
-        Id = idCounter;
+        _idCounter++;
+        Id = _idCounter;
         Name = name;
         Role = "Auxiliary";
     }
 
     public int Id { get; private set; }
     public string Name { get; set; }
-    public string Role { get; protected set; }
+    public string Role { get; protected init; }
+    public abstract string QuickActionName { get; }
 
-    public abstract string AfiseazaActivitate();
+    public abstract string ShowActivity();
+    public abstract List<string> GetAvailableMenuOptions();
 }
 
 public class Director : Employee
@@ -27,9 +29,22 @@ public class Director : Employee
         Role = "Director";
     }
 
-    public override string AfiseazaActivitate()
+    public override string QuickActionName => "Quick Actions";
+
+    public override string ShowActivity()
     {
         return "The Director " + Name + " verifies employees and has access to all reports.";
+    }
+
+    public override List<string> GetAvailableMenuOptions()
+    {
+        return
+        [
+            "Quick Actions",
+            "Employee Management",
+            "Reports",
+            "Log Out / Exit Session"
+        ];
     }
 }
 
@@ -37,12 +52,26 @@ public class Technician : Employee
 {
     public Technician(string name) : base(name)
     {
-        Role = "Tehnician";
+        Role = "Technician";
     }
 
-    public override string AfiseazaActivitate()
+    public override string QuickActionName => "Quick Actions";
+
+    public override string ShowActivity()
     {
         return "Technician " + Name + " supervises equipment and repairs defective parts.";
+    }
+
+    public override List<string> GetAvailableMenuOptions()
+    {
+        return
+        [
+            "Quick Actions",
+            "Machine Management",
+            "Reports",
+            "Factory Information",
+            "Log Out / Exit Session"
+        ];
     }
 }
 
@@ -50,12 +79,24 @@ public class SalesAgent : Employee
 {
     public SalesAgent(string name) : base(name)
     {
-        Role = "Agent Vanzari";
+        Role = "Sales Agent";
     }
 
-    public override string AfiseazaActivitate()
+    public override string QuickActionName => "Quick Actions";
+
+    public override string ShowActivity()
     {
         return "Sales Agent " + Name + " places orders, sets prices, and tracks sales.";
+    }
+
+    public override List<string> GetAvailableMenuOptions()
+    {
+        return
+        [
+            "Quick Actions",
+            "Product Management",
+            "Log Out / Exit Session"
+        ];
     }
 }
 
@@ -63,11 +104,23 @@ public class Accountant : Employee
 {
     public Accountant(string name) : base(name)
     {
-        Role = "Contabil";
+        Role = "Accountant";
     }
 
-    public override string AfiseazaActivitate()
+    public override string QuickActionName => "N/A";
+
+    public override string ShowActivity()
     {
         return "Accountant " + Name + " takes care of any type of reports and financial statements.";
+    }
+
+    public override List<string> GetAvailableMenuOptions()
+    {
+        return
+        [
+            "Accounting",
+            "Reports",
+            "Log Out / Exit Session"
+        ];
     }
 }

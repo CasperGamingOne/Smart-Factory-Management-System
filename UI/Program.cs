@@ -31,95 +31,62 @@ internal class Program
             while (sessionActive)
             {
                 // Render header and session info
-                TUIHelper.RenderSessionHeader(loggedInUser, factory);
+                TuiHelper.RenderSessionHeader(loggedInUser, factory);
 
                 // Build role-filtered main menu
-                var available = GetAvailableMainMenu(loggedInUser);
+                var available = loggedInUser.GetAvailableMenuOptions();
+                var indexedAvailable = available.Select((item, index) => $"{index + 1}. {item}").ToList();
 
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
                         .Title("[yellow]Select an operational module:[/]")
                         .PageSize(10)
-                        .AddChoices(available));
+                        .AddChoices(indexedAvailable));
 
-                switch (choice)
+                var option = choice.Split(". ", 2)[1];
+
+                if (option == loggedInUser.QuickActionName)
                 {
-                    case "1. Quick Actions":
-                        if (loggedInUser is Director) EmployeeMenuHandler.Run(factory, loggedInUser);
-                        else if (loggedInUser is Technician) MachineMenuHandler.Run(factory, loggedInUser);
-                        else if (loggedInUser is SalesAgent) SalesMenuHandler.Run(factory, loggedInUser);
-                        else if (loggedInUser is Accountant) AccountingMenuHandler.Run(factory, loggedInUser);
-                        break;
-                    case "2. Employee Management":
-                        EmployeeMenuHandler.Run(factory, loggedInUser);
-                        break;
-                    case "3. Machine Management":
-                        MachineMenuHandler.Run(factory, loggedInUser);
-                        break;
-                    case "4. Product Management":
-                        ProductMenuHandler.Run(factory, loggedInUser);
-                        break;
-                    case "5. Accounting":
-                        AccountingMenuHandler.Run(factory, loggedInUser);
-                        break;
-                    case "6. Reports":
-                        ReportMenuHandler.Run(factory, loggedInUser);
-                        break;
-                    case "7. Factory Information":
-                        FactoryReportMenuHandler.Run(factory, loggedInUser);
-                        break;
-                    case "8. Log Out / Exit Session":
-                        AnsiConsole.MarkupLine("[yellow]Logging out of current profile...[/]");
-                        Thread.Sleep(600);
-                        sessionActive = false;
-                        break;
+                    ExecuteQuickAction(loggedInUser, factory);
+                }
+                else
+                {
+                    switch (option)
+                    {
+                        case "Employee Management":
+                            EmployeeMenuHandler.Run(factory, loggedInUser);
+                            break;
+                        case "Machine Management":
+                            MachineMenuHandler.Run(factory, loggedInUser);
+                            break;
+                        case "Product Management":
+                            ProductMenuHandler.Run(factory, loggedInUser);
+                            break;
+                        case "Accounting":
+                            AccountingMenuHandler.Run(factory, loggedInUser);
+                            break;
+                        case "Reports":
+                            ReportMenuHandler.Run(factory, loggedInUser);
+                            break;
+                        case "Factory Information":
+                            FactoryReportMenuHandler.Run(factory, loggedInUser);
+                            break;
+                        case "Log Out / Exit Session":
+                            AnsiConsole.MarkupLine("[yellow]Logging out of current profile...[/]");
+                            Thread.Sleep(600);
+                            sessionActive = false;
+                            break;
+                    }
                 }
             }
         }
     }
 
-    private static List<string> GetAvailableMainMenu(Employee loggedInUser)
+    private static void ExecuteQuickAction(Employee user, Factory factory)
     {
-        var available = new List<string>();
-
-        if (loggedInUser is Director)
-        {
-            available.AddRange(MenuOptions.MainMenu);
-        }
-        else if (loggedInUser is Technician)
-        {
-            available.Add("1. Quick Actions");
-            available.Add("3. Machine Management");
-            available.Add("4. Product Management");
-            available.Add("6. Reports");
-            available.Add("7. Factory Information");
-            available.Add("8. Log Out / Exit Session");
-        }
-        else if (loggedInUser is SalesAgent)
-        {
-            available.Add("1. Quick Actions");
-            available.Add("4. Product Management");
-            available.Add("5. Accounting");
-            available.Add("6. Reports");
-            available.Add("7. Factory Information");
-            available.Add("8. Log Out / Exit Session");
-        }
-        else if (loggedInUser is Accountant)
-        {
-            available.Add("4. Product Management");
-            available.Add("5. Accounting");
-            available.Add("6. Reports");
-            available.Add("7. Factory Information");
-            available.Add("8. Log Out / Exit Session");
-        }
-        else
-        {
-            available.Add("4. Product Management");
-            available.Add("6. Reports");
-            available.Add("7. Factory Information");
-            available.Add("8. Log Out / Exit Session");
-        }
-
-        return available;
+        if (user is Director) EmployeeMenuHandler.Run(factory, user);
+        else if (user is Technician) MachineMenuHandler.Run(factory, user);
+        else if (user is SalesAgent) SalesMenuHandler.Run(factory, user);
+        else if (user is Accountant) AccountingMenuHandler.Run(factory, user);
     }
 }

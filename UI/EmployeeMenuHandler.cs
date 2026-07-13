@@ -12,18 +12,21 @@ internal static class EmployeeMenuHandler
             AnsiConsole.Clear();
             AnsiConsole.Write(new Rule("[green]EMPLOYEE MANAGEMENT MODULE[/]").Centered());
 
+            var menuOptions = MenuOptions.EmployeeManagementMenu.Select((item, index) => $"{index + 1}. {item}")
+                .ToList();
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("[yellow]Select an administrative action:[/]")
-                    .AddChoices(MenuOptions.EmployeeManagementMenu));
+                    .AddChoices(menuOptions));
 
-            switch (choice)
+            var option = choice.Split(". ", 2)[1];
+            switch (option)
             {
-                case "1. View All Registered Staff":
+                case "View All Registered Staff":
                     DisplayStaffTable(factory);
                     break;
 
-                case "2. Add New Employee":
+                case "Add New Employee":
                     if (loggedInUser is not Director)
                         AnsiConsole.MarkupLine(
                             $"[red]❌ Access Denied: {loggedInUser.Role} cannot perform this action.[/]");
@@ -32,7 +35,7 @@ internal static class EmployeeMenuHandler
 
                     break;
 
-                case "3. Return to Main Menu":
+                case "Return to Main Menu":
                     inRoom = false;
                     break;
             }
@@ -58,7 +61,7 @@ internal static class EmployeeMenuHandler
                 factory.Employees[i].Id.ToString(),
                 factory.Employees[i].Name,
                 factory.Employees[i].Role,
-                factory.Employees[i].AfiseazaActivitate()
+                factory.Employees[i].ShowActivity()
             );
 
         AnsiConsole.Write(table);
