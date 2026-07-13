@@ -27,14 +27,8 @@ internal static class LoginHandler
             // Graceful application exit sequence
             if (empId.Trim().ToLower() == "exit") return null; // Signals Program.cs to close down
 
-            // Null-safe check inside the internal Factory collection up to EmployeeCount
-            Employee? matchedEmployee = null;
-            for (var i = 0; i < factory.EmployeeCount; i++)
-                if (factory.Employees[i].Id.ToString().Equals(empId, StringComparison.OrdinalIgnoreCase))
-                {
-                    matchedEmployee = factory.Employees[i];
-                    break;
-                }
+            // Authentication call
+            var matchedEmployee = Authentication.Authenticate(factory, empId);
 
             // Authentication purely by ID validation
             if (matchedEmployee != null)
