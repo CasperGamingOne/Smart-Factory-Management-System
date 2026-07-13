@@ -1,14 +1,17 @@
-name: Generate and Deploy GitHub Pages Docs
+name: Generate and Deploy Architecture Map
 
 on:
   push:
-    branches: [ main, new-tui-frontend ]
-  workflow_dispatch: # Permite rularea manuală din GitHub
+    branches:
+      - main
+      - new-tui-frontend
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
-# Prevents multiple deployments from running at the exact same time
 concurrency:
   group: "pages"
   cancel-in-progress: true
@@ -17,22 +20,29 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.11' # Pinned for deterministic behavior
+
+      - name: Prepare Documentation Directory
+        run: mkdir -p docs # Defensive creation
 
       - name: Run Documentation Generator
         run: |
-          mkdir -p docs
           python scripts/generate_docs.py
+          
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'docs'
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
-          commit_message: "docs: auto-generated UML and Class Map"
+        id: deployment
+        uses: actions/deploy-pages@v4
