@@ -2,11 +2,12 @@ namespace Smart_Factory_Management_System;
 
 public static class Authentication
 {
-    public static Employee? Authenticate(Factory factory, string employeeId)
+    public static Employee? Authenticate(IAuthRepository<Employee> repository, string username, string password)
     {
-        for (var i = 0; i < factory.EmployeeCount; i++)
-            if (factory.Employees[i].Id.ToString().Equals(employeeId, StringComparison.OrdinalIgnoreCase))
-                return factory.Employees[i];
+        var users = repository.LoadUsers();
+        var employee = users.FirstOrDefault(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+
+        if (employee != null && SecurityHelper.VerifyPassword(password, employee.PasswordHash)) return employee;
 
         return null;
     }

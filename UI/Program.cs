@@ -11,18 +11,23 @@ internal class Program
 
         // Initialize core factory and seed data
         var factory = new Factory();
+        var authRepository = new JsonAuthRepository();
+        var employees = authRepository.LoadUsers();
+        foreach (var employee in employees) factory.AddEmployee(employee);
 
         while (true)
         {
             AnsiConsole.Clear();
             AnsiConsole.Write(new Rule("[yellow]SMART FACTORY SYSTEM - LOGIN GATEWAY[/]").Centered());
 
-            var loggedInUser = LoginHandler.ShowLoginScreen(factory);
+            var loggedInUser = LoginHandler.ShowLoginScreen(authRepository);
             if (loggedInUser == null)
             {
                 AnsiConsole.MarkupLine("[red]Application shutting down...[/]");
                 break;
             }
+
+            if (loggedInUser.IsFirstTimeLogin) PasswordChangeHandler.Run(loggedInUser, authRepository);
 
             AnsiConsole.MarkupLine($"[green]Welcome back, {loggedInUser.Name} ({loggedInUser.Role})![/]");
             AnsiConsole.Status().Start("Booting production environment...", _ => { Thread.Sleep(800); });
@@ -47,14 +52,14 @@ internal class Program
 
                 if (option == loggedInUser.QuickActionName)
                 {
-                    ExecuteQuickAction(loggedInUser, factory);
+                    ExecuteQuickAction(loggedInUser, factory, authRepository);
                 }
                 else
                 {
                     switch (option)
                     {
                         case "Employee Management":
-                            EmployeeMenuHandler.Run(factory, loggedInUser);
+                            EmployeeMenuHandler.Run(factory, loggedInUser, authRepository);
                             break;
                         case "Machine Management":
                             MachineMenuHandler.Run(factory, loggedInUser);
@@ -82,9 +87,9 @@ internal class Program
         }
     }
 
-    private static void ExecuteQuickAction(Employee user, Factory factory)
+    private static void ExecuteQuickAction(Employee user, Factory factory, IAuthRepository<Employee> authRepository)
     {
-        if (user is Director) EmployeeMenuHandler.Run(factory, user);
+        if (user is Director) EmployeeMenuHandler.Run(factory, user, authRepository);
         else if (user is Technician) MachineMenuHandler.Run(factory, user);
         else if (user is SalesAgent) SalesMenuHandler.Run(factory, user);
         else if (user is Accountant) AccountingMenuHandler.Run(factory, user);

@@ -33,11 +33,6 @@ public class Factory
 
     private void SeedInitialData()
     {
-        AddEmployee(new Director("Andrei Popescu"));
-        AddEmployee(new Technician("Maria Ionescu"));
-        AddEmployee(new SalesAgent("Alexandru Dumitru"));
-        AddEmployee(new Accountant("Elena Vasilescu"));
-
         AddProduct(new Microprocessor("ARM Cortex-M4", 50, 74.99, 10, 4, 2.5));
         AddProduct(new Motherboard("Motherboard ATX", 50.00, 99.99, 5, "AM4", "ATX"));
 

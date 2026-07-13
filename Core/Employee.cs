@@ -1,22 +1,40 @@
-﻿namespace Smart_Factory_Management_System;
+﻿using System.Text.Json.Serialization;
 
+namespace Smart_Factory_Management_System;
+
+[JsonDerivedType(typeof(Director), "director")]
+[JsonDerivedType(typeof(Technician), "technician")]
+[JsonDerivedType(typeof(SalesAgent), "salesAgent")]
+[JsonDerivedType(typeof(Accountant), "accountant")]
 public abstract class Employee
 {
     private static int _idCounter;
 
 
-    protected Employee(string name)
+    protected Employee(string name, string username, string passwordHash)
     {
         _idCounter++;
         Id = _idCounter;
         Name = name;
-        Role = "Auxiliary";
+        Username = username;
+        PasswordHash = passwordHash;
     }
 
-    public int Id { get; private set; }
+    public int Id { get; init; }
     public string Name { get; set; }
-    public string Role { get; protected init; }
+    public string Username { get; set; }
+    public string PasswordHash { get; set; }
+    public bool IsPasswordHashed { get; set; } = true;
+
+    [JsonPropertyName("IsFirstTimeLogin")] public bool IsFirstTimeLogin { get; set; } = true;
+
+    public string Role { get; protected init; } = string.Empty;
     public abstract string QuickActionName { get; }
+
+    public static void InitializeIdCounter(int maxId)
+    {
+        _idCounter = maxId;
+    }
 
     public abstract string ShowActivity();
     public abstract List<string> GetAvailableMenuOptions();
@@ -24,7 +42,7 @@ public abstract class Employee
 
 public class Director : Employee
 {
-    public Director(string name) : base(name)
+    public Director(string name, string username, string passwordHash) : base(name, username, passwordHash)
     {
         Role = "Director";
     }
@@ -50,7 +68,7 @@ public class Director : Employee
 
 public class Technician : Employee
 {
-    public Technician(string name) : base(name)
+    public Technician(string name, string username, string passwordHash) : base(name, username, passwordHash)
     {
         Role = "Technician";
     }
@@ -77,7 +95,7 @@ public class Technician : Employee
 
 public class SalesAgent : Employee
 {
-    public SalesAgent(string name) : base(name)
+    public SalesAgent(string name, string username, string passwordHash) : base(name, username, passwordHash)
     {
         Role = "Sales Agent";
     }
@@ -102,7 +120,7 @@ public class SalesAgent : Employee
 
 public class Accountant : Employee
 {
-    public Accountant(string name) : base(name)
+    public Accountant(string name, string username, string passwordHash) : base(name, username, passwordHash)
     {
         Role = "Accountant";
     }

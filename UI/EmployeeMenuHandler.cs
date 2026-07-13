@@ -4,7 +4,7 @@ namespace Smart_Factory_Management_System;
 
 internal static class EmployeeMenuHandler
 {
-    public static void Run(Factory factory, Employee loggedInUser)
+    public static void Run(Factory factory, Employee loggedInUser, IAuthRepository<Employee> repository)
     {
         var inRoom = true;
         while (inRoom)
@@ -31,7 +31,7 @@ internal static class EmployeeMenuHandler
                         AnsiConsole.MarkupLine(
                             $"[red]❌ Access Denied: {loggedInUser.Role} cannot perform this action.[/]");
                     else
-                        AddNewEmployeeFlow(factory);
+                        AddNewEmployeeFlow(factory, repository);
 
                     break;
 
@@ -67,31 +67,45 @@ internal static class EmployeeMenuHandler
         AnsiConsole.Write(table);
     }
 
-    private static void AddNewEmployeeFlow(Factory factory)
+    private static void AddNewEmployeeFlow(Factory factory, IAuthRepository<Employee> repository)
     {
         var name = AnsiConsole.Ask<string>("Enter Employee Full Name:");
+        var username = AnsiConsole.Ask<string>("Enter Employee Username:");
+        var password = AnsiConsole.Ask<string>("Enter Employee Password:");
+        var hashedPassword = SecurityHelper.HashPassword(password);
 
         var role = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
                 .Title("Select Job Title:")
                 .AddChoices(MenuOptions.EmployeeRoles));
 
+        Employee? newEmployee = null;
         switch (role)
         {
             case "Technician":
-                factory.AddEmployee(new Technician(name));
+                newEmployee = new Technician(name, username, hashedPassword);
                 break;
             case "Sales Agent":
-                factory.AddEmployee(new SalesAgent(name));
+                newEmployee = new SalesAgent(name, username, hashedPassword);
                 break;
             case "Accountant":
-                factory.AddEmployee(new Accountant(name));
+                newEmployee = new Accountant(name, username, hashedPassword);
                 break;
             default:
                 AnsiConsole.MarkupLine("[red]❌ Invalid role selection. Operation aborted.[/]");
                 return;
         }
 
-        AnsiConsole.MarkupLine($"[green]✔ Employee '{name}' registered successfully![/]");
+        if (newEmployee != null)
+        {
+            newEmployee.IsFirstTimeLogin = true;
+            factory.AddEmployee(newEmployee);
+
+            var users = repository.LoadUsers();
+            users.Add(newEmployee);
+            repository.SaveUsers(users);
+
+            AnsiConsole.MarkupLine($"[green]✔ Employee '{name}' registered successfully![/]");
+        }
     }
 }
