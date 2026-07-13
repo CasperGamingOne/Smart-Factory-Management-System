@@ -34,31 +34,29 @@ internal static class PasswordChangeHandler
         user.IsFirstTimeLogin = false;
 
         // Need to save the changes
+        // Persist changes
         var users = repository.LoadUsers();
         var userToUpdate = users.FirstOrDefault(u => u.Id == user.Id);
+
         if (userToUpdate != null)
         {
-            userToUpdate.PasswordHash = user.PasswordHash;
+            userToUpdate.PasswordHash = SecurityHelper.HashPassword(newPassword);
             userToUpdate.IsFirstTimeLogin = false;
-            repository.SaveUsers(users);
 
-            // Check if it's saved
-            var reloadedUsers = repository.LoadUsers();
-            var reloadedUser = reloadedUsers.FirstOrDefault(u => u.Id == user.Id);
-            if (reloadedUser is { IsFirstTimeLogin: false })
+            try
             {
-                AnsiConsole.MarkupLine("[green]Verified: Saved to JSON![/]");
+                repository.SaveUsers(users);
+                AnsiConsole.MarkupLine("[green]✅ Password updated successfully.[/]");
             }
-            else
+            catch (IOException ex)
             {
-                AnsiConsole.MarkupLine("[red]Error: Not saved to JSON![/]");
-                Thread.Sleep(3000);
+                // Log the actual error internally if needed
+                AnsiConsole.MarkupLine("[red]❌ Critical error: Could not write to the database file.[/]");
             }
         }
         else
         {
-            AnsiConsole.MarkupLine($"[red]Error: Could not find user with ID {user.Id} in JSON file![/]");
-            Thread.Sleep(3000);
+            AnsiConsole.MarkupLine($"[red]Error: Could not find user with ID {user.Id} in database.[/]");
         }
 
         AnsiConsole.MarkupLine("[green]✔ Password updated successfully![/]");
