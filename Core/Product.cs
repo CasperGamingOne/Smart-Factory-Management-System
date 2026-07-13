@@ -16,8 +16,6 @@ public abstract class Product
     }
 
     public string? Name { get; protected set; }
-    public int? Cores { get; protected set; }
-    public double ClockSpeed { get; protected set; }
 
     public double ProductionCost
     {
@@ -59,6 +57,8 @@ public class Microprocessor : Product
     }
 
     public string? Architecture { get; set; }
+    public int? Cores { get; protected set; }
+    public double ClockSpeed { get; protected set; }
 
     public override string GetTechnicalSpecifications()
     {
