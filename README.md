@@ -27,15 +27,21 @@ The generated overview includes a detailed UML class table, relationship summary
 > [!NOTE]
 > Format: Task | Assigned Person
 
+### Part 1
 - [x] Factory.cs ~ Final             | @CasperGamingOne
 - [x] Machine.cs ~ Final             | @CasperGamingOne
 - [x] MachinePart.cs ~ Final         | @CasperGamingOne
-- [ ] Product.cs                     | @ganeaandreea701-crypto
+- [x] Product.cs                     | @ganeaandreea701-crypto
 - [x] Employee.cs (Basic)            | @ganeaandreea701-crypto
-- [ ] Program.cs                     | @CasperGamingOne & @ganeaandreea701-crypto
+- [x] Program.cs                     | @CasperGamingOne & @ganeaandreea701-crypto
 - [x] LoginHandler.cs                | @CasperGamingOne
 - [x] *MenuHandler.cs* not Final     | @CasperGamingOne & @ganeaandreea701-crypto
 
-- [ ] to revise code                  | @CasperGamingOne
+### Part 2
+
+- [ ] Logging.cs                     | @ganeaandreea701-crypto
+- [ ] Enhancing User Login           | @CasperGamingOne
+
+- [x] to revise code                  | @CasperGamingOne
 - [ ] to make dynamic menus           | @CasperGamingOne
 - [ ] to add menu restrictions        | @CasperGamingOne

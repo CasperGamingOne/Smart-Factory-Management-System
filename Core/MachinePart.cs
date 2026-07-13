@@ -7,16 +7,10 @@ public enum PartCondition
     Critical
 }
 
-public abstract class MachinePart
+public abstract class MachinePart(string name, PartCondition? condition)
 {
-    public MachinePart(string name, PartCondition? condition)
-    {
-        Name = name;
-        Condition = condition;
-    }
-
-    public string? Name { get; private protected set; }
-    public PartCondition? Condition { get; private protected set; }
+    public string? Name { get; private protected set; } = name;
+    public PartCondition? Condition { get; private set; } = condition;
 
     public void BreakDown()
     {
@@ -39,14 +33,9 @@ public abstract class MachinePart
     public abstract string PrintPartInfo();
 }
 
-public class Power_Supply : MachinePart
+public class PowerSupply(string name, PartCondition? condition, int voltage) : MachinePart(name, condition)
 {
-    public Power_Supply(string name, PartCondition? condition, int voltage) : base(name, condition)
-    {
-        Voltage = voltage;
-    }
-
-    public int Voltage { get; }
+    private int Voltage { get; } = voltage;
 
     public override string PrintPartInfo()
     {
@@ -54,14 +43,9 @@ public class Power_Supply : MachinePart
     }
 }
 
-public class Cooling_System : MachinePart
+public class CoolingSystem(string name, PartCondition? condition, string type) : MachinePart(name, condition)
 {
-    public Cooling_System(string name, PartCondition? condition, string type) : base(name, condition)
-    {
-        Type = type;
-    }
-
-    public string Type { get; private protected set; }
+    private string Type { get; } = type;
 
     public override string PrintPartInfo()
     {
@@ -69,14 +53,9 @@ public class Cooling_System : MachinePart
     }
 }
 
-public class Control_Unit : MachinePart
+public class ControlUnit(string name, PartCondition? condition, string processor) : MachinePart(name, condition)
 {
-    public Control_Unit(string name, PartCondition? condition, string processor) : base(name, condition)
-    {
-        Processor = processor;
-    }
-
-    public string Processor { get; private protected set; }
+    private string Processor { get; } = processor;
 
     public override string PrintPartInfo()
     {
@@ -84,14 +63,9 @@ public class Control_Unit : MachinePart
     }
 }
 
-public class AOI_System : MachinePart
+public class AoiSystem(string name, PartCondition? condition, string systemType) : MachinePart(name, condition)
 {
-    public AOI_System(string name, PartCondition? condition, string systemType) : base(name, condition)
-    {
-        SystemType = systemType;
-    }
-
-    public string SystemType { get; private protected set; }
+    private string SystemType { get; } = systemType;
 
     public override string PrintPartInfo()
     {

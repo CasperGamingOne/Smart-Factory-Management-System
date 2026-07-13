@@ -12,18 +12,20 @@ internal static class MachineMenuHandler
             AnsiConsole.Clear();
             AnsiConsole.Write(new Rule("[cyan]MACHINE MONITORING & MAINTENANCE[/]").Centered());
 
+            var menuOptions = MenuOptions.MachineMenu.Select((item, index) => $"{index + 1}. {item}").ToList();
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("[yellow]Select a diagnostic option:[/]")
-                    .AddChoices(MenuOptions.MachineMenu));
+                    .AddChoices(menuOptions));
 
-            switch (choice)
+            var option = choice.Split(". ", 2)[1];
+            switch (option)
             {
-                case "1. Overall Fleet Status Overview":
+                case "Overall Fleet Status Overview":
                     DisplayFleetOverview(factory);
                     break;
 
-                case "2. Run Deep Component Inspection":
+                case "Run Deep Component Inspection":
                     if (loggedInUser is not Technician)
                         AnsiConsole.MarkupLine(
                             $"[red]❌ Access Denied: {loggedInUser.Role} cannot perform this action.[/]");
@@ -31,10 +33,10 @@ internal static class MachineMenuHandler
                         RunInspection(factory);
                     break;
 
-                case "3. Fulfill Pending Orders":
+                case "Fulfill Pending Orders":
                     ProductionMenuHandler.Run(factory, loggedInUser);
                     break;
-                case "4. Return to Main Menu":
+                case "Return to Main Menu":
                     inRoom = false;
                     break;
             }
