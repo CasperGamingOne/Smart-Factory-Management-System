@@ -36,15 +36,12 @@ public abstract class Product
         get => quantity;
         set
         {
-            if (value >= 0)
+            if (value < 0)
             {
-                quantity = value;
+                throw new ArgumentOutOfRangeException(nameof(value), "Quantity cannot be negative.");
             }
-            else
-            {
-                quantity = 0; // Previne cantitatea negativa
-                Console.WriteLine("!!! Cantitatea in stoc nu poate fi negativa! S-a setat automat pe 0.");
-            }
+
+            quantity = value;
         }
     }
 
