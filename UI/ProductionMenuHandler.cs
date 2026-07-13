@@ -258,12 +258,13 @@ internal static class ProductionMenuHandler
     {
         var pendingOrders = new List<ProductionOrder>();
 
-        for (var i = 0; i < factory.OrderCount; i++)
+        foreach (var order in factory.PendingOrders)
         {
-            var order = factory.PendingOrders[i];
-            if (!order.IsComplete) pendingOrders.Add(order);
+            if (!order.IsComplete)
+            {
+                pendingOrders.Add(order);
+            }
         }
-
         return pendingOrders;
     }
 

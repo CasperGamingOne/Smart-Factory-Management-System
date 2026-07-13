@@ -76,7 +76,7 @@ internal static class FactoryReportMenuHandler
         Pause();
     }
 
-    */
+    
     private static void ShowOverview(Factory factory, Employee loggedInUser)
     {
         AnsiConsole.Clear();

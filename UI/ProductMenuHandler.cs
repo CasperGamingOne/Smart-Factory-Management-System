@@ -17,7 +17,7 @@ internal class ProductMenuHandler
             summaryGrid.AddRow(new Markup(
                 $"[grey]Operator Session:[/] [cyan]{currentUser.Name}[/] ([yellow]{currentUser.Role}[/])"));
             summaryGrid.AddRow(new Markup(
-                $"[grey]Warehouse Storage Stock:[/] [green]{factory.ProductCount} / {factory.Inventory.Length} units[/]"));
+                $"[grey]Warehouse Storage Stock:[/] [green]{factory.ProductCount} / {factory.Inventory.Count} units[/]"));
 
             AnsiConsole.Write(
                 new Panel(summaryGrid)
@@ -122,7 +122,7 @@ internal class ProductMenuHandler
             else if (product is Motherboard) pcbCount++;
         }
 
-        var storageUtilization = (double)factory.ProductCount / factory.Inventory.Length * 100;
+        var storageUtilization = (double)factory.ProductCount / factory.Inventory.Count* 100;
 
         var statsGrid = new Grid().AddColumns(2);
         statsGrid.AddRow("[bold white]Total Volume Level:[/]",
