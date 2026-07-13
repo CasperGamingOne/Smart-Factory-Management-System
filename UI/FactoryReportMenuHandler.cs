@@ -30,12 +30,53 @@ internal static class FactoryReportMenuHandler
                 case "4. Inventory Report":
                     ShowInventoryReport(factory);
                     break;
-                case "5. Return to Main Menu":
+                case "5. View Operation History":
+                    ShowOperationHistory();
+                    break;
+                case "6. Return to Main Menu":
                     return;
+
             }
         }
     }
 
+    //*****
+    private static void ShowOperationHistory()
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.Write(new Rule("[cyan]Operation History Log[/]").Centered());
+
+        string logFilePath = "operations.txt";
+
+        if (!File.Exists(logFilePath))
+        {
+            AnsiConsole.MarkupLine("[yellow]No operation history found yet.[/]");
+        }
+        else
+        {
+            // Citim toate liniile din fișier
+            var lines = File.ReadAllLines(logFilePath);
+
+            var table = new Table().Border(TableBorder.Rounded);
+            table.AddColumn("Timestamp");
+            table.AddColumn("User");
+            table.AddColumn("Action");
+
+            foreach (var line in lines)
+            {
+                var parts = line.Split('|');
+                if (parts.Length == 3)
+                {
+                    table.AddRow(parts[0].Trim(), parts[1].Trim(), parts[2].Trim());
+                }
+            }
+            AnsiConsole.Write(table);
+        }
+
+        Pause();
+    }
+
+    */
     private static void ShowOverview(Factory factory, Employee loggedInUser)
     {
         AnsiConsole.Clear();
@@ -159,4 +200,5 @@ internal static class FactoryReportMenuHandler
         AnsiConsole.MarkupLine("\n[grey]Press any key to return...[/]");
         Console.ReadKey(true);
     }
+
 }

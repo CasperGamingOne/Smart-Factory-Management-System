@@ -39,11 +39,20 @@ internal static class LoginHandler
             // Authentication purely by ID validation
             if (matchedEmployee != null)
             {
+                //****
+                Logger.Log(matchedEmployee.Name, "Successful login");
                 AnsiConsole.MarkupLine("[green]✔ Access Granted successfully![/]");
                 Thread.Sleep(600); // Visual feedback pause
                 return matchedEmployee; // Immediately hands control and user context back to Program.cs
             }
+            else
+            {
+                // Aici logăm eșecul (folosim "System" deoarece nu știm cine a încercat să intre)
+                Logger.Log("System", $"Failed login attempt for ID: {empId}");
 
+                AnsiConsole.MarkupLine("[red]❌ Error: Employee ID not found in system registers.[/]");
+                // ... restul codului
+            }
             // Error boundary feedback if the ID doesn't match seeded array values
             AnsiConsole.MarkupLine("[red]❌ Error: Employee ID not found in system registers.[/]");
             AnsiConsole.MarkupLine("[grey]Press any key to try again...[/]");

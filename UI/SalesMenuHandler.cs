@@ -27,13 +27,13 @@ internal static class SalesMenuHandler
             switch (choice)
             {
                 case "1. Place Production Order":
-                    PlaceOrder(factory);
+                    PlaceOrder(factory,loggedInUser);
                     break;
                 case "2. View Pending Orders":
                     ShowPendingOrders(factory);
                     break;
                 case "3. Record Sale for Batch":
-                    RecordSale(factory);
+                    RecordSale(factory, loggedInUser);
                     break;
                 case "4. Return to Main Menu":
                     return;
@@ -44,7 +44,7 @@ internal static class SalesMenuHandler
         }
     }
 
-    private static void PlaceOrder(Factory factory)
+    private static void PlaceOrder(Factory factory, Employee loggedInUser)
     {
         AnsiConsole.WriteLine();
         var productChoice = AnsiConsole.Prompt(
@@ -84,6 +84,8 @@ internal static class SalesMenuHandler
 
         var order = new ProductionOrder(productChoice, quantity, technicianId);
         factory.AddOrder(order);
+        //*******
+        Logger.Log(loggedInUser.Name, $"Placed production order: {order.OrderId} for {order.ProductName} (Qty: {order.Quantity})");
 
         AnsiConsole.MarkupLine(
             $"[green]✔ Order placed: {order.OrderId} - {order.ProductName} x{order.Quantity} assigned to tech #{order.AssignedTechnicianId}[/]");
@@ -121,7 +123,7 @@ internal static class SalesMenuHandler
         AnsiConsole.Write(table);
     }
 
-    private static void RecordSale(Factory factory)
+    private static void RecordSale(Factory factory, Employee loggedInUser)
     {
         // Offer selling either from completed batches or from existing inventory
         var options = new List<string>();
@@ -156,9 +158,11 @@ internal static class SalesMenuHandler
             foreach (var idx in chosen.InventoryIndexes)
                 if (idx >= 0 && idx < factory.ProductCount)
                     factory.Inventory[idx].SellingPrice = soldPrice;
-
+            ///*****
+            Logger.Log(loggedInUser.Name, $"Sold batch {chosen.BatchId} of {chosen.ProductName} at ${soldPrice:F2} per unit");
             AnsiConsole.MarkupLine(
                 $"[green]✔ Recorded sale for batch {chosen.BatchId} at ${soldPrice:F2} per unit.[/]");
+    
         }
         else if (pickContext == "Sell from Inventory")
         {
@@ -199,7 +203,8 @@ internal static class SalesMenuHandler
             batch.IsSold = true;
             batch.UnitSellPrice = soldPrice;
             factory.AddBatch(batch);
-
+            //***
+            Logger.Log(loggedInUser.Name, $"Sold {qty} units of {chosen.Name} at ${soldPrice:F2} per unit. Batch {batch.BatchId} recorded.");
             AnsiConsole.MarkupLine(
                 $"[green]✔ Sold {qty} units of {chosen.Name} at ${soldPrice:F2} per unit. Batch {batch.BatchId} recorded.[/]");
         }
