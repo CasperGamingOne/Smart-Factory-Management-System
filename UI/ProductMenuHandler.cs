@@ -2,7 +2,7 @@
 
 namespace Smart_Factory_Management_System;
 
-internal class ProductMenuHandler
+internal static class ProductMenuHandler
 {
     public static void Run(Factory factory, Employee currentUser)
     {
@@ -27,28 +27,30 @@ internal class ProductMenuHandler
             );
             AnsiConsole.WriteLine();
 
+            var menuOptions = MenuOptions.ProductMenu.Select((item, index) => $"{index + 1}. {item}").ToList();
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("[bold white]Navigate to an inventory operation:[/]")
                     .PageSize(10)
-                    .AddChoices(MenuOptions.ProductMenu));
+                    .AddChoices(menuOptions));
 
-            switch (choice)
+            var option = choice.Split(". ", 2)[1];
+            switch (option)
             {
-                case "1. View Finished Goods Stock":
+                case "View Finished Goods Stock":
                     DisplayInventoryTable(factory);
                     break;
-                case "2. View Inventory Financial & Capacity Analytics":
+                case "View Inventory Financial & Capacity Analytics":
                     DisplayInventoryAnalytics(factory);
                     break;
-                case "3. Sales & Orders":
+                case "Sales & Orders":
                     // Reuse Sales menu view; if user is SalesAgent, open full Sales UI
-                    if (currentUser is SalesAgent)
+                    if (currentUser is SalesAgent || currentUser is Director)
                         SalesMenuHandler.Run(factory, currentUser);
                     else
                         SalesMenuHandler.ShowPendingOrders(factory);
                     break;
-                case "4. Return to Main Menu":
+                case "Return to Main Menu":
                     return;
             }
         }

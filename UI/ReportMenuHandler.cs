@@ -11,26 +11,34 @@ internal static class ReportMenuHandler
             AnsiConsole.Clear();
             AnsiConsole.Write(new Rule("[magenta]FACTORY PERFORMANCE & METRIC REPORTS[/]").Centered());
 
+            var choices = MenuOptions.ReportMenu.Select((item, index) => $"{index + 1}. {item}").ToList();
+            if (loggedInUser is Director)
+                choices.Insert(choices.Count - 1, $"{choices.Count}. Request Printable Report");
+
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("Choose a report:")
-                    .AddChoices(MenuOptions.ReportMenu));
+                    .AddChoices(choices));
 
-            switch (choice)
+            var option = choice.Split(". ", 2)[1];
+            switch (option)
             {
-                case "1. Production Summary":
+                case "Production Summary":
                     ShowProductionSummary(factory, loggedInUser);
                     break;
-                case "2. Employee Report":
+                case "Employee Report":
                     ShowEmployeeReport(factory);
                     break;
-                case "3. Batch Revenue Summary":
+                case "Batch Revenue Summary":
                     ShowBatchRevenueSummary(factory);
                     break;
-                case "4. Order Backlog Summary":
+                case "Order Backlog Summary":
                     ShowOrderBacklogSummary(factory);
                     break;
-                case "5. Return to Main Menu":
+                case "Request Printable Report":
+                    RequestPrintableReport(factory, loggedInUser);
+                    break;
+                case "Return to Main Menu":
                     return;
             }
         }
@@ -41,6 +49,22 @@ internal static class ReportMenuHandler
         AnsiConsole.Clear();
         AnsiConsole.Write(new Rule("[magenta]Employee Report[/]").Centered());
         EmployeeMenuHandler.DisplayStaffTable(factory);
+        Pause();
+    }
+
+    private static void RequestPrintableReport(Factory factory, Employee director)
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.Write(new Rule("[magenta]Request Printable Report[/]").Centered());
+
+        var reportType = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Select report type to request:")
+                .AddChoices("Production Summary", "Employee Report", "Batch Revenue Summary", "Order Backlog Summary"));
+
+        factory.AddReportRequest(new ReportRequest(reportType, director.Name));
+
+        AnsiConsole.MarkupLine($"[green]✔ Request for '{reportType}' submitted successfully![/]");
         Pause();
     }
 

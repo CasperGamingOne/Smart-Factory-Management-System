@@ -4,7 +4,7 @@ namespace Smart_Factory_Management_System;
 
 internal static class LoginHandler
 {
-    public static Employee? ShowLoginScreen(Factory factory)
+    public static Employee? ShowLoginScreen(IAuthRepository<Employee> repository)
     {
         while (true)
         {
@@ -18,34 +18,35 @@ internal static class LoginHandler
                     .Expand()
             );
 
-            // Ask only for the Employee ID
-            var empId = AnsiConsole.Prompt(
-                new TextPrompt<string>("[white]Enter your Employee ID (or type 'exit' to quit):[/]")
+            // Ask for Username
+            var username = AnsiConsole.Prompt(
+                new TextPrompt<string>("[white]Enter your Username (or type 'exit' to quit):[/]")
                     .PromptStyle("cyan")
             );
 
             // Graceful application exit sequence
-            if (empId.Trim().ToLower() == "exit") return null; // Signals Program.cs to close down
+            if (username.Trim().ToLower() == "exit") return null;
 
-            // Null-safe check inside the internal Factory collection up to EmployeeCount
-            Employee? matchedEmployee = null;
-            for (var i = 0; i < factory.EmployeeCount; i++)
-                if (factory.Employees[i].Id.ToString().Equals(empId, StringComparison.OrdinalIgnoreCase))
-                {
-                    matchedEmployee = factory.Employees[i];
-                    break;
-                }
+            // Ask for Password
+            var password = AnsiConsole.Prompt(
+                new TextPrompt<string>("[white]Enter your Password:[/]")
+                    .PromptStyle("cyan")
+                    .Secret('*')
+            );
 
-            // Authentication purely by ID validation
+            // Authentication call
+            var matchedEmployee = Authentication.Authenticate(repository, username, password);
+
+            // Authentication logic
             if (matchedEmployee != null)
             {
                 AnsiConsole.MarkupLine("[green]✔ Access Granted successfully![/]");
                 Thread.Sleep(600); // Visual feedback pause
-                return matchedEmployee; // Immediately hands control and user context back to Program.cs
+                return matchedEmployee;
             }
 
-            // Error boundary feedback if the ID doesn't match seeded array values
-            AnsiConsole.MarkupLine("[red]❌ Error: Employee ID not found in system registers.[/]");
+            // Error boundary feedback
+            AnsiConsole.MarkupLine("[red]❌ Error: Invalid username or password.[/]");
             AnsiConsole.MarkupLine("[grey]Press any key to try again...[/]");
             Console.ReadKey(true);
         }

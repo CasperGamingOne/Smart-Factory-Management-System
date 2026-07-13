@@ -6,7 +6,7 @@ internal static class SalesMenuHandler
 {
     public static void Run(Factory factory, Employee loggedInUser)
     {
-        if (loggedInUser is not SalesAgent)
+        if (loggedInUser is not SalesAgent && loggedInUser is not Director)
         {
             AnsiConsole.MarkupLine($"[red]❌ Access Denied: {loggedInUser.Role} cannot access Sales.[/]");
             AnsiConsole.WriteLine("\nPress any key to return...");
@@ -19,23 +19,25 @@ internal static class SalesMenuHandler
             AnsiConsole.Clear();
             AnsiConsole.Write(new Rule("[green]SALES - Create Production Orders[/]").Centered());
 
+            var menuOptions = MenuOptions.SalesMenu.Select((item, index) => $"{index + 1}. {item}").ToList();
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("Choose action:")
-                    .AddChoices(MenuOptions.SalesMenu));
+                    .AddChoices(menuOptions));
 
-            switch (choice)
+            var option = choice.Split(". ", 2)[1];
+            switch (option)
             {
-                case "1. Place Production Order":
+                case "Place Production Order":
                     PlaceOrder(factory);
                     break;
-                case "2. View Pending Orders":
+                case "View Pending Orders":
                     ShowPendingOrders(factory);
                     break;
-                case "3. Record Sale for Batch":
+                case "Record Sale for Batch":
                     RecordSale(factory);
                     break;
-                case "4. Return to Main Menu":
+                case "Return to Main Menu":
                     return;
             }
 
