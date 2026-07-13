@@ -354,7 +354,7 @@ public abstract class Machine
         }
 
         board.TransitionTo(nextState);
-        Console.WriteLine($"[green]Successfully completed {stageName} for {board.Name}. New state: {nextState}[/]");
+        AnsiConsole.MarkupLine($"[green]Successfully completed {stageName} for {board.Name}. New state: {nextState}[/]");
         return true;
     }
 
