@@ -8,6 +8,11 @@ on:
 permissions:
   contents: write
 
+# Prevents multiple deployments from running at the exact same time
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
