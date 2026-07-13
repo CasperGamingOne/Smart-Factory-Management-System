@@ -61,7 +61,7 @@ public abstract class Machine
         return TimeSpan.FromDays((DateTime.Now - InstallationDate).TotalDays);
     }
 
-    public double GetMachineAgeInYears()
+    private double GetMachineAgeInYears()
     {
         return (DateTime.Now - InstallationDate).TotalDays / 365.25;
     }
@@ -342,13 +342,13 @@ public abstract class Machine
     {
         if (product is not Motherboard board)
         {
-            Console.WriteLine($"[red]Error: This machine cannot process {product.GetType().Name}[/]");
+            AnsiConsole.MarkupLine($"[red]Error: This machine cannot process {product.GetType().Name}[/]");
             return false;
         }
 
         if (board.CurrentState != requiredInputState)
         {
-            Console.WriteLine(
+            AnsiConsole.MarkupLine(
                 $"[yellow]Warning: {board.Name} is not in the expected {requiredInputState} state for {stageName}.[/]");
             return false;
         }
