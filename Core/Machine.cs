@@ -235,7 +235,8 @@ public abstract class Machine
 
         profileTable.AddRow("Manufacturer Identity", Manufacturer ?? "-");
         profileTable.AddRow("Factory Serial Reference", SerialNumber ?? "-");
-        profileTable.AddRow("Asset Total Life Age", $"{GetMachineAgeInYears():F1} Years Old");
+        profileTable.AddRow("Asset Total Life Age",
+            $"{GetMachineAgeInYears():F1} Years / {(int)GetMachineAge().TotalDays} Days");
 
         var statusColor = Status == MachineStatus.Running
             ? "green"
