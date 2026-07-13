@@ -19,20 +19,25 @@ internal static class AccountingMenuHandler
             AnsiConsole.Clear();
             AnsiConsole.Write(new Rule("[magenta]ACCOUNTING - Price Produced Batches[/]").Centered());
 
+            var menuOptions = MenuOptions.AccountingMenu.Select((item, index) => $"{index + 1}. {item}").ToList();
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("Choose action:")
-                    .AddChoices(MenuOptions.AccountingMenu));
+                    .AddChoices(menuOptions));
 
-            switch (choice)
+            var option = choice.Split(". ", 2)[1];
+            switch (option)
             {
-                case "1. View Batches":
+                case "View Batches":
                     ShowBatches(factory);
                     break;
-                case "2. Set Unit Sell Price for Batch":
+                case "Set Unit Sell Price for Batch":
                     SetBatchPrice(factory);
                     break;
-                case "3. Return to Main Menu":
+                case "Process Report Requests":
+                    ProcessReportRequests(factory, loggedInUser);
+                    break;
+                case "Return to Main Menu":
                     return;
             }
 
@@ -83,5 +88,31 @@ internal static class AccountingMenuHandler
                 factory.Inventory[idx].SellingPrice = price;
 
         AnsiConsole.MarkupLine($"[green]✔ Batch {chosen.BatchId} priced at ${price:F2} per unit.[/]");
+    }
+
+    private static void ProcessReportRequests(Factory factory, Employee accountant)
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.Write(new Rule("[magenta]Process Report Requests[/]").Centered());
+
+        var pendingRequests = factory.PendingReportRequests.Take(factory.ReportRequestCount)
+            .Where(r => r.Status == ReportStatus.Pending).ToList();
+
+        if (!pendingRequests.Any())
+        {
+            AnsiConsole.MarkupLine("[yellow]No pending report requests.[/]");
+            return;
+        }
+
+        var selector = new SelectionPrompt<ReportRequest>()
+            .Title("Select request to fulfill:")
+            .AddChoices(pendingRequests);
+
+        var chosen = AnsiConsole.Prompt(selector);
+
+        chosen.Status = ReportStatus.Fulfilled;
+
+        AnsiConsole.MarkupLine(
+            $"[green]✔ Report '{chosen.ReportType}' (Req ID: {chosen.RequestId}) fulfilled by {accountant.Name}.[/]");
     }
 }

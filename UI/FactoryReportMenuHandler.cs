@@ -11,29 +11,31 @@ internal static class FactoryReportMenuHandler
             AnsiConsole.Clear();
             AnsiConsole.Write(new Rule("[cyan]FACTORY REPORT MENU[/]").Centered());
 
+            var menuOptions = MenuOptions.FactoryReportMenu.Select((item, index) => $"{index + 1}. {item}").ToList();
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("Choose a factory report:")
-                    .AddChoices(MenuOptions.FactoryReportMenu));
+                    .AddChoices(menuOptions));
 
-            switch (choice)
+            var option = choice.Split(". ", 2)[1];
+            switch (option)
             {
-                case "1. Factory Overview":
+                case "Factory Overview":
                     ShowOverview(factory, loggedInUser);
                     break;
-                case "2. Staffing Report":
+                case "Staffing Report":
                     ShowStaffingReport(factory);
                     break;
-                case "3. Machine Fleet Report":
+                case "Machine Fleet Report":
                     ShowMachineFleetReport(factory);
                     break;
-                case "4. Inventory Report":
+                case "Inventory Report":
                     ShowInventoryReport(factory);
                     break;
-                case "5. View Operation History":
+                case "View Operation History":
                     ShowOperationHistory();
                     break;
-                case "6. Return to Main Menu":
+                case "Return to Main Menu":
                     return;
 
             }

@@ -2,13 +2,13 @@ using Spectre.Console;
 
 namespace Smart_Factory_Management_System;
 
-internal static class TUIHelper
+internal static class TuiHelper
 {
     public static void RenderSessionHeader(Employee user, Factory factory)
     {
         AnsiConsole.Clear();
         var header = new Rule($"[blue]FACTORY CONTROL PANEL - Session: {user.Name}[/]").Centered();
-        var activity = user.AfiseazaActivitate();
+        var activity = user.ShowActivity();
 
         var info = new Grid().AddColumn().AddRow($"[bold]ID:[/] {user.Id}")
             .AddRow($"[bold]Name:[/] {user.Name}")

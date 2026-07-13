@@ -2,12 +2,11 @@
 
 public abstract class Product
 {
-    private double productionCost;
-    private int quantity;
-    private double sellingPrice;
+    private readonly double _productionCost;
+    private int _quantity;
+    private double _sellingPrice;
 
-    // Constructorul pt intitializarea unui produs
-    public Product(string name, double cost, double price, int quantity)
+    protected Product(string name, double cost, double price, int quantity)
     {
         Name = name;
         ProductionCost = cost;
@@ -19,19 +18,19 @@ public abstract class Product
 
     public double ProductionCost
     {
-        get => productionCost;
-        set => productionCost = value >= 0 ? value : 0;
+        get => _productionCost;
+        private init => _productionCost = value >= 0 ? value : 0;
     }
 
     public double SellingPrice
     {
-        get => sellingPrice;
-        set => sellingPrice = value >= 0 ? value : 0;
+        get => _sellingPrice;
+        set => _sellingPrice = value >= 0 ? value : 0;
     }
 
     public int Quantity
     {
-        get => quantity;
+        get => _quantity;
         set
         {
             if (value < 0)
@@ -39,26 +38,19 @@ public abstract class Product
                 throw new ArgumentOutOfRangeException(nameof(value), "Quantity cannot be negative.");
             }
 
-            quantity = value;
+            _quantity = value;
         }
     }
 
     public abstract string GetTechnicalSpecifications();
 }
 
-//clasele derivate pentru diferite tipuri de produse
-public class Microprocessor : Product
+public class Microprocessor(string name, double cost, double price, int quantity, int cores, double clockSpeed)
+    : Product(name, cost, price, quantity)
 {
-    public Microprocessor(string name, double cost, double price, int quantity, int cores, double clockSpeed)
-        : base(name, cost, price, quantity)
-    {
-        Cores = cores;
-        ClockSpeed = clockSpeed;
-    }
-
     public string? Architecture { get; set; }
-    public int? Cores { get; protected set; }
-    public double ClockSpeed { get; protected set; }
+    public int? Cores { get; protected set; } = cores;
+    public double ClockSpeed { get; protected set; } = clockSpeed;
 
     public override string GetTechnicalSpecifications()
     {
@@ -78,19 +70,13 @@ public enum BoardState
     BakedAndSoldered
 }
 
-public class Motherboard : Product
+public class Motherboard(string name, double cost, double price, int quantity, string socket, string type)
+    : Product(name, cost, price, quantity)
 {
-    public Motherboard(string name, double cost, double price, int quantity, string socket, string type)
-        : base(name, cost, price, quantity)
-    {
-        SocketStandard = socket;
-        PhysicalForm = type;
-    }
-
     public BoardState CurrentState { get; private set; } = BoardState.BlankBoard;
 
-    public string? SocketStandard { get; set; }
-    public string? PhysicalForm { get; set; }
+    public string? SocketStandard { get; set; } = socket;
+    public string? PhysicalForm { get; set; } = type;
 
     // Only the machines will call this
     public void TransitionTo(BoardState nextState)

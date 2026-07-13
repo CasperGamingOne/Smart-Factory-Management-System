@@ -1,48 +1,53 @@
-name: Generate and Deploy GitHub Pages Docs
+name: Generate and Deploy Architecture Map
 
 on:
-  workflow_dispatch:      # Allows you to trigger this documentation build manually via the UI
+  push:
+    branches:
+      - main
+      - new-tui-frontend
+  workflow_dispatch:
 
-# Sets specific secure permissions for the native GitHub token layer to publish updates
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allows one concurrent deployment at a time to prevent conflicting pipeline update requests
 concurrency:
   group: "pages"
   cancel-in-progress: true
 
 jobs:
-  build-and-deploy-docs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout Code Repository Base
-        uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v7
 
-      - name: Configure Python Environment Engine
-        uses: actions/setup-python@v5
+      - name: Setup Python
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
+          python-version: '3.11' # Pinned for deterministic behavior
 
-      - name: Execute Project Structural Map Engine
+      - name: Prepare Documentation Directory
+        run: mkdir -p docs # Defensive creation
+
+      - name: Run Documentation Generator
         run: |
-          echo "Executing native script mapping out the repository files..."
-          python scripts/generate_repo_map.py
+          python scripts/generate_docs.py
+          
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
 
-      - name: Initialize Pages Artifact Staging Area
-        uses: actions/configure-pages@v6
-
-      - name: Upload Finished Static Documentation Dashboard
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Target only the root folder containing the newly built index.html
-          path: '.'
+          path: 'docs'
 
-      - name: Deploy Live Portal to GitHub Pages
+      - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@v4

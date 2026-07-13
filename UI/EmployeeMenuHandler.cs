@@ -4,7 +4,7 @@ namespace Smart_Factory_Management_System;
 
 internal static class EmployeeMenuHandler
 {
-    public static void Run(Factory factory, Employee loggedInUser)
+    public static void Run(Factory factory, Employee loggedInUser, IAuthRepository<Employee> repository)
     {
         var inRoom = true;
         while (inRoom)
@@ -12,27 +12,30 @@ internal static class EmployeeMenuHandler
             AnsiConsole.Clear();
             AnsiConsole.Write(new Rule("[green]EMPLOYEE MANAGEMENT MODULE[/]").Centered());
 
+            var menuOptions = MenuOptions.EmployeeManagementMenu.Select((item, index) => $"{index + 1}. {item}")
+                .ToList();
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("[yellow]Select an administrative action:[/]")
-                    .AddChoices(MenuOptions.EmployeeManagementMenu));
+                    .AddChoices(menuOptions));
 
-            switch (choice)
+            var option = choice.Split(". ", 2)[1];
+            switch (option)
             {
-                case "1. View All Registered Staff":
+                case "View All Registered Staff":
                     DisplayStaffTable(factory);
                     break;
 
-                case "2. Add New Employee":
+                case "Add New Employee":
                     if (loggedInUser is not Director)
                         AnsiConsole.MarkupLine(
                             $"[red]❌ Access Denied: {loggedInUser.Role} cannot perform this action.[/]");
                     else
-                        AddNewEmployeeFlow(factory);
+                        AddNewEmployeeFlow(factory, repository);
 
                     break;
 
-                case "3. Return to Main Menu":
+                case "Return to Main Menu":
                     inRoom = false;
                     break;
             }
@@ -58,37 +61,51 @@ internal static class EmployeeMenuHandler
                 factory.Employees[i].Id.ToString(),
                 factory.Employees[i].Name,
                 factory.Employees[i].Role,
-                factory.Employees[i].AfiseazaActivitate()
+                factory.Employees[i].ShowActivity()
             );
 
         AnsiConsole.Write(table);
     }
 
-    private static void AddNewEmployeeFlow(Factory factory)
+    private static void AddNewEmployeeFlow(Factory factory, IAuthRepository<Employee> repository)
     {
         var name = AnsiConsole.Ask<string>("Enter Employee Full Name:");
+        var username = AnsiConsole.Ask<string>("Enter Employee Username:");
+        var password = AnsiConsole.Ask<string>("Enter Employee Password:");
+        var hashedPassword = SecurityHelper.HashPassword(password);
 
         var role = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
                 .Title("Select Job Title:")
                 .AddChoices(MenuOptions.EmployeeRoles));
 
+        Employee? newEmployee = null;
         switch (role)
         {
             case "Technician":
-                factory.AddEmployee(new Technician(name));
+                newEmployee = new Technician(name, username, hashedPassword);
                 break;
             case "Sales Agent":
-                factory.AddEmployee(new SalesAgent(name));
+                newEmployee = new SalesAgent(name, username, hashedPassword);
                 break;
             case "Accountant":
-                factory.AddEmployee(new Accountant(name));
+                newEmployee = new Accountant(name, username, hashedPassword);
                 break;
             default:
                 AnsiConsole.MarkupLine("[red]❌ Invalid role selection. Operation aborted.[/]");
                 return;
         }
 
-        AnsiConsole.MarkupLine($"[green]✔ Employee '{name}' registered successfully![/]");
+        if (newEmployee != null)
+        {
+            newEmployee.IsFirstTimeLogin = true;
+            factory.AddEmployee(newEmployee);
+
+            var users = repository.LoadUsers();
+            users.Add(newEmployee);
+            repository.SaveUsers(users);
+
+            AnsiConsole.MarkupLine($"[green]✔ Employee '{name}' registered successfully![/]");
+        }
     }
 }
