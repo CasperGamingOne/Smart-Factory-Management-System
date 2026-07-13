@@ -150,6 +150,12 @@ internal static class SalesMenuHandler
 
             var soldPrice = AnsiConsole.Ask<double>("Enter unit sold price ($):");
             chosen.IsSold = true;
+            chosen.UnitSellPrice = soldPrice;
+
+            // Apply price to linked inventory items
+            foreach (var idx in chosen.InventoryIndexes)
+                if (idx >= 0 && idx < factory.ProductCount)
+                    factory.Inventory[idx].SellingPrice = soldPrice;
 
             AnsiConsole.MarkupLine(
                 $"[green]✔ Recorded sale for batch {chosen.BatchId} at ${soldPrice:F2} per unit.[/]");
@@ -184,10 +190,14 @@ internal static class SalesMenuHandler
 
             var soldPrice = AnsiConsole.Ask<double>("Enter unit sold price ($):");
 
+            // Update product selling price
+            chosen.SellingPrice = soldPrice;
+
             // Decrease stock and create a record batch for accounting
             chosen.Quantity -= qty;
             var batch = new ProductionBatch(chosen.Name ?? "Inventory Sale", qty, chosen.ProductionCost);
             batch.IsSold = true;
+            batch.UnitSellPrice = soldPrice;
             factory.AddBatch(batch);
 
             AnsiConsole.MarkupLine(
