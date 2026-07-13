@@ -1,5 +1,7 @@
 ﻿using Spectre.Console;
 
+using System.Linq;
+
 namespace Smart_Factory_Management_System;
 
 public enum MachineStatus
@@ -174,27 +176,11 @@ public abstract class Machine
 
     protected void ApplyProductionWearAndTear()
     {
-        var activePartsCount = 0;
-        foreach (var unused in Parts ?? Array.Empty<MachinePart>()) activePartsCount++;
+        var parts = (Parts ?? Array.Empty<MachinePart>()).ToArray();
+        if (parts.Length == 0) return;
 
-        if (activePartsCount == 0) return;
-
-        var randomIndex = Random.Next(0, activePartsCount);
-        var currentStep = 0;
-        MachinePart? selectedPart = null;
-
-        foreach (var part in Parts ?? Array.Empty<MachinePart>())
-        {
-            if (currentStep == randomIndex)
-            {
-                selectedPart = part;
-                break;
-            }
-
-            currentStep++;
-        }
-
-        if (selectedPart == null) return;
+        var randomIndex = Random.Next(0, parts.Length);
+        MachinePart? selectedPart = parts[randomIndex];
 
         if (Random.Next(0, 100) < 20)
         {
