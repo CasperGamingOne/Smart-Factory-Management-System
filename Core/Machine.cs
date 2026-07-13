@@ -1,7 +1,5 @@
 ﻿using Spectre.Console;
 
-using System.Linq;
-
 namespace Smart_Factory_Management_System;
 
 public enum MachineStatus
@@ -180,7 +178,7 @@ public abstract class Machine
         if (parts.Length == 0) return;
 
         var randomIndex = Random.Next(0, parts.Length);
-        MachinePart? selectedPart = parts[randomIndex];
+        MachinePart selectedPart = parts[randomIndex];
 
         if (Random.Next(0, 100) < 20)
         {
@@ -403,14 +401,14 @@ public class SmtMachine : Machine // Solder Paste Printer
     }
 }
 
-public class PaPMachine : Machine // Pick and Place
+public class PaPMachine(
+    string machineName,
+    string machineManufacturer,
+    string machineSerial,
+    MachinePart[] parts,
+    MachineCondition condition)
+    : Machine(machineName, machineManufacturer, machineSerial, parts, condition) // Pick and Place
 {
-    public PaPMachine(string machineName, string machineManufacturer, string machineSerial, MachinePart[] parts,
-        MachineCondition condition)
-        : base(machineName, machineManufacturer, machineSerial, parts, condition)
-    {
-    }
-
     public override bool Produce(Product product)
     {
         return TryProcessMotherboard(product, BoardState.SolderPrinted, BoardState.ComponentsPlaced,
@@ -418,14 +416,14 @@ public class PaPMachine : Machine // Pick and Place
     }
 }
 
-public class ReflowOven : Machine
+public class ReflowOven(
+    string machineName,
+    string machineManufacturer,
+    string machineSerial,
+    MachinePart[] parts,
+    MachineCondition condition)
+    : Machine(machineName, machineManufacturer, machineSerial, parts, condition)
 {
-    public ReflowOven(string machineName, string machineManufacturer, string machineSerial, MachinePart[] parts,
-        MachineCondition condition)
-        : base(machineName, machineManufacturer, machineSerial, parts, condition)
-    {
-    }
-
     public override bool Produce(Product product)
     {
         return TryProcessMotherboard(product, BoardState.ComponentsPlaced, BoardState.BakedAndSoldered,
