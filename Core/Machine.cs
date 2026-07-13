@@ -61,6 +61,11 @@ public abstract class Machine
         return TimeSpan.FromDays((DateTime.Now - InstallationDate).TotalDays);
     }
 
+    public double GetMachineAgeInYears()
+    {
+        return (DateTime.Now - InstallationDate).TotalDays / 365.25;
+    }
+
     public void StartOrder(ProductionOrder order)
     {
         ActiveOrder = order;
@@ -230,7 +235,7 @@ public abstract class Machine
 
         profileTable.AddRow("Manufacturer Identity", Manufacturer ?? "-");
         profileTable.AddRow("Factory Serial Reference", SerialNumber ?? "-");
-        profileTable.AddRow("Asset Total Life Age", $"{GetMachineAge()} Years Old");
+        profileTable.AddRow("Asset Total Life Age", $"{GetMachineAgeInYears():F1} Years Old");
 
         var statusColor = Status == MachineStatus.Running
             ? "green"
