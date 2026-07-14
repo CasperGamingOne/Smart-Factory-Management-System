@@ -3,7 +3,7 @@
 > [!IMPORTANT]
 > Project early in development! The repository map and UML overview are generated from `scripts/generate_repo_map.py`.
 > 
-> GitHub Pages: https://caspergamingone.github.io/Smart-Factory-Management-System/
+> GitHub Page: https://caspergamingone.github.io/Smart-Factory-Management-System/
 > 
 > Generated overview: [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md)
 
