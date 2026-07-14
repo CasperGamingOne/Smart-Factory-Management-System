@@ -26,6 +26,3 @@
 - [x] to revise code                  | @CasperGamingOne
 - [ ] to make dynamic menus           | @CasperGamingOne
 - [ ] to add menu restrictions        | @CasperGamingOne
-
-``
-``
