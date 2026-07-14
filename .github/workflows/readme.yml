@@ -1,0 +1,51 @@
+name: Generate Readme
+
+on:
+  push:
+    branches:
+      - new-tui-frontend
+  pull_request:
+    branches:
+      - new-tui-frontend
+  workflow_dispatch:
+
+permissions:
+  contents: write # Required to allow the action to commit the generated README.md
+
+jobs:
+  generate-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Generate README
+        uses: bitflight-devops/github-action-readme-generator@v1
+        with:
+          # REQUIRED: GitHub Token for API authentication
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+          # OPTIONAL PARAMETERS (Uncomment to enable):
+          
+          output_file: "README.md"
+          # template: ".github/templates/README.md"
+          base_path: "."
+          
+          # Boolean Toggles:
+          enable_badges: true
+          enable_contributors: true
+          enable_stars: true
+          enable_forks: true
+          enable_issues: true
+          enable_pull_requests: true
+          enable_license: true
+          enable_description: true
+          enable_topics: true
+          enable_languages: true
+          
+          # Customization:
+          readme_title: "README for Smart Factory Management System"
+          # custom_css: ".custom-style { color: red; }"
+          # exclude_files: "docs/**"
+          # include_files: "**/*.md"
+          branch: "new-tui-frontend"
