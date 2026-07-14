@@ -25,6 +25,8 @@ jobs:
 
       - name: Run Readme Generator Plugin
         uses: bitflight-devops/github-action-readme-generator@v1
+        env:
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
         with:
           # =========================================================================
           # EVERY SINGLE VALID PARAMETER POSSIBLE FOR THIS PLUGIN
