@@ -13,20 +13,65 @@ permissions:
   contents: write # Required to allow the action to commit the generated README.md
 
 jobs:
-  generate-readme:
+  update-readme:
+    name: Auto-Generate README
     runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required to fetch tags and version history for the generator
 
-      - name: Generate Readme
+      - name: Run Readme Generator Plugin
         uses: bitflight-devops/github-action-readme-generator@v1
         with:
+          # =========================================================================
+          # EVERY SINGLE VALID PARAMETER POSSIBLE FOR THIS PLUGIN
+          # Based on strict action.yml schema (No invalid keys like 'github_token')
+          # =========================================================================
+          
+          # (Required) The action to perform. 
+          action: 'generate'
+          
+          # (Required) The path to the readme file you want to update.
           readme: 'README.md'
+          
+          # (Optional) Owner of the repository. Auto-detects if left blank.
+          # owner: ''
+          
+          # (Optional) Name of the repository. Auto-detects if left blank.
+          # repo: ''
+          
+          # (Optional) Saves the generated markdown directly to the file.
           save: 'true'
-          path: .
+          
+          # (Optional) Formats and prettifies the output Markdown.
           pretty: 'true'
-        env:
-          # The plugin expects the token via an environment variable, 
-          # not a 'with' input.
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+          # (Optional) Enables automatic versioning tags in the README.
+          versioning_enabled: 'true'
+          
+          # (Optional) Hardcodes a specific version (Leave commented to auto-detect).
+          # version_override: ''
+          
+          # (Optional) Prefix for the version tag (e.g., 'v' for v1.0.0).
+          version_prefix: 'v'
+          
+          # (Optional) The branch to check for default versioning.
+          versioning_default_branch: 'new-tui-frontend'
+          
+          # (Optional) Source of the version data. Can be 'tags' or 'package.json'.
+          version_source: 'tags'
+          
+          # (Optional) A custom prefix added to the title of the README.
+          # title_prefix: ''
+          
+          # (Optional) Toggles the GitHub version badge on or off.
+          include_github_version_badge: 'true'
+          
+          # (Optional) Path to a logo/SVG file for branding at the top.
+          # branding_svg_path: ''
+          
+          # (Optional) Uses the branding SVG specifically as the title prefix.
+          branding_as_title_prefix: 'false'
