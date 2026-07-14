@@ -28,8 +28,6 @@ jobs:
         env:
           ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
         with:
-          # Only include valid inputs. 
-          # Remove 'action', 'path', 'github_token', etc.
           readme: 'README.md'
           save: true
           pretty: true
