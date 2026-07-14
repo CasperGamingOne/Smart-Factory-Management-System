@@ -59,14 +59,14 @@ jobs:
       - name: 🗜️ Compress Artifacts
         run: |
           # Zip the executables so they are easy to download from the GitHub Releases page
-          zip -j windows-smart-factory.zip ./publish/windows/*
-          zip -j linux-smart-factory.zip ./publish/linux/*
+          zip -j windows-smart-factory-management-system.zip ./publish/windows/*
+          zip -j linux-smart-factory-management-system.zip ./publish/linux/*
 
       - name: 🚀 Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: Smart Factory Release ${{ github.ref_name }}
+          name: Smart Factory Management System Release ${{ github.ref_name }}
           generate_release_notes: true # Auto-generates changelog based on your PRs!
           files: |
-            windows-smart-factory.zip
-            linux-smart-factory.zip
+            windows-smart-factory-management-system.zip
+            linux-smart-factory-management-system.zip
