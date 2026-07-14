@@ -4,7 +4,7 @@ namespace Smart_Factory_Management_System;
 
 internal static class ProductMenuHandler
 {
-    public static void Run(Factory factory, Employee currentUser)
+    public static void Run(Factory factory, Employee currentUser, ILoggerService loggerService)
     {
         while (true)
         {
@@ -46,7 +46,7 @@ internal static class ProductMenuHandler
                 case "Sales & Orders":
                     // Reuse Sales menu view; if user is SalesAgent, open full Sales UI
                     if (currentUser is SalesAgent || currentUser is Director)
-                        SalesMenuHandler.Run(factory, currentUser);
+                        SalesMenuHandler.Run(factory, currentUser, loggerService);
                     else
                         SalesMenuHandler.ShowPendingOrders(factory);
                     break;

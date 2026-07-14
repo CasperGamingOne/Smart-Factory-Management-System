@@ -4,7 +4,7 @@ namespace Smart_Factory_Management_System;
 
 internal static class FactoryReportMenuHandler
 {
-    public static void Run(Factory factory, Employee loggedInUser)
+    public static void Run(Factory factory, Employee loggedInUser, ILoggerService loggerService)
     {
         while (true)
         {

@@ -26,6 +26,7 @@ internal static class Program
             var loggedInUser = LoginMenuHandler.ShowLoginScreen(authRepository, loggerService);
             if (loggedInUser == null)
             {
+                loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.ClosingApplication, loggedInUser?.Username);
                 AnsiConsole.MarkupLine("[red]Application shutting down...[/]");
                 break;
             }
@@ -55,7 +56,7 @@ internal static class Program
 
                 if (option == loggedInUser.QuickActionName)
                 {
-                    ExecuteQuickAction(loggedInUser, factory, authRepository);
+                    ExecuteQuickAction(loggedInUser, factory, authRepository, loggerService);
                 }
                 else
                 {
@@ -65,21 +66,22 @@ internal static class Program
                             EmployeeMenuHandler.Run(factory, loggedInUser, authRepository);
                             break;
                         case "Machine Management":
-                            MachineMenuHandler.Run(factory, loggedInUser);
+                            MachineMenuHandler.Run(factory, loggedInUser, loggerService);
                             break;
                         case "Product Management":
-                            ProductMenuHandler.Run(factory, loggedInUser);
+                            ProductMenuHandler.Run(factory, loggedInUser, loggerService);
                             break;
                         case "Accounting":
-                            AccountingMenuHandler.Run(factory, loggedInUser);
+                            AccountingMenuHandler.Run(factory, loggedInUser, loggerService);
                             break;
                         case "Reports":
-                            ReportMenuHandler.Run(factory, loggedInUser);
+                            ReportMenuHandler.Run(factory, loggedInUser, loggerService);
                             break;
                         case "Factory Information":
-                            FactoryReportMenuHandler.Run(factory, loggedInUser);
+                            FactoryReportMenuHandler.Run(factory, loggedInUser, loggerService);
                             break;
                         case "Log Out / Exit Session":
+                            loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.Logout, loggedInUser.Username);
                             AnsiConsole.MarkupLine("[yellow]Logging out of current profile...[/]");
                             Thread.Sleep(600);
                             sessionActive = false;
@@ -90,11 +92,12 @@ internal static class Program
         }
     }
 
-    private static void ExecuteQuickAction(Employee user, Factory factory, IAuthRepository<Employee> authRepository)
+    private static void ExecuteQuickAction(Employee user, Factory factory, IAuthRepository<Employee> authRepository,
+        ILoggerService loggerService)
     {
         if (user is Director) EmployeeMenuHandler.Run(factory, user, authRepository);
-        else if (user is Technician) MachineMenuHandler.Run(factory, user);
-        else if (user is SalesAgent) SalesMenuHandler.Run(factory, user);
-        else if (user is Accountant) AccountingMenuHandler.Run(factory, user);
+        else if (user is Technician) MachineMenuHandler.Run(factory, user, loggerService);
+        else if (user is SalesAgent) SalesMenuHandler.Run(factory, user, loggerService);
+        else if (user is Accountant) AccountingMenuHandler.Run(factory, user, loggerService);
     }
 }

@@ -2,14 +2,11 @@
 
 public class Factory
 {
-    // --- 1. THE CONSTRUCTOR HANDLES INITIAL DATA SEEDING ---
     public Factory()
     {
         SeedInitialData();
     }
 
-    // --- 2. ADVANCED COLLECTIONS (Replacing Arrays) ---
-    // Using Queue for Orders and Reports (First-In, First-Out)
     public Queue<ProductionOrder> PendingOrders { get; private set; } = new Queue<ProductionOrder>();
     public int OrderCount => PendingOrders.Count;
 
@@ -29,7 +26,6 @@ public class Factory
     public List<Product> Inventory { get; } = new List<Product>();
     public int ProductCount => Inventory.Count;
 
-    // --- 3. SEEDING LOGIC ---
     private void SeedInitialData()
     {
         AddProduct(new Microprocessor("ARM Cortex-M4", 50, 74.99, 10, 4, 2.5));
@@ -80,10 +76,6 @@ public class Factory
         AddMachine(new ReflowOven("OmniMax Thermal Tunnel", "Heller Industries", "SN-HLR-5542-Z9", ovenParts,
             MachineCondition.Critical));
     }
-
-    // --- 4. STREAMLINED ADD METHODS ---
-    // With generic collections, you no longer need capacity checks (if count < length). 
-    // They dynamically expand, wiping out an entire category of potential bugs!
 
     public void AddEmployee(Employee employee) => Employees.Add(employee);
 

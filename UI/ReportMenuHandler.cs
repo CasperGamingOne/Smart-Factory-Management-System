@@ -4,7 +4,7 @@ namespace Smart_Factory_Management_System;
 
 internal static class ReportMenuHandler
 {
-    public static void Run(Factory factory, Employee loggedInUser)
+    public static void Run(Factory factory, Employee loggedInUser, ILoggerService loggerService)
     {
         while (true)
         {
@@ -163,8 +163,6 @@ internal static class ReportMenuHandler
 
         foreach (var order in factory.PendingOrders)
         {
-            
-
             table.AddRow(
                 order.OrderId,
                 order.ProductName,

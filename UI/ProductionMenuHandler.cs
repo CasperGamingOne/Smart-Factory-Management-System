@@ -4,7 +4,7 @@ namespace Smart_Factory_Management_System;
 
 internal static class ProductionMenuHandler
 {
-    public static void Run(Factory factory, Employee loggedInUser)
+    public static void Run(Factory factory, Employee loggedInUser, ILoggerService loggerService)
     {
         AnsiConsole.Clear();
         AnsiConsole.Write(Align.Left(new Rule("[yellow]🏭 Active Production Control Deck[/]")));
@@ -111,6 +111,8 @@ internal static class ProductionMenuHandler
 
             selectedMachine.StartOrder(order);
             selectedMachine.Produce(produced);
+            loggerService.LogInfo(LogOrigin.USER, LogEvent.ProductionStarted,
+                $"${order.ProductName} * {order.Quantity}");
 
             if (selectedMachine.Status == MachineStatus.Running)
             {
@@ -123,6 +125,21 @@ internal static class ProductionMenuHandler
                 AnsiConsole.MarkupLine("[red]Machine tripped. Production paused.[/]");
                 break;
             }
+        }
+
+        if (order.IsComplete)
+        {
+            loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.ProductionCompleted,
+                $"{order.ProductName} * {order.Quantity}");
+            AnsiConsole.MarkupLine(
+                "$\"[green]Batch complete. Created batch {batch.BatchId} with {batch.InventoryIndexes.Count} items.[/]\"");
+        }
+        else
+        {
+            loggerService.LogWarning(LogOrigin.SYSTEM, LogEvent.ProductionInterrupted,
+                $"{order.ProductName} * {order.Quantity}");
+            AnsiConsole.MarkupLine(
+                $"[yellow]Order incomplete. Produced {order.CompletedCount}/{order.Quantity} so far.[/]");
         }
 
         AnsiConsole.MarkupLine(
@@ -266,6 +283,7 @@ internal static class ProductionMenuHandler
                 pendingOrders.Add(order);
             }
         }
+
         return pendingOrders;
     }
 

@@ -15,6 +15,6 @@ public interface IAuthRepository<T>
 public interface ILoggerService
 {
     void LogInfo(LogOrigin origin, LogEvent eventType, string context = "");
-    void LogWarning(string message);
+    void LogWarning(LogOrigin origin, LogEvent eventType, string context = "");
     void LogError(string message);
 }

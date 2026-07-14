@@ -4,7 +4,7 @@ namespace Smart_Factory_Management_System;
 
 internal static class SalesMenuHandler
 {
-    public static void Run(Factory factory, Employee loggedInUser)
+    public static void Run(Factory factory, Employee loggedInUser, ILoggerService loggerService)
     {
         if (loggedInUser is not SalesAgent && loggedInUser is not Director)
         {
@@ -116,7 +116,7 @@ internal static class SalesMenuHandler
         foreach (var o in factory.PendingOrders)
         {
             table.AddRow(
-                o.OrderId.ToString(),
+                o.OrderId,
                 o.ProductName,
                 o.Quantity.ToString(),
                 o.CompletedCount.ToString(),

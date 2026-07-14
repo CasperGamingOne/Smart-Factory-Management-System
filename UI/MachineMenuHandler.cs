@@ -4,7 +4,7 @@ namespace Smart_Factory_Management_System;
 
 internal static class MachineMenuHandler
 {
-    public static void Run(Factory factory, Employee loggedInUser)
+    public static void Run(Factory factory, Employee loggedInUser, ILoggerService loggerService)
     {
         var inRoom = true;
         while (inRoom)
@@ -30,11 +30,11 @@ internal static class MachineMenuHandler
                         AnsiConsole.MarkupLine(
                             $"[red]❌ Access Denied: {loggedInUser.Role} cannot perform this action.[/]");
                     else
-                        RunInspection(factory);
+                        RunInspection(factory, loggerService);
                     break;
 
                 case "Fulfill Pending Orders":
-                    ProductionMenuHandler.Run(factory, loggedInUser);
+                    ProductionMenuHandler.Run(factory, loggedInUser, loggerService);
                     break;
                 case "Return to Main Menu":
                     inRoom = false;
@@ -67,7 +67,7 @@ internal static class MachineMenuHandler
         AnsiConsole.Write(table);
     }
 
-    private static void RunInspection(Factory factory)
+    private static void RunInspection(Factory factory, ILoggerService loggerService)
     {
         if (factory.MachineCount == 0)
         {
@@ -101,5 +101,7 @@ internal static class MachineMenuHandler
         {
             AnsiConsole.MarkupLine("[green]This machine does not currently need repairs.[/]");
         }
+
+        loggerService.LogInfo(LogOrigin.USER, LogEvent.MaintenancePerformed, chosenMachine.Name!);
     }
 }

@@ -4,7 +4,7 @@ namespace Smart_Factory_Management_System;
 
 internal static class AccountingMenuHandler
 {
-    public static void Run(Factory factory, Employee loggedInUser)
+    public static void Run(Factory factory, Employee loggedInUser, ILoggerService loggerService)
     {
         if (loggedInUser is not Accountant)
         {
