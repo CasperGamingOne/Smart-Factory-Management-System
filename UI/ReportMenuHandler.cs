@@ -161,9 +161,9 @@ internal static class ReportMenuHandler
         table.AddColumn("Assigned Tech");
         table.AddColumn("Status");
 
-        for (var i = 0; i < factory.OrderCount; i++)
+        foreach (var order in factory.PendingOrders)
         {
-            var order = factory.PendingOrders[i];
+            
 
             table.AddRow(
                 order.OrderId,

@@ -48,7 +48,7 @@ internal static class PasswordChangeHandler
                 repository.SaveUsers(users);
                 AnsiConsole.MarkupLine("[green]✅ Password updated successfully.[/]");
             }
-            catch (IOException ex)
+            catch (IOException)
             {
                 // Log the actual error internally if needed
                 AnsiConsole.MarkupLine("[red]❌ Critical error: Could not write to the database file.[/]");

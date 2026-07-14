@@ -113,11 +113,15 @@ internal static class SalesMenuHandler
 
         var table = new Table().AddColumn("Order").AddColumn("Product").AddColumn("Qty").AddColumn("Done")
             .AddColumn("TechId");
-        for (var i = 0; i < factory.OrderCount; i++)
+        foreach (var o in factory.PendingOrders)
         {
-            var o = factory.PendingOrders[i];
-            table.AddRow(o.OrderId, o.ProductName, o.Quantity.ToString(), o.CompletedCount.ToString(),
-                o.AssignedTechnicianId.ToString());
+            table.AddRow(
+                o.OrderId.ToString(),
+                o.ProductName,
+                o.Quantity.ToString(),
+                o.CompletedCount.ToString(),
+                o.AssignedTechnicianId.ToString()
+            );
         }
 
         AnsiConsole.Write(table);
@@ -158,7 +162,6 @@ internal static class SalesMenuHandler
             foreach (var idx in chosen.InventoryIndexes)
                 if (idx >= 0 && idx < factory.ProductCount)
                     factory.Inventory[idx].SellingPrice = soldPrice;
-
             AnsiConsole.MarkupLine(
                 $"[green]✔ Recorded sale for batch {chosen.BatchId} at ${soldPrice:F2} per unit.[/]");
         }
@@ -197,9 +200,11 @@ internal static class SalesMenuHandler
 
             // Decrease stock and create a record batch for accounting
             chosen.Quantity -= qty;
-            var batch = new ProductionBatch(chosen.Name ?? "Inventory Sale", qty, chosen.ProductionCost);
-            batch.IsSold = true;
-            batch.UnitSellPrice = soldPrice;
+            var batch = new ProductionBatch(chosen.Name ?? "Inventory Sale", qty, chosen.ProductionCost)
+            {
+                IsSold = true,
+                UnitSellPrice = soldPrice
+            };
             factory.AddBatch(batch);
 
             AnsiConsole.MarkupLine(

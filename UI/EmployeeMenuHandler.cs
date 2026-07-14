@@ -79,7 +79,8 @@ internal static class EmployeeMenuHandler
                 .Title("Select Job Title:")
                 .AddChoices(MenuOptions.EmployeeRoles));
 
-        Employee? newEmployee = null;
+        Employee newEmployee;
+
         switch (role)
         {
             case "Technician":
@@ -96,16 +97,13 @@ internal static class EmployeeMenuHandler
                 return;
         }
 
-        if (newEmployee != null)
-        {
-            newEmployee.IsFirstTimeLogin = true;
-            factory.AddEmployee(newEmployee);
+        newEmployee.IsFirstTimeLogin = true;
+        factory.AddEmployee(newEmployee);
 
-            var users = repository.LoadUsers();
-            users.Add(newEmployee);
-            repository.SaveUsers(users);
+        var users = repository.LoadUsers();
+        users.Add(newEmployee);
+        repository.SaveUsers(users);
 
-            AnsiConsole.MarkupLine($"[green]✔ Employee '{name}' registered successfully![/]");
-        }
+        AnsiConsole.MarkupLine($"[green]✔ Employee '{name}' registered successfully![/]");
     }
 }
