@@ -1,0 +1,10 @@
+name: 'Smart Factory Management System'
+description: 'Automated documentation for the Smart Factory Management System'
+branding:
+  icon: 'book'
+  color: 'blue'
+runs:
+  using: 'composite'
+  steps:
+    - run: echo "Documentation source initialized."
+      shell: bash
