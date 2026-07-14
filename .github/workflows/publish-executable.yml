@@ -31,14 +31,14 @@ jobs:
       - name: 🔍 Code Analysis & Validation
         run: |
           echo "Running rigorous structural analysis..."
-          dotnet build Smart-Factory-Management-System.slnx --no-restore --configuration Release -warnaserror
+          dotnet build UI/UI.csproj --no-restore --configuration Release -warnaserror
           
           # If you set up Qodana or a Testing project earlier, you can execute it here:
           # dotnet test --no-build --verbosity normal
 
       - name: 🪟 Publish Windows Executable (Self-Contained)
         run: >
-          dotnet publish Smart-Factory-Management-System.csproj 
+          dotnet publish UI/UI.csproj 
           -c Release 
           -r win-x64 
           --self-contained true 
@@ -48,7 +48,7 @@ jobs:
 
       - name: 🐧 Publish Linux Executable (Self-Contained)
         run: >
-          dotnet publish Smart-Factory-Management-System.csproj 
+          dotnet publish UI/UI.csproj
           -c Release 
           -r linux-x64 
           --self-contained true 
