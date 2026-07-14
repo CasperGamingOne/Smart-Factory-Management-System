@@ -24,6 +24,7 @@ jobs:
         with:
           readme: 'README.md'
           save: 'true'
+          path: .
           pretty: 'true'
         env:
           # The plugin expects the token via an environment variable, 
