@@ -22,7 +22,6 @@ jobs:
       - name: Generate Readme
         uses: bitflight-devops/github-action-readme-generator@v1
         with:
-          action: 'generate'
           readme: 'README.md'
           save: 'true'
           pretty: 'true'
