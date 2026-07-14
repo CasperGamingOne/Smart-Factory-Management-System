@@ -113,11 +113,15 @@ internal static class SalesMenuHandler
 
         var table = new Table().AddColumn("Order").AddColumn("Product").AddColumn("Qty").AddColumn("Done")
             .AddColumn("TechId");
-        for (var i = 0; i < factory.OrderCount; i++)
+        foreach (var o in factory.PendingOrders)
         {
-            var o = factory.PendingOrders[i];
-            table.AddRow(o.OrderId, o.ProductName, o.Quantity.ToString(), o.CompletedCount.ToString(),
-                o.AssignedTechnicianId.ToString());
+            table.AddRow(
+                o.OrderId.ToString(),
+                o.ProductName,
+                o.Quantity.ToString(),
+                o.CompletedCount.ToString(),
+                o.AssignedTechnicianId.ToString()
+            );
         }
 
         AnsiConsole.Write(table);

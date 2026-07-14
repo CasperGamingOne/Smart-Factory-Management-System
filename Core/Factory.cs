@@ -10,26 +10,28 @@ public class Factory
         SeedInitialData();
     }
 
-    public ProductionOrder[] PendingOrders { get; } = new ProductionOrder[50];
-    public int OrderCount { get; private set; }
+    //public ProductionOrder[] PendingOrders { get; } = new ProductionOrder[50];
+    public Queue<ProductionOrder> PendingOrders { get; private set; } = new Queue<ProductionOrder>();
+    public int OrderCount => PendingOrders.Count;//public int OrderCount { get; private set; }
 
     public ReportRequest[] PendingReportRequests { get; } = new ReportRequest[50];
     public int ReportRequestCount { get; private set; }
 
     // Track finished production batches for accounting and sales
-    public ProductionBatch[] Batches { get; } = new ProductionBatch[100];
-    public int BatchCount { get; private set; }
+    //public ProductionBatch[] Batches { get; } = new ProductionBatch[100];
+    public List<ProductionBatch> Batches { get; } = new List<ProductionBatch>();
+    public int BatchCount => Batches.Count; //public int BatchCount { get; private set; }
 
     // Core bounded arrays
-    public Employee[] Employees { get; } = new Employee[100];
-    public Machine[] Machines { get; } = new Machine[50];
-    public Product[] Inventory { get; } = new Product[200];
+    public List<Employee> Employees { get; } = new List<Employee>();
+    public int EmployeeCount => Employees.Count;
 
-    public int EmployeeCount { get; private set; }
+    public List<Machine> Machines { get; } = new List<Machine>();
+    public int MachineCount => Machines.Count;
 
-    public int MachineCount { get; private set; }
+    public List<Product> Inventory { get; } = new List<Product>();
+    public int ProductCount => Inventory.Count;
 
-    public int ProductCount { get; private set; }
 
     private void SeedInitialData()
     {
@@ -86,14 +88,15 @@ public class Factory
             MachineCondition.Critical));
     }
 
-    public void AddEmployee(Employee employee)
-    {
-        if (EmployeeCount < Employees.Length)
-        {
-            Employees[EmployeeCount] = employee;
-            EmployeeCount++;
-        }
-    }
+    //public void AddEmployee(Employee employee)
+    //{
+    //    if (EmployeeCount < Employees.Length)
+    //    {
+    //        Employees[EmployeeCount] = employee;
+    //        EmployeeCount++;
+    //    }
+    //}
+    public void AddEmployee(Employee employee) => Employees.Add(employee);
 
     private void AddMachine(Machine machine)
     {
@@ -116,31 +119,26 @@ public class Factory
     // Add product and track association with a production batch
     public void AddProduct(Product product, string? batchId)
     {
-        if (ProductCount < Inventory.Length)
+        Inventory.Add(product);
+        int index = Inventory.Count - 1;
+
+        if (!string.IsNullOrEmpty(batchId))
         {
-            Inventory[ProductCount] = product;
-
-            // If a batch id is provided, find the batch and record the inventory index
-            if (!string.IsNullOrEmpty(batchId))
-                for (var i = 0; i < BatchCount; i++)
-                    if (Batches[i].BatchId == batchId)
-                    {
-                        Batches[i].InventoryIndexes.Add(ProductCount);
-                        break;
-                    }
-
-            ProductCount++;
+            var batch = Batches.Find(b => b.BatchId == batchId);
+            batch?.InventoryIndexes.Add(index);
         }
     }
 
-    public void AddOrder(ProductionOrder order)
-    {
-        if (OrderCount < PendingOrders.Length)
-        {
-            PendingOrders[OrderCount] = order;
-            OrderCount++;
-        }
-    }
+    //public void AddOrder(ProductionOrder order)
+    //{
+    //    if (OrderCount < PendingOrders.Length)
+    //    {
+    //        PendingOrders[OrderCount] = order;
+    //        OrderCount++;
+    //    }
+    //}
+
+    public void AddOrder(ProductionOrder order) => PendingOrders.Enqueue(order);
 
     public void AddReportRequest(ReportRequest request)
     {
