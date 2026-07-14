@@ -3,7 +3,7 @@ using Spectre.Console;
 
 namespace Smart_Factory_Management_System;
 
-internal class Program
+internal static class Program
 {
     private static void Main()
     {
@@ -11,7 +11,8 @@ internal class Program
 
         // Initialize core factory and seed data
         var factory = new Factory();
-        var authRepository = new JsonAuthRepository();
+        var loggerService = new LoggerService(new FileSystemService());
+        var authRepository = new JsonAuthRepository(new FileSystemService());
         var employees = authRepository.LoadUsers();
         foreach (var employee in employees) factory.AddEmployee(employee);
 
@@ -20,7 +21,7 @@ internal class Program
             AnsiConsole.Clear();
             AnsiConsole.Write(new Rule("[yellow]SMART FACTORY SYSTEM - LOGIN GATEWAY[/]").Centered());
 
-            var loggedInUser = LoginHandler.ShowLoginScreen(authRepository);
+            var loggedInUser = LoginMenuHandler.ShowLoginScreen(authRepository, loggerService);
             if (loggedInUser == null)
             {
                 AnsiConsole.MarkupLine("[red]Application shutting down...[/]");

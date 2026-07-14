@@ -37,12 +37,10 @@ internal static class FactoryReportMenuHandler
                     break;
                 case "Return to Main Menu":
                     return;
-
             }
         }
     }
 
-    //*****
     private static void ShowOperationHistory()
     {
         AnsiConsole.Clear();
@@ -72,13 +70,13 @@ internal static class FactoryReportMenuHandler
                     table.AddRow(parts[0].Trim(), parts[1].Trim(), parts[2].Trim());
                 }
             }
+
             AnsiConsole.Write(table);
         }
 
         Pause();
     }
 
-    */
     private static void ShowOverview(Factory factory, Employee loggedInUser)
     {
         AnsiConsole.Clear();
@@ -202,5 +200,4 @@ internal static class FactoryReportMenuHandler
         AnsiConsole.MarkupLine("\n[grey]Press any key to return...[/]");
         Console.ReadKey(true);
     }
-
 }

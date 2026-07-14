@@ -42,6 +42,7 @@ internal static class MenuOptions
         "Staffing Report",
         "Machine Fleet Report",
         "Inventory Report",
+        "View Operation History",
         "Return to Main Menu"
     ];
 

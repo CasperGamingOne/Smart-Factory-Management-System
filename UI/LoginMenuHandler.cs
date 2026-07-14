@@ -2,9 +2,9 @@
 
 namespace Smart_Factory_Management_System;
 
-internal static class LoginHandler
+internal static class LoginMenuHandler
 {
-    public static Employee? ShowLoginScreen(IAuthRepository<Employee> repository)
+    public static Employee? ShowLoginScreen(IAuthRepository<Employee> repository, ILoggerService logger)
     {
         while (true)
         {
@@ -40,21 +40,18 @@ internal static class LoginHandler
             // Authentication logic
             if (matchedEmployee != null)
             {
-                //****
-                Logger.Log(matchedEmployee.Name, "Successful login");
+                logger.LogInfo(LogOrigin.SYSTEM, LogEvent.LoginSuccess, matchedEmployee.Username);
                 AnsiConsole.MarkupLine("[green]✔ Access Granted successfully![/]");
                 Thread.Sleep(600); // Visual feedback pause
                 return matchedEmployee;
             }
-            else
-            {
-                // Aici logăm eșecul (folosim "System" deoarece nu știm cine a încercat să intre)
-                Logger.Log("System", $"Failed login attempt for ID: {empId}");
-            }
 
             // Error boundary feedback
+            logger.LogInfo(LogOrigin.SYSTEM, LogEvent.LoginFailed, username);
             AnsiConsole.MarkupLine("[red]❌ Error: Invalid username or password.[/]");
             AnsiConsole.MarkupLine("[grey]Press any key to try again...[/]");
+
+
             Console.ReadKey(true);
         }
     }

@@ -122,8 +122,8 @@ public abstract class Machine
         };
 
         AnsiConsole.Write(successPanel);
+
         //****
-        Logger.Log($"Started machine {Name} (ID: {Id})");
         return true;
     }
 
@@ -161,7 +161,6 @@ public abstract class Machine
 
         Status = MachineStatus.Stopped;
         //******
-        Logger.Log($"Stopped machine {Name} (ID: {Id})");
         var stopPanel = new Panel(
             new Markup($"[red]🛑 [bold]SHUTDOWN COMPLETE:[/] {Name} has been safely isolated and powered down.\n" +
                        $"[grey]Operational State updated to:[/] [yellow bold]STOPPED (STANDBY)[/]")
@@ -309,7 +308,6 @@ public abstract class Machine
         };
 
         AnsiConsole.Write(panel);
-        Logger.Log($"Repaired machine {Name} (ID: {Id}) - {repairedParts} parts restored.");
         return true;
     }
 
@@ -342,7 +340,8 @@ public abstract class Machine
         }
 
         board.TransitionTo(nextState);
-        AnsiConsole.MarkupLine($"[green]Successfully completed {stageName} for {board.Name}. New state: {nextState}[/]");
+        AnsiConsole.MarkupLine(
+            $"[green]Successfully completed {stageName} for {board.Name}. New state: {nextState}[/]");
         return true;
     }
 
