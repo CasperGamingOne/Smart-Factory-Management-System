@@ -28,52 +28,9 @@ jobs:
         env:
           ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
         with:
-          # =========================================================================
-          # EVERY SINGLE VALID PARAMETER POSSIBLE FOR THIS PLUGIN
-          # Based on strict action.yml schema (No invalid keys like 'github_token')
-          # =========================================================================
-          
-          # (Required) The action to perform. 
-          action: 'generate'
-          
-          # (Required) The path to the readme file you want to update.
+          # Only include valid inputs. 
+          # Remove 'action', 'path', 'github_token', etc.
           readme: 'README.md'
-          
-          # (Optional) Owner of the repository. Auto-detects if left blank.
-          # owner: ''
-          
-          # (Optional) Name of the repository. Auto-detects if left blank.
-          # repo: ''
-          
-          # (Optional) Saves the generated markdown directly to the file.
-          save: 'true'
-          
-          # (Optional) Formats and prettifies the output Markdown.
-          pretty: 'true'
-          
-          # (Optional) Enables automatic versioning tags in the README.
-          versioning_enabled: 'true'
-          
-          # (Optional) Hardcodes a specific version (Leave commented to auto-detect).
-          # version_override: ''
-          
-          # (Optional) Prefix for the version tag (e.g., 'v' for v1.0.0).
-          version_prefix: 'v'
-          
-          # (Optional) The branch to check for default versioning.
-          versioning_default_branch: 'new-tui-frontend'
-          
-          # (Optional) Source of the version data. Can be 'tags' or 'package.json'.
-          version_source: 'tags'
-          
-          # (Optional) A custom prefix added to the title of the README.
-          # title_prefix: ''
-          
-          # (Optional) Toggles the GitHub version badge on or off.
-          include_github_version_badge: 'true'
-          
-          # (Optional) Path to a logo/SVG file for branding at the top.
-          # branding_svg_path: ''
-          
-          # (Optional) Uses the branding SVG specifically as the title prefix.
-          branding_as_title_prefix: 'false'
+          save: true
+          pretty: true
+          versioning_enabled: false
