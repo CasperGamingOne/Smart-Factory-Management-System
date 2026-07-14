@@ -19,33 +19,14 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Generate README
+      - name: Generate Readme
         uses: bitflight-devops/github-action-readme-generator@v1
         with:
-          # REQUIRED: GitHub Token for API authentication
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-
-          # OPTIONAL PARAMETERS (Uncomment to enable):
-          
-          output_file: "README.md"
-          # template: ".github/templates/README.md"
-          base_path: "."
-          
-          # Boolean Toggles:
-          enable_badges: true
-          enable_contributors: true
-          enable_stars: true
-          enable_forks: true
-          enable_issues: true
-          enable_pull_requests: true
-          enable_license: true
-          enable_description: true
-          enable_topics: true
-          enable_languages: true
-          
-          # Customization:
-          readme_title: "README for Smart Factory Management System"
-          # custom_css: ".custom-style { color: red; }"
-          # exclude_files: "docs/**"
-          # include_files: "**/*.md"
-          branch: "new-tui-frontend"
+          action: 'generate'
+          readme: 'README.md'
+          save: 'true'
+          pretty: 'true'
+        env:
+          # The plugin expects the token via an environment variable, 
+          # not a 'with' input.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
