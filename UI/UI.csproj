@@ -2,8 +2,12 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
+        <AssemblyName>SmartFactory_ManagementSystem</AssemblyName>
+        <Authors>CasperGamingOne;Ganea Andreea</Authors>
         <TargetFramework>net10.0</TargetFramework>
+        <Version>0.16</Version>
         <RootNamespace>Smart_Factory_Management_System</RootNamespace>
+        <Description>A professional-grade smart factory simulation system, simulated ofc.</Description>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
