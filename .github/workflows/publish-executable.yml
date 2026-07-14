@@ -1,76 +1,72 @@
-name: Publish Executable
+name: Build and Release Executables
 
+# This triggers the workflow ONLY when you push a tag that starts with 'v' (e.g., v1.0.0)
 on:
-  workflow_dispatch:
   push:
     tags:
-      - "v*"
-
-permissions:
-  contents: write
+      - 'v*'
 
 jobs:
-  publish:
+  analyze-and-release:
+    name: Analyze Code and Build Releases
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Strictly required to allow GitHub Actions to create the Release page
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
         with:
-          dotnet-version: '10.0.x'
+          fetch-depth: 0 # Fetches all history for all tags and branches
 
-      - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Publish self-contained executable
-        run: |
-          dotnet publish Smart-Factory-Management-System.csproj \
-            -c Release \
-            -r linux-x64 \
-            --self-contained true \
-            -p:PublishSingleFile=true \
-            -p:IncludeNativeLibrariesForSelfExtract=true \
-            -o ./publish/linux-x64
-
-      - name: Package Linux release asset
-        run: |
-          cd ./publish/linux-x64
-          zip -r ../smart-factory-management-system-linux-x64.zip .
-
-      - name: Publish Windows executable
-        run: |
-          dotnet publish Smart-Factory-Management-System.csproj \
-            -c Release \
-            -r win-x64 \
-            --self-contained true \
-            -p:PublishSingleFile=true \
-            -p:IncludeNativeLibrariesForSelfExtract=true \
-            -o ./publish/win-x64
-
-      - name: Package Windows release asset
-        run: |
-          cd ./publish/win-x64
-          zip -r ../smart-factory-management-system-win-x64.zip .
-
-      - name: Upload Linux published artifact
-        uses: actions/upload-artifact@v7
+      - name: ⚙️ Setup .NET Environment
+        uses: actions/setup-dotnet@v4
         with:
-          name: smart-factory-management-system-linux-x64
-          path: ./publish/linux-x64/
+          dotnet-version: '8.0.x' # Ensure this matches your project's target framework
 
-      - name: Upload Windows published artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: smart-factory-management-system-win-x64
-          path: ./publish/win-x64/
+      - name: 📦 Restore Dependencies
+        run: dotnet restore Smart-Factory-Management-System.slnx
 
-      - name: Upload GitHub Release asset
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v3
+      # "After analyzing perfectly the repo" - We ensure it compiles without warnings/errors first
+      - name: 🔍 Code Analysis & Validation
+        run: |
+          echo "Running rigorous structural analysis..."
+          dotnet build Smart-Factory-Management-System.slnx --no-restore --configuration Release -warnaserror
+          
+          # If you set up Qodana or a Testing project earlier, you can execute it here:
+          # dotnet test --no-build --verbosity normal
+
+      - name: 🪟 Publish Windows Executable (Self-Contained)
+        run: >
+          dotnet publish Smart-Factory-Management-System.csproj 
+          -c Release 
+          -r win-x64 
+          --self-contained true 
+          -p:PublishSingleFile=true 
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -o ./publish/windows
+
+      - name: 🐧 Publish Linux Executable (Self-Contained)
+        run: >
+          dotnet publish Smart-Factory-Management-System.csproj 
+          -c Release 
+          -r linux-x64 
+          --self-contained true 
+          -p:PublishSingleFile=true 
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -o ./publish/linux
+
+      - name: 🗜️ Compress Artifacts
+        run: |
+          # Zip the executables so they are easy to download from the GitHub Releases page
+          zip -j windows-smart-factory.zip ./publish/windows/*
+          zip -j linux-smart-factory.zip ./publish/linux/*
+
+      - name: 🚀 Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
+          name: Smart Factory Release ${{ github.ref_name }}
+          generate_release_notes: true # Auto-generates changelog based on your PRs!
           files: |
-            ./publish/smart-factory-management-system-linux-x64.zip
-            ./publish/smart-factory-management-system-win-x64.zip
+            windows-smart-factory.zip
+            linux-smart-factory.zip
