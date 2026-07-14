@@ -54,7 +54,6 @@ internal static class FactoryReportMenuHandler
         }
         else
         {
-            // Citim toate liniile din fișier
             var lines = File.ReadAllLines(logFilePath);
 
             var table = new Table().Border(TableBorder.Rounded);
@@ -84,9 +83,9 @@ internal static class FactoryReportMenuHandler
 
         var grid = new Grid().AddColumns(2);
         grid.AddRow("[bold white]Requested By[/]", Markup.Escape(loggedInUser.Name));
-        grid.AddRow("[bold white]Employees[/]", factory.EmployeeCount.ToString());
-        grid.AddRow("[bold white]Machines[/]", factory.MachineCount.ToString());
-        grid.AddRow("[bold white]Inventory Item Types[/]", factory.ProductCount.ToString());
+        grid.AddRow("[bold white]Employees[/]", factory.Employees.Count.ToString());
+        grid.AddRow("[bold white]Machines[/]", factory.Machines.Count.ToString());
+        grid.AddRow("[bold white]Inventory Item Types[/]", factory.Inventory.Count.ToString());
         grid.AddRow("[bold white]Pending Orders[/]", factory.OrderCount.ToString());
         grid.AddRow("[bold white]Batches[/]", factory.BatchCount.ToString());
 
@@ -99,7 +98,7 @@ internal static class FactoryReportMenuHandler
         AnsiConsole.Clear();
         AnsiConsole.Write(new Rule("[cyan]Staffing Report[/]").Centered());
 
-        if (factory.EmployeeCount == 0)
+        if (factory.Employees.Count == 0)
         {
             AnsiConsole.MarkupLine("[yellow]No staff registered.[/]");
             Pause();
@@ -115,7 +114,7 @@ internal static class FactoryReportMenuHandler
         AnsiConsole.Clear();
         AnsiConsole.Write(new Rule("[cyan]Machine Fleet Report[/]").Centered());
 
-        if (factory.MachineCount == 0)
+        if (factory.Machines.Count == 0)
         {
             AnsiConsole.MarkupLine("[yellow]No machines registered.[/]");
             Pause();
@@ -130,9 +129,8 @@ internal static class FactoryReportMenuHandler
         table.AddColumn("Status");
         table.AddColumn("Age (days)");
 
-        for (var i = 0; i < factory.MachineCount; i++)
+        foreach (var machine in factory.Machines)
         {
-            var machine = factory.Machines[i];
             table.AddRow(
                 machine.Id.ToString(),
                 machine.Name ?? "-",
@@ -152,7 +150,7 @@ internal static class FactoryReportMenuHandler
         AnsiConsole.Clear();
         AnsiConsole.Write(new Rule("[cyan]Inventory Report[/]").Centered());
 
-        if (factory.ProductCount == 0)
+        if (factory.Inventory.Count == 0)
         {
             AnsiConsole.MarkupLine("[yellow]No inventory items registered.[/]");
             Pause();
@@ -169,9 +167,8 @@ internal static class FactoryReportMenuHandler
         double totalValue = 0;
         var totalQuantity = 0;
 
-        for (var i = 0; i < factory.ProductCount; i++)
+        foreach (var product in factory.Inventory)
         {
-            var product = factory.Inventory[i];
             {
                 var itemValue = product.SellingPrice * product.Quantity;
                 totalValue += itemValue;

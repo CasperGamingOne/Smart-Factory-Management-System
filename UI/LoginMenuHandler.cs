@@ -4,7 +4,7 @@ namespace Smart_Factory_Management_System;
 
 internal static class LoginMenuHandler
 {
-    public static Employee? ShowLoginScreen(IAuthRepository<Employee> repository, ILoggerService loggerService)
+    public static Employee? ShowLoginScreen(IJsonRepository<Employee> repository, ILoggerService loggerService)
     {
         while (true)
         {

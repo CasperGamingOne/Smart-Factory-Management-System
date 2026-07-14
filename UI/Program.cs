@@ -14,16 +14,22 @@ internal static class Program
         var fileSystem = new FileSystemService();
         var factory = new Factory();
         var loggerService = new LoggerService(fileSystem);
-        var authRepository = new JsonAuthRepository(fileSystem);
-        var employees = authRepository.LoadUsers();
-        foreach (var employee in employees) factory.AddEmployee(employee);
+        var employeeRepo = new JsonRepository<Employee>(fileSystem, "employees.json");
+        var machinesRepo = new JsonRepository<Machine>(fileSystem, "machines.json");
+        var productsRepo = new JsonRepository<Product>(fileSystem, "products.json");
+
+        factory.LoadFromRepository(
+            employeeRepo.Load(),
+            machinesRepo.Load(),
+            productsRepo.Load()
+        );
 
         while (true)
         {
             AnsiConsole.Clear();
             AnsiConsole.Write(new Rule("[yellow]SMART FACTORY SYSTEM - LOGIN GATEWAY[/]").Centered());
 
-            var loggedInUser = LoginMenuHandler.ShowLoginScreen(authRepository, loggerService);
+            var loggedInUser = LoginMenuHandler.ShowLoginScreen(employeeRepo, loggerService);
             if (loggedInUser == null)
             {
                 loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.ClosingApplication, loggedInUser?.Username);
@@ -31,7 +37,7 @@ internal static class Program
                 break;
             }
 
-            if (loggedInUser.IsFirstTimeLogin) PasswordChangeHandler.Run(loggedInUser, authRepository);
+            if (loggedInUser.IsFirstTimeLogin) PasswordChangeHandler.Run(loggedInUser, employeeRepo);
 
             AnsiConsole.MarkupLine($"[green]Welcome back, {loggedInUser.Name} ({loggedInUser.Role})![/]");
             AnsiConsole.Status().Start("Booting production environment...", _ => { Thread.Sleep(800); });
@@ -56,14 +62,14 @@ internal static class Program
 
                 if (option == loggedInUser.QuickActionName)
                 {
-                    ExecuteQuickAction(loggedInUser, factory, authRepository, loggerService);
+                    ExecuteQuickAction(loggedInUser, factory, employeeRepo, loggerService);
                 }
                 else
                 {
                     switch (option)
                     {
                         case "Employee Management":
-                            EmployeeMenuHandler.Run(factory, loggedInUser, authRepository);
+                            EmployeeMenuHandler.Run(factory, loggedInUser, employeeRepo);
                             break;
                         case "Machine Management":
                             MachineMenuHandler.Run(factory, loggedInUser, loggerService);
@@ -92,7 +98,7 @@ internal static class Program
         }
     }
 
-    private static void ExecuteQuickAction(Employee user, Factory factory, IAuthRepository<Employee> authRepository,
+    private static void ExecuteQuickAction(Employee user, Factory factory, IJsonRepository<Employee> authRepository,
         ILoggerService loggerService)
     {
         if (user is Director) EmployeeMenuHandler.Run(factory, user, authRepository);

@@ -1,15 +1,9 @@
 ﻿namespace Smart_Factory_Management_System;
 
-public interface IAuthService
+public interface IJsonRepository<T>
 {
-    // Your existing flawless auth logic goes behind this interface
-    Employee Authenticate(string username, string rawPassword);
-}
-
-public interface IAuthRepository<T>
-{
-    List<T> LoadUsers();
-    void SaveUsers(List<T> users);
+    List<T> Load();
+    void Save(List<T> data);
 }
 
 public interface ILoggerService

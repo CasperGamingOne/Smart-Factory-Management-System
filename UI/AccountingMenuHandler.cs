@@ -84,7 +84,7 @@ internal static class AccountingMenuHandler
 
         // Apply price to linked inventory items
         foreach (var idx in chosen.InventoryIndexes)
-            if (idx >= 0 && idx < factory.ProductCount)
+            if (idx >= 0 && idx < factory.Inventory.Count)
                 factory.Inventory[idx].SellingPrice = price;
 
         AnsiConsole.MarkupLine($"[green]✔ Batch {chosen.BatchId} priced at ${price:F2} per unit.[/]");

@@ -17,7 +17,7 @@ internal static class ProductMenuHandler
             summaryGrid.AddRow(new Markup(
                 $"[grey]Operator Session:[/] [cyan]{currentUser.Name}[/] ([yellow]{currentUser.Role}[/])"));
             summaryGrid.AddRow(new Markup(
-                $"[grey]Warehouse Storage Stock:[/] [green]{factory.ProductCount} / {factory.Inventory.Count} units[/]"));
+                $"[grey]Warehouse Storage Stock:[/] [green]{factory.Inventory.Count} / {factory.Inventory.Capacity} units[/]"));
 
             AnsiConsole.Write(
                 new Panel(summaryGrid)
@@ -62,7 +62,7 @@ internal static class ProductMenuHandler
         AnsiConsole.Write(new Rule("[green]📦 Finished Electronics Inventory Stock[/]").Centered());
         AnsiConsole.WriteLine();
 
-        if (factory.ProductCount == 0)
+        if (factory.Inventory.Count == 0)
         {
             AnsiConsole.Write(
                 new Panel(
@@ -82,7 +82,7 @@ internal static class ProductMenuHandler
         table.AddColumn("[bold magenta]Value ($)[/]");
 
         // Populate table rows with inventory data
-        for (var i = 0; i < factory.ProductCount; i++)
+        for (var i = 0; i < factory.Inventory.Count; i++)
         {
             var product = factory.Inventory[i];
             {
@@ -114,9 +114,8 @@ internal static class ProductMenuHandler
         var cpuCount = 0;
         var pcbCount = 0;
 
-        for (var i = 0; i < factory.ProductCount; i++)
+        foreach (var product in factory.Inventory)
         {
-            var product = factory.Inventory[i];
             cumulativeValue += product.SellingPrice;
 
             // Type checking subclasses safely for metrics grouping
@@ -126,11 +125,11 @@ internal static class ProductMenuHandler
 
         var storageUtilization = factory.Inventory.Count == 0
             ? 0.0
-            : (double)factory.ProductCount / factory.Inventory.Count * 100;
+            : (double)factory.Inventory.Count / factory.Inventory.Capacity * 100;
 
         var statsGrid = new Grid().AddColumns(2);
         statsGrid.AddRow("[bold white]Total Volume Level:[/]",
-            $"[green]{factory.ProductCount} items[/] (📊 CPUs: {cpuCount} | ⚙️ PCBs: {pcbCount} )");
+            $"[green]{factory.Inventory.Count} items[/] (📊 CPUs: {cpuCount} | ⚙️ PCBs: {pcbCount} )");
         statsGrid.AddRow("[bold white]Asset Portfolio Valuation:[/]", $"[yellow]${cumulativeValue:F2} USD[/]");
         statsGrid.AddRow("[bold white]Warehouse Occupancy Rate:[/]", $"[cyan]{storageUtilization:F1}% utilized[/]");
 

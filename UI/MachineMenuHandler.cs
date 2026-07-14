@@ -57,9 +57,8 @@ internal static class MachineMenuHandler
         table.AddColumn("[cyan]Operational Status[/]");
         table.AddColumn("[cyan]Structural Condition[/]");
 
-        for (var i = 0; i < factory.MachineCount; i++)
+        foreach (var mach in factory.Machines)
         {
-            var mach = factory.Machines[i];
             table.AddRow(mach.Name ?? "-", mach.Manufacturer ?? "-", mach.Status.ToString(),
                 mach.Condition.ToString());
         }
@@ -69,7 +68,7 @@ internal static class MachineMenuHandler
 
     private static void RunInspection(Factory factory, ILoggerService loggerService)
     {
-        if (factory.MachineCount == 0)
+        if (factory.Machines.Count == 0)
         {
             AnsiConsole.MarkupLine("[red]No machines are currently provisioned in the asset index.[/]");
             return;
@@ -83,7 +82,8 @@ internal static class MachineMenuHandler
                 var statusColor = m.Condition == MachineCondition.Critical ? "red" : "green";
                 return $"[{statusColor}]{m.Name}[/] - [dim]Status: {m.Status}[/]";
             });
-        for (var i = 0; i < factory.MachineCount; i++) selector.AddChoice(factory.Machines[i]);
+        foreach (var t in factory.Machines)
+            selector.AddChoice(t);
 
         var chosenMachine = AnsiConsole.Prompt(selector);
 

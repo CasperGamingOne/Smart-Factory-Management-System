@@ -95,9 +95,9 @@ internal static class SalesMenuHandler
     {
         var technicians = new List<Employee>();
 
-        for (var i = 0; i < factory.EmployeeCount; i++)
-            if (factory.Employees[i] is Technician)
-                technicians.Add(factory.Employees[i]);
+        foreach (var t in factory.Employees)
+            if (t is Technician)
+                technicians.Add(t);
 
         return technicians;
     }
@@ -132,7 +132,7 @@ internal static class SalesMenuHandler
         // Offer selling either from completed batches or from existing inventory
         var options = new List<string>();
         if (factory.BatchCount > 0) options.Add("Sell from Batch");
-        if (factory.ProductCount > 0) options.Add("Sell from Inventory");
+        if (factory.Inventory.Count > 0) options.Add("Sell from Inventory");
         if (options.Count == 0)
         {
             AnsiConsole.MarkupLine("[yellow]No available inventory or batches to sell.[/]");
@@ -160,7 +160,7 @@ internal static class SalesMenuHandler
 
             // Apply price to linked inventory items
             foreach (var idx in chosen.InventoryIndexes)
-                if (idx >= 0 && idx < factory.ProductCount)
+                if (idx >= 0 && idx < factory.Inventory.Count)
                     factory.Inventory[idx].SellingPrice = soldPrice;
             AnsiConsole.MarkupLine(
                 $"[green]✔ Recorded sale for batch {chosen.BatchId} at ${soldPrice:F2} per unit.[/]");
@@ -168,9 +168,8 @@ internal static class SalesMenuHandler
         else if (pickContext == "Sell from Inventory")
         {
             var products = new List<Product>();
-            for (var i = 0; i < factory.ProductCount; i++)
+            foreach (var p in factory.Inventory)
             {
-                var p = factory.Inventory[i];
                 if (p.Quantity > 0)
                     products.Add(p);
             }

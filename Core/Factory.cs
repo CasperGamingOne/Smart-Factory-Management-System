@@ -18,13 +18,18 @@ public class Factory
     public int BatchCount => Batches.Count;
 
     public List<Employee> Employees { get; } = new List<Employee>();
-    public int EmployeeCount => Employees.Count;
 
     public List<Machine> Machines { get; } = new List<Machine>();
-    public int MachineCount => Machines.Count;
 
     public List<Product> Inventory { get; } = new List<Product>();
-    public int ProductCount => Inventory.Count;
+
+    public void LoadFromRepository(IEnumerable<Employee> employees, IEnumerable<Machine> machines,
+        IEnumerable<Product> products)
+    {
+        Employees.AddRange(employees);
+        Machines.AddRange(machines);
+        Inventory.AddRange(products);
+    }
 
     private void SeedInitialData()
     {
