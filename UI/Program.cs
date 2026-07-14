@@ -7,6 +7,7 @@ internal static class Program
 {
     private static void Main()
     {
+        Console.Title = "Smart Factory Management System";
         Console.OutputEncoding = Encoding.UTF8;
 
         // Initialize core factory and seed data
