@@ -124,7 +124,9 @@ internal static class ProductMenuHandler
             else if (product is Motherboard) pcbCount++;
         }
 
-        var storageUtilization = (double)factory.ProductCount / factory.Inventory.Count* 100;
+        var storageUtilization = factory.Inventory.Count == 0
+            ? 0.0
+            : (double)factory.ProductCount / factory.Inventory.Count * 100;
 
         var statsGrid = new Grid().AddColumns(2);
         statsGrid.AddRow("[bold white]Total Volume Level:[/]",

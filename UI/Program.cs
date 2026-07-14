@@ -10,9 +10,10 @@ internal static class Program
         Console.OutputEncoding = Encoding.UTF8;
 
         // Initialize core factory and seed data
+        var fileSystem = new FileSystemService();
         var factory = new Factory();
-        var loggerService = new LoggerService(new FileSystemService());
-        var authRepository = new JsonAuthRepository(new FileSystemService());
+        var loggerService = new LoggerService(fileSystem);
+        var authRepository = new JsonAuthRepository(fileSystem);
         var employees = authRepository.LoadUsers();
         foreach (var employee in employees) factory.AddEmployee(employee);
 

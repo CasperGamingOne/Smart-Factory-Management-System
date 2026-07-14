@@ -79,7 +79,8 @@ internal static class EmployeeMenuHandler
                 .Title("Select Job Title:")
                 .AddChoices(MenuOptions.EmployeeRoles));
 
-        Employee? newEmployee;
+        Employee newEmployee;
+
         switch (role)
         {
             case "Technician":
