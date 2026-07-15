@@ -38,4 +38,4 @@ Throughout the development of this project, several key software engineering con
 ## Project Structure & UML Diagram
 Below is the comprehensive Mermaid class diagram illustrating the system's architecture, including classes, methods, fields, and their relationships, categorized by their respective projects.
 
-![UML Class Diagram](UML_Diagram.svg)
+![Architecture Diagram](Architecture_Diagram.svg)
