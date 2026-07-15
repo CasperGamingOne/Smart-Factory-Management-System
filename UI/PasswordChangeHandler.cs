@@ -30,7 +30,8 @@ internal static class PasswordChangeHandler
             AnsiConsole.MarkupLine("[red]❌ Passwords do not match. Please try again.[/]");
         }
 
-        user.ChangePassword(SecurityHelper.HashPassword(newPassword));
+        var hashedPassword = SecurityHelper.HashPassword(newPassword);
+        user.ChangePassword(hashedPassword);
 
         // Need to save the changes
         // Persist changes
@@ -39,12 +40,11 @@ internal static class PasswordChangeHandler
 
         if (userToUpdate != null)
         {
-            userToUpdate.ChangePassword(SecurityHelper.HashPassword(newPassword));
+            userToUpdate.ChangePassword(hashedPassword);
 
             try
             {
                 repository.Save(users);
-                AnsiConsole.MarkupLine("[green]✅ Password updated successfully.[/]");
             }
             catch (IOException)
             {

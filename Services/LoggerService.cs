@@ -28,33 +28,33 @@ public class LoggerService(IFileSystemService fileService) : ILoggerService
     {
         var message = eventType switch
         {
-            LogEvent.LoginSuccess => $"[{origin}] Successful login: User '{context}'",
-            LogEvent.LoginFailed => $"[{origin}] Failed login attempt: Username '{context}'",
-            LogEvent.Logout => $"[{origin}] User {context} logged out.",
-            LogEvent.ProductionStarted => $"[{origin}] Production operation started for {context}",
-            LogEvent.ProductionCompleted => $"[{origin}] Production operation completed for {context}",
-            LogEvent.MaintenancePerformed => $"[{origin}] Maintenance performed on the machine {context}",
-            LogEvent.ClosingApplication => $"[{origin}] Closing application...",
+            LogEvent.LoginSuccess => $"Successful login: User '{context}'",
+            LogEvent.LoginFailed => $"Failed login attempt: Username '{context}'",
+            LogEvent.Logout => $"User {context} logged out.",
+            LogEvent.ProductionStarted => $"Production operation started for {context}",
+            LogEvent.ProductionCompleted => $"Production operation completed for {context}",
+            LogEvent.MaintenancePerformed => $"Maintenance performed on the machine {context}",
+            LogEvent.ClosingApplication => "Closing application...",
             _ => "Unknown event occurred"
         };
 
-        WriteToFile("INFO", message);
+        WriteToFile("INFO", origin, message);
     }
 
     public void LogWarning(LogOrigin origin, LogEvent eventType, string context = "")
     {
         var message = eventType switch
         {
-            LogEvent.ProductionInterrupted => $"[{origin}] Production operation interrupted for {context}",
+            LogEvent.ProductionInterrupted => $"Production operation interrupted for {context}",
             _ => "Unknown event occurred"
         };
 
-        WriteToFile("WARN", message);
+        WriteToFile("WARN", origin, message);
     }
 
     public void LogError(string message)
     {
-        WriteToFile("[ERROR] [SYSTEM] ", message);
+        WriteToFile("ERROR", LogOrigin.SYSTEM, message);
     }
 
     public void ShowOperationHistory()
@@ -122,9 +122,9 @@ public class LoggerService(IFileSystemService fileService) : ILoggerService
         AnsiConsole.Write(table);
     }
 
-    private void WriteToFile(string level, string message)
+    private void WriteToFile(string level, LogOrigin origin, string message)
     {
-        var entry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{level}] {message}";
+        var entry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{level}] [{origin}] {message}";
         fileService.AppendToFile(LogFileName, entry);
     }
 }

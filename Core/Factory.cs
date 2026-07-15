@@ -28,9 +28,25 @@ public class Factory
     public void LoadFromRepository(IEnumerable<Employee> employees, IEnumerable<Machine> machines,
         IEnumerable<Product> products)
     {
-        _employees.AddRange(employees);
-        _machines.AddRange(machines);
-        _inventory.AddRange(products);
+        var employeeList = employees.ToList();
+        var machineList = machines.ToList();
+        var productList = products.ToList();
+
+        _employees.AddRange(employeeList);
+        _machines.AddRange(machineList);
+        _inventory.AddRange(productList);
+
+        if (employeeList.Count > 0)
+        {
+            var maxEmployeeId = employeeList.Max(e => e.Id);
+            Employee.InitializeIdCounter(maxEmployeeId);
+        }
+
+        if (machineList.Count > 0)
+        {
+            var maxMachineId = machineList.Max(m => m.Id);
+            Machine.InitializeIdCounter(maxMachineId);
+        }
     }
 
     public void AddEmployee(Employee employee)

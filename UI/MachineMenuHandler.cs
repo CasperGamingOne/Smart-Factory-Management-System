@@ -109,6 +109,7 @@ internal static class MachineMenuHandler
             AnsiConsole.MarkupLine("[green]This machine does not currently need repairs.[/]");
         }
 
-        loggerService.LogInfo(LogOrigin.USER, LogEvent.MaintenancePerformed, chosenMachine.Name!);
+        loggerService.LogInfo(LogOrigin.USER, LogEvent.MaintenancePerformed,
+            $"{chosenMachine.Id} - {chosenMachine.Name}");
     }
 }

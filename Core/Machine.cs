@@ -47,11 +47,11 @@ public abstract class Machine
 
     public string? Manufacturer { get; init; }
 
-    private string? SerialNumber { get; }
+    public string? SerialNumber { get; }
 
-    private DateTime InstallationDate { get; }
+    public DateTime InstallationDate { get; }
 
-    private MachinePart[]? Parts { get; }
+    public MachinePart[]? Parts { get; }
 
     public MachineStatus Status { get; private protected set; } = MachineStatus.Stopped;
 
@@ -60,6 +60,11 @@ public abstract class Machine
     [JsonIgnore] public Type SupportedProductType { get; private protected init; }
 
     protected ProductionOrder? ActiveOrder { get; private set; }
+
+    public static void InitializeIdCounter(int maxId)
+    {
+        _idCounter = maxId;
+    }
 
     public TimeSpan GetMachineAge()
     {

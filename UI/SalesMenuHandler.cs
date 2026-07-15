@@ -188,9 +188,16 @@ internal static class SalesMenuHandler
 
             var chosen = AnsiConsole.Prompt(prodSelector);
             var qty = AnsiConsole.Ask<int>($"Enter quantity to sell (available: {chosen.Quantity}):");
-            if (qty <= 0 || qty > chosen.Quantity)
+            if (qty <= 0)
             {
-                AnsiConsole.MarkupLine("[red]Invalid quantity specified.[/]");
+                AnsiConsole.MarkupLine("[red]Quantity to sell must be greater than zero.[/]");
+                return;
+            }
+
+            if (qty > chosen.Quantity)
+            {
+                AnsiConsole.MarkupLine(
+                    $"[red]Error: Cannot sell {qty} units. Only {chosen.Quantity} units are available in inventory.[/]");
                 return;
             }
 

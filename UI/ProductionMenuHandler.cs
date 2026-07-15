@@ -135,7 +135,7 @@ internal static class ProductionMenuHandler
             loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.ProductionCompleted,
                 $"{batch.ProductName} * {batch.Quantity}");
             AnsiConsole.MarkupLine(
-                "$\"[green]Batch complete. Created batch {batch.BatchId} with {batch.InventoryIndexes.Count} items.[/]\"");
+                $"[green]Batch complete. Created batch {batch.BatchId} with {batch.InventoryIndexes.Count} items.[/]");
         }
         else
         {
@@ -144,11 +144,6 @@ internal static class ProductionMenuHandler
             AnsiConsole.MarkupLine(
                 $"[yellow]Order incomplete. Produced {order.CompletedCount}/{order.Quantity} so far.[/]");
         }
-
-        AnsiConsole.MarkupLine(
-            order.IsComplete
-                ? $"[green]Batch complete. Created batch {batch.BatchId} with {batch.InventoryIndexes.Count} items.[/]"
-                : $"[yellow]Order incomplete. Produced {order.CompletedCount}/{order.Quantity} so far.[/]");
 
         machineRepo.Save(factory.Machines);
         productRepo.Save(factory.Inventory);

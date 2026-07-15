@@ -41,7 +41,7 @@ public abstract class MachinePart(string name, PartCondition? condition)
 
 public class PowerSupply(string name, PartCondition? condition, int voltage) : MachinePart(name, condition)
 {
-    private int Voltage { get; } = voltage;
+    public int Voltage { get; } = voltage;
 
     public override string PrintPartInfo()
     {
@@ -51,7 +51,7 @@ public class PowerSupply(string name, PartCondition? condition, int voltage) : M
 
 public class CoolingSystem(string name, PartCondition? condition, string type) : MachinePart(name, condition)
 {
-    private string Type { get; } = type;
+    public string Type { get; } = type;
 
     public override string PrintPartInfo()
     {
@@ -61,7 +61,7 @@ public class CoolingSystem(string name, PartCondition? condition, string type) :
 
 public class ControlUnit(string name, PartCondition? condition, string processor) : MachinePart(name, condition)
 {
-    private string Processor { get; } = processor;
+    public string Processor { get; } = processor;
 
     public override string PrintPartInfo()
     {
@@ -71,7 +71,7 @@ public class ControlUnit(string name, PartCondition? condition, string processor
 
 public class AoiSystem(string name, PartCondition? condition, string systemType) : MachinePart(name, condition)
 {
-    private string SystemType { get; } = systemType;
+    public string SystemType { get; } = systemType;
 
     public override string PrintPartInfo()
     {
