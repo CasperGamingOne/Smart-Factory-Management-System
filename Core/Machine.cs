@@ -17,7 +17,7 @@ public enum MachineCondition
     Critical
 }
 
-[JsonDerivedType(typeof(LitographyMachine), "litographyMachine")]
+[JsonDerivedType(typeof(LithographyMachine), "litographyMachine")]
 [JsonDerivedType(typeof(SmtMachine), "smtMachine")]
 [JsonDerivedType(typeof(PaPMachine), "papMachine")]
 [JsonDerivedType(typeof(ReflowOven), "reflowOven")]
@@ -357,9 +357,9 @@ public abstract class Machine
     public abstract bool Produce(Product product);
 }
 
-public class LitographyMachine : Machine
+public class LithographyMachine : Machine
 {
-    public LitographyMachine(string name, string manufacturer, string serialNumber,
+    public LithographyMachine(string name, string manufacturer, string serialNumber,
         List<MachinePart> parts, MachineCondition condition)
         : base(name, manufacturer, serialNumber, parts, condition)
     {

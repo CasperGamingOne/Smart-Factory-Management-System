@@ -25,7 +25,7 @@ The system is cleanly decoupled into three main projects (namespaces):
 *(Note: Ensure your terminal supports ANSI escape sequences for the best TUI experience.)*
 
 ## Usage
-Upon starting the application, you will be prompted to log in. Default seeded users are provided based on roles (e.g., `admin`/`admin` for Director, or specific usernames setup by `DataSeeder`).
+Upon starting the application, you will be prompted to log in. Default seeded users are provided based on roles (e.g., `admin`/`admin` for Director, or specific usernames set up by `DataSeeder`).
 Navigate through the intuitive TUI using the arrow keys and `Enter` to manage employees, execute production workflows, fulfill sales orders, and review factory reports.
 
 ## Learning Experience
