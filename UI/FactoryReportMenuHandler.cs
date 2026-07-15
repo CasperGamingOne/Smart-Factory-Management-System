@@ -22,15 +22,20 @@ internal static class FactoryReportMenuHandler
             {
                 case "Factory Overview":
                     ShowOverview(factory, loggedInUser);
+                    loggerService.LogInfo(LogOrigin.USER, LogEvent.FactoryOverviewReportGenerated,
+                        loggedInUser.Username);
                     break;
                 case "Staffing Report":
                     ShowStaffingReport(factory);
+                    loggerService.LogInfo(LogOrigin.USER, LogEvent.StaffingReportGenerated, loggedInUser.Username);
                     break;
                 case "Machine Fleet Report":
                     ShowMachineFleetReport(factory);
+                    loggerService.LogInfo(LogOrigin.USER, LogEvent.MachineFleetReportGenerated, loggedInUser.Username);
                     break;
                 case "Inventory Report":
                     ShowInventoryReport(factory);
+                    loggerService.LogInfo(LogOrigin.USER, LogEvent.InventoryReportGenerated, loggedInUser.Username);
                     break;
                 case "Return to Main Menu":
                     return;

@@ -30,12 +30,13 @@ internal static class AccountingMenuHandler
             {
                 case "View Batches":
                     ShowBatches(factory);
+                    loggerService.LogInfo(LogOrigin.USER, LogEvent.BatchesViewed, loggedInUser.Username);
                     break;
                 case "Set Unit Sell Price for Batch":
-                    SetBatchPrice(factory);
+                    SetBatchPrice(factory, loggerService, loggedInUser);
                     break;
                 case "Process Report Requests":
-                    ProcessReportRequests(factory, loggedInUser);
+                    ProcessReportRequests(factory, loggedInUser, loggerService);
                     break;
                 case "Return to Main Menu":
                     return;
@@ -67,7 +68,7 @@ internal static class AccountingMenuHandler
         AnsiConsole.Write(table);
     }
 
-    private static void SetBatchPrice(Factory factory)
+    private static void SetBatchPrice(Factory factory, ILoggerService loggerService, Employee loggedInUser)
     {
         if (factory.BatchCount == 0)
         {
@@ -88,9 +89,11 @@ internal static class AccountingMenuHandler
                 factory.Inventory[idx].UpdateSellingPrice(price);
 
         AnsiConsole.MarkupLine($"[green]✔ Batch {chosen.BatchId} priced at ${price:F2} per unit.[/]");
+        loggerService.LogInfo(LogOrigin.USER, LogEvent.BatchPriceSet,
+            $"Batch {chosen.BatchId} priced at ${price:F2} by {loggedInUser.Username}");
     }
 
-    private static void ProcessReportRequests(Factory factory, Employee accountant)
+    private static void ProcessReportRequests(Factory factory, Employee accountant, ILoggerService loggerService)
     {
         AnsiConsole.Clear();
         AnsiConsole.Write(new Rule("[magenta]Process Report Requests[/]").Centered());
@@ -114,5 +117,7 @@ internal static class AccountingMenuHandler
 
         AnsiConsole.MarkupLine(
             $"[green]✔ Report '{chosen.ReportType}' (Req ID: {chosen.RequestId}) fulfilled by {accountant.Name}.[/]");
+        loggerService.LogInfo(LogOrigin.USER, LogEvent.ReportRequestsProcessed,
+            $"Report '{chosen.ReportType}' (Req ID: {chosen.RequestId}) fulfilled by {accountant.Username}");
     }
 }

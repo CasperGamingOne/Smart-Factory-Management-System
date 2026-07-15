@@ -40,9 +40,11 @@ internal static class ProductMenuHandler
             {
                 case "View Finished Goods Stock":
                     DisplayInventoryTable(factory);
+                    loggerService.LogInfo(LogOrigin.USER, LogEvent.InventoryViewed, currentUser.Username);
                     break;
                 case "View Inventory Financial & Capacity Analytics":
                     DisplayInventoryAnalytics(factory);
+                    loggerService.LogInfo(LogOrigin.USER, LogEvent.InventoryAnalyticsViewed, currentUser.Username);
                     break;
                 case "Sales & Orders":
                     // Reuse Sales menu view; if user is SalesAgent, open full Sales UI

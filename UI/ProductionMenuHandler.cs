@@ -47,7 +47,7 @@ internal static class ProductionMenuHandler
 
         if (order.ProductName == "Motherboard")
         {
-            RunMotherboardWorkflow(factory, order);
+            RunMotherboardWorkflow(factory, order, loggerService);
             machineRepo.Save(factory.Machines);
             productRepo.Save(factory.Inventory);
             AnsiConsole.WriteLine();
@@ -176,7 +176,7 @@ internal static class ProductionMenuHandler
         };
     }
 
-    private static void RunMotherboardWorkflow(Factory factory, ProductionOrder order)
+    private static void RunMotherboardWorkflow(Factory factory, ProductionOrder order, ILoggerService loggerService)
     {
         var batch = StartProductionBatch(factory, order, 20);
 
@@ -193,6 +193,8 @@ internal static class ProductionMenuHandler
 
         AnsiConsole.MarkupLine(
             $"[cyan]Starting motherboard workflow for order {order.OrderId} - {order.ProductName} x{order.Quantity}[/]");
+        loggerService.LogInfo(LogOrigin.USER, LogEvent.ProductionStarted,
+            $"{order.ProductName} * {order.Quantity}");
 
         var motherboardTemplate = new Motherboard("Batch Motherboard", 20, 0, 1, "AM4", "ATX");
 
@@ -232,8 +234,19 @@ internal static class ProductionMenuHandler
         }
 
         if (order.IsComplete)
+        {
+            loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.ProductionCompleted,
+                $"{batch.ProductName} * {batch.Quantity}");
             AnsiConsole.MarkupLine(
                 $"[green]Batch complete. Created batch {batch.BatchId} with {batch.InventoryIndexes.Count} items.[/]");
+        }
+        else
+        {
+            loggerService.LogWarning(LogOrigin.SYSTEM, LogEvent.ProductionInterrupted,
+                $"{order.ProductName} * {order.Quantity}");
+            AnsiConsole.MarkupLine(
+                $"[yellow]Order incomplete. Produced {order.CompletedCount}/{order.Quantity} so far.[/]");
+        }
     }
 
     private static bool RunMotherboardStage(

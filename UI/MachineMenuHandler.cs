@@ -24,6 +24,7 @@ internal static class MachineMenuHandler
             {
                 case "Overall Fleet Status Overview":
                     DisplayFleetOverview(factory);
+                    loggerService.LogInfo(LogOrigin.USER, LogEvent.FleetStatusViewed, loggedInUser.Username);
                     break;
 
                 case "Run Deep Component Inspection":

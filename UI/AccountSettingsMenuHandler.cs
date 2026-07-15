@@ -4,7 +4,7 @@ namespace Smart_Factory_Management_System;
 
 internal static class AccountSettingsMenuHandler
 {
-    public static void Run(Employee user, IAccountService accountService)
+    public static void Run(Employee user, IAccountService accountService, ILoggerService loggerService)
     {
         var inSettings = true;
         while (inSettings)
@@ -33,13 +33,13 @@ internal static class AccountSettingsMenuHandler
             switch (choice)
             {
                 case "1. Change Full Name":
-                    ChangeFullName(user, accountService);
+                    ChangeFullName(user, accountService, loggerService);
                     break;
                 case "2. Change Username":
-                    ChangeUsername(user, accountService);
+                    ChangeUsername(user, accountService, loggerService);
                     break;
                 case "3. Change Password":
-                    ChangePassword(user, accountService);
+                    ChangePassword(user, accountService, loggerService);
                     break;
                 case "4. Return to Main Menu":
                     inSettings = false;
@@ -48,16 +48,22 @@ internal static class AccountSettingsMenuHandler
         }
     }
 
-    private static void ChangeFullName(Employee user, IAccountService accountService)
+    private static void ChangeFullName(Employee user, IAccountService accountService, ILoggerService loggerService)
     {
         AnsiConsole.WriteLine();
         var newName = AnsiConsole.Ask<string>("Enter your new Full Name:");
 
         try
         {
-            AnsiConsole.MarkupLine(accountService.UpdateFullName(user, newName)
-                ? "[green]✅ Full Name updated successfully![/]"
-                : "[red]❌ Critical error: Could not write to the database file.[/]");
+            if (accountService.UpdateFullName(user, newName))
+            {
+                AnsiConsole.MarkupLine("[green]✅ Full Name updated successfully![/]");
+                loggerService.LogInfo(LogOrigin.USER, LogEvent.FullNameUpdated, user.Username);
+            }
+            else
+            {
+                AnsiConsole.MarkupLine("[red]❌ Critical error: Could not write to the database file.[/]");
+            }
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
         {
@@ -67,16 +73,22 @@ internal static class AccountSettingsMenuHandler
         Thread.Sleep(1000);
     }
 
-    private static void ChangeUsername(Employee user, IAccountService accountService)
+    private static void ChangeUsername(Employee user, IAccountService accountService, ILoggerService loggerService)
     {
         AnsiConsole.WriteLine();
         var newUsername = AnsiConsole.Ask<string>("Enter your new Username:");
 
         try
         {
-            AnsiConsole.MarkupLine(accountService.UpdateUsername(user, newUsername)
-                ? "[green]✅ Username updated successfully![/]"
-                : "[red]❌ Critical error: Could not write to the database file.[/]");
+            if (accountService.UpdateUsername(user, newUsername))
+            {
+                AnsiConsole.MarkupLine("[green]✅ Username updated successfully![/]");
+                loggerService.LogInfo(LogOrigin.USER, LogEvent.UsernameUpdated, user.Username);
+            }
+            else
+            {
+                AnsiConsole.MarkupLine("[red]❌ Critical error: Could not write to the database file.[/]");
+            }
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
         {
@@ -88,7 +100,7 @@ internal static class AccountSettingsMenuHandler
         Thread.Sleep(1000);
     }
 
-    private static void ChangePassword(Employee user, IAccountService accountService)
+    private static void ChangePassword(Employee user, IAccountService accountService, ILoggerService loggerService)
     {
         AnsiConsole.WriteLine();
         string newPassword;
@@ -113,9 +125,15 @@ internal static class AccountSettingsMenuHandler
 
         try
         {
-            AnsiConsole.MarkupLine(accountService.UpdatePassword(user, newPassword)
-                ? "[green]✅ Password updated successfully![/]"
-                : "[red]❌ Critical error: Could not write to the database file.[/]");
+            if (accountService.UpdatePassword(user, newPassword))
+            {
+                AnsiConsole.MarkupLine("[green]✅ Password updated successfully![/]");
+                loggerService.LogInfo(LogOrigin.USER, LogEvent.PasswordUpdated, user.Username);
+            }
+            else
+            {
+                AnsiConsole.MarkupLine("[red]❌ Critical error: Could not write to the database file.[/]");
+            }
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
         {

@@ -4,7 +4,7 @@ namespace Smart_Factory_Management_System;
 
 internal static class PasswordChangeHandler
 {
-    public static void Run(Employee user, IJsonRepository<Employee> repository)
+    public static void Run(Employee user, IJsonRepository<Employee> repository, ILoggerService loggerService)
     {
         AnsiConsole.Clear();
         AnsiConsole.Write(new Rule("[yellow]FIRST-TIME PASSWORD SETUP[/]").Centered());
@@ -58,6 +58,7 @@ internal static class PasswordChangeHandler
         }
 
         AnsiConsole.MarkupLine("[green]✔ Password updated successfully![/]");
+        loggerService.LogInfo(LogOrigin.USER, LogEvent.PasswordChangedFirstLogin, user.Username);
         Thread.Sleep(1000);
     }
 }

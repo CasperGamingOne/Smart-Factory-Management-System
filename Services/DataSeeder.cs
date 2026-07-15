@@ -37,7 +37,7 @@ public class DataSeeder(
             MachinePart litoAoi = new AoiSystem("Wafer Laser Interferometer", PartCondition.Excellent,
                 "EUV Nano-Alignment Scanner");
 
-            MachinePart[] litoParts = [litoPower, litoCooling, litoControl, litoAoi];
+            List<MachinePart> litoParts = [litoPower, litoCooling, litoControl, litoAoi];
 
             MachinePart printerPower = new PowerSupply("Delta PSU-24V Module", PartCondition.Excellent, 24);
             MachinePart printerCooling =
@@ -47,7 +47,7 @@ public class DataSeeder(
             MachinePart printerAoi = new AoiSystem("Fiducial Alignment Cam", PartCondition.Excellent,
                 "2D Solder Paste Inspection (SPI)");
 
-            MachinePart[] printerParts = [printerPower, printerCooling, printerControl, printerAoi];
+            List<MachinePart> printerParts = [printerPower, printerCooling, printerControl, printerAoi];
 
             MachinePart papPower = new PowerSupply("Omron Servo Power Rail", PartCondition.Excellent, 230);
             MachinePart papCooling =
@@ -57,7 +57,7 @@ public class DataSeeder(
             MachinePart papAoi = new AoiSystem("High-Speed Flying Vision Module", PartCondition.Excellent,
                 "Component Orientation 2D Camera");
 
-            MachinePart[] papParts = [papPower, papCooling, papControl, papAoi];
+            List<MachinePart> papParts = [papPower, papCooling, papControl, papAoi];
 
             MachinePart ovenPower = new PowerSupply("Heavy Induction Heating Grid", PartCondition.Excellent, 415);
             MachinePart ovenCooling = new CoolingSystem("Nitrogen Exhaust Chiller", PartCondition.Excellent,
@@ -67,7 +67,7 @@ public class DataSeeder(
             MachinePart ovenAoi = new AoiSystem("Exit Solder Defect Inspector", PartCondition.Excellent,
                 "Post-Reflow Automated Optical Inspection");
 
-            MachinePart[] ovenParts = [ovenPower, ovenCooling, ovenControl, ovenAoi];
+            List<MachinePart> ovenParts = [ovenPower, ovenCooling, ovenControl, ovenAoi];
 
             var initialMachines = new List<Machine>
             {

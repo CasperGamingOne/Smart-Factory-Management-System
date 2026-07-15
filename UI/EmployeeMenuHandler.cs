@@ -4,7 +4,8 @@ namespace Smart_Factory_Management_System;
 
 internal static class EmployeeMenuHandler
 {
-    public static void Run(Factory factory, Employee loggedInUser, IJsonRepository<Employee> repository)
+    public static void Run(Factory factory, Employee loggedInUser, ILoggerService loggerService,
+        IJsonRepository<Employee> repository)
     {
         var inRoom = true;
         while (inRoom)
@@ -24,6 +25,7 @@ internal static class EmployeeMenuHandler
             {
                 case "View All Registered Staff":
                     DisplayStaffTable(factory);
+                    loggerService.LogInfo(LogOrigin.USER, LogEvent.StaffViewed, loggedInUser.Username);
                     break;
 
                 case "Add New Employee":
@@ -31,7 +33,7 @@ internal static class EmployeeMenuHandler
                         AnsiConsole.MarkupLine(
                             $"[red]❌ Access Denied: {loggedInUser.Role} cannot perform this action.[/]");
                     else
-                        AddNewEmployeeFlow(factory, repository);
+                        AddNewEmployeeFlow(factory, repository, loggerService, loggedInUser);
 
                     break;
 
@@ -67,7 +69,8 @@ internal static class EmployeeMenuHandler
         AnsiConsole.Write(table);
     }
 
-    private static void AddNewEmployeeFlow(Factory factory, IJsonRepository<Employee> repository)
+    private static void AddNewEmployeeFlow(Factory factory, IJsonRepository<Employee> repository,
+        ILoggerService loggerService, Employee loggedInUser)
     {
         var name = AnsiConsole.Ask<string>("Enter Employee Full Name:");
         var username = AnsiConsole.Ask<string>("Enter Employee Username:");
@@ -104,5 +107,7 @@ internal static class EmployeeMenuHandler
         repository.Save(users);
 
         AnsiConsole.MarkupLine($"[green]✔ Employee '{name}' registered successfully![/]");
+        loggerService.LogInfo(LogOrigin.USER, LogEvent.EmployeeAdded,
+            $"New user '{username}' ({role}) registered by '{loggedInUser.Username}'");
     }
 }

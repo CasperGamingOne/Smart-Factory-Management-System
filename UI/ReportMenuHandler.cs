@@ -1,4 +1,4 @@
-﻿using Spectre.Console;
+using Spectre.Console;
 
 namespace Smart_Factory_Management_System;
 
@@ -25,18 +25,23 @@ internal static class ReportMenuHandler
             {
                 case "Production Summary":
                     ShowProductionSummary(factory, loggedInUser);
+                    loggerService.LogInfo(LogOrigin.USER, LogEvent.ProductionSummaryReportGenerated,
+                        loggedInUser.Username);
                     break;
                 case "Employee Report":
                     ShowEmployeeReport(factory);
+                    loggerService.LogInfo(LogOrigin.USER, LogEvent.EmployeeReportGenerated, loggedInUser.Username);
                     break;
                 case "Batch Revenue Summary":
                     ShowBatchRevenueSummary(factory);
+                    loggerService.LogInfo(LogOrigin.USER, LogEvent.BatchRevenueReportGenerated, loggedInUser.Username);
                     break;
                 case "Order Backlog Summary":
                     ShowOrderBacklogSummary(factory);
+                    loggerService.LogInfo(LogOrigin.USER, LogEvent.OrderBacklogReportGenerated, loggedInUser.Username);
                     break;
                 case "Request Printable Report":
-                    RequestPrintableReport(factory, loggedInUser);
+                    RequestPrintableReport(factory, loggedInUser, loggerService);
                     break;
                 case "Return to Main Menu":
                     return;
@@ -52,7 +57,7 @@ internal static class ReportMenuHandler
         Pause();
     }
 
-    private static void RequestPrintableReport(Factory factory, Employee director)
+    private static void RequestPrintableReport(Factory factory, Employee director, ILoggerService loggerService)
     {
         AnsiConsole.Clear();
         AnsiConsole.Write(new Rule("[magenta]Request Printable Report[/]").Centered());
@@ -65,6 +70,8 @@ internal static class ReportMenuHandler
         factory.AddReportRequest(new ReportRequest(reportType, director.Name));
 
         AnsiConsole.MarkupLine($"[green]✔ Request for '{reportType}' submitted successfully![/]");
+        loggerService.LogInfo(LogOrigin.USER, LogEvent.PrintableReportRequested,
+            $"Report '{reportType}' requested by {director.Username}");
         Pause();
     }
 

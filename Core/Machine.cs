@@ -27,7 +27,7 @@ public abstract class Machine
 
     private static readonly Random Random = new();
 
-    protected Machine(string name, string manufacturer, string serialNumber, MachinePart[] parts,
+    protected Machine(string name, string manufacturer, string serialNumber, List<MachinePart> parts,
         MachineCondition condition)
     {
         _idCounter++;
@@ -51,7 +51,7 @@ public abstract class Machine
 
     public DateTime InstallationDate { get; }
 
-    public MachinePart[]? Parts { get; }
+    public List<MachinePart>? Parts { get; }
 
     public MachineStatus Status { get; private protected set; } = MachineStatus.Stopped;
 
@@ -98,7 +98,7 @@ public abstract class Machine
                 Thread.Sleep(500);
             });
 
-        foreach (var part in Parts ?? Array.Empty<MachinePart>())
+        foreach (var part in Parts ?? new List<MachinePart>())
             if (part.Condition == PartCondition.Critical)
             {
                 Status = MachineStatus.Stopped;
@@ -186,11 +186,10 @@ public abstract class Machine
 
     protected void ApplyProductionWearAndTear()
     {
-        var parts = (Parts ?? Array.Empty<MachinePart>()).ToArray();
-        if (parts.Length == 0) return;
+        if (Parts == null || Parts.Count == 0) return;
 
-        var randomIndex = Random.Next(0, parts.Length);
-        MachinePart selectedPart = parts[randomIndex];
+        var randomIndex = Random.Next(0, Parts.Count);
+        var selectedPart = Parts[randomIndex];
 
         if (Random.Next(0, 100) < 20)
         {
@@ -250,7 +249,7 @@ public abstract class Machine
         componentTable.AddColumn(new TableColumn("[bold]Health Status[/]").Centered());
         componentTable.AddColumn("[bold]Technical Specifications & Diagnostics[/]");
 
-        foreach (var part in Parts ?? Array.Empty<MachinePart>())
+        foreach (var part in Parts ?? new List<MachinePart>())
         {
             var p = part;
 
@@ -278,7 +277,7 @@ public abstract class Machine
     {
         if (Condition == MachineCondition.Critical) return true;
 
-        foreach (var part in Parts ?? Array.Empty<MachinePart>())
+        foreach (var part in Parts ?? new List<MachinePart>())
             if (part.Condition != PartCondition.Excellent)
                 return true;
 
@@ -298,7 +297,7 @@ public abstract class Machine
         AnsiConsole.WriteLine();
 
         var repairedParts = 0;
-        foreach (var part in Parts ?? Array.Empty<MachinePart>())
+        foreach (var part in Parts ?? new List<MachinePart>())
             if (part.Condition != PartCondition.Excellent)
             {
                 part.Repair(PartCondition.Excellent);
@@ -323,7 +322,7 @@ public abstract class Machine
 
     private MachineCondition GetMachineCondition()
     {
-        foreach (var part in Parts ?? Array.Empty<MachinePart>())
+        foreach (var part in Parts ?? new List<MachinePart>())
         {
             if (part.Condition == PartCondition.Good) return MachineCondition.Good;
 
@@ -361,7 +360,7 @@ public abstract class Machine
 public class LitographyMachine : Machine
 {
     public LitographyMachine(string name, string manufacturer, string serialNumber,
-        MachinePart[] parts, MachineCondition condition)
+        List<MachinePart> parts, MachineCondition condition)
         : base(name, manufacturer, serialNumber, parts, condition)
     {
         SupportedProductType = typeof(Microprocessor);
@@ -400,7 +399,7 @@ public class LitographyMachine : Machine
 
 public class SmtMachine : Machine // Solder Paste Printer
 {
-    public SmtMachine(string name, string manufacturer, string serialNumber, MachinePart[] parts,
+    public SmtMachine(string name, string manufacturer, string serialNumber, List<MachinePart> parts,
         MachineCondition condition)
         : base(name, manufacturer, serialNumber, parts, condition)
     {
@@ -418,7 +417,7 @@ public class PaPMachine(
     string name,
     string manufacturer,
     string serialNumber,
-    MachinePart[] parts,
+    List<MachinePart> parts,
     MachineCondition condition)
     : Machine(name, manufacturer, serialNumber, parts, condition) // Pick and Place
 {
@@ -433,7 +432,7 @@ public class ReflowOven(
     string name,
     string manufacturer,
     string serialNumber,
-    MachinePart[] parts,
+    List<MachinePart> parts,
     MachineCondition condition)
     : Machine(name, manufacturer, serialNumber, parts, condition)
 {

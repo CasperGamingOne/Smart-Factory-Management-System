@@ -41,7 +41,7 @@ internal static class Program
                 break;
             }
 
-            if (loggedInUser.IsFirstTimeLogin) PasswordChangeHandler.Run(loggedInUser, employeeRepo);
+            if (loggedInUser.IsFirstTimeLogin) PasswordChangeHandler.Run(loggedInUser, employeeRepo, loggerService);
 
             AnsiConsole.MarkupLine($"[green]Welcome back, {loggedInUser.Name} ({loggedInUser.Role})![/]");
             AnsiConsole.Status().Start("Booting production environment...", _ => { Thread.Sleep(800); });
@@ -79,7 +79,7 @@ internal static class Program
                     switch (option)
                     {
                         case "Employee Management":
-                            EmployeeMenuHandler.Run(factory, loggedInUser, employeeRepo);
+                            EmployeeMenuHandler.Run(factory, loggedInUser, loggerService, employeeRepo);
                             break;
                         case "Machine Management":
                             MachineMenuHandler.Run(factory, loggedInUser, loggerService, machinesRepo, productsRepo);
@@ -102,7 +102,7 @@ internal static class Program
                             FactoryReportMenuHandler.Run(factory, loggedInUser, loggerService);
                             break;
                         case "Account Settings":
-                            AccountSettingsMenuHandler.Run(loggedInUser, accountService);
+                            AccountSettingsMenuHandler.Run(loggedInUser, accountService, loggerService);
                             break;
                         case "Log Out / Exit Session":
                             loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.Logout, loggedInUser.Username);
@@ -119,7 +119,7 @@ internal static class Program
     private static void ExecuteQuickAction(Employee user, Factory factory, IJsonRepository<Employee> authRepository,
         ILoggerService loggerService, IJsonRepository<Machine> machinesRepo, IJsonRepository<Product> productsRepo)
     {
-        if (user is Director) EmployeeMenuHandler.Run(factory, user, authRepository);
+        if (user is Director) EmployeeMenuHandler.Run(factory, user, loggerService, authRepository);
         else if (user is Technician) MachineMenuHandler.Run(factory, user, loggerService, machinesRepo, productsRepo);
         else if (user is SalesAgent) SalesMenuHandler.Run(factory, user, loggerService, productsRepo);
         else if (user is Accountant) AccountingMenuHandler.Run(factory, user, loggerService);

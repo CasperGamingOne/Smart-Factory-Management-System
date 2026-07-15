@@ -30,13 +30,14 @@ internal static class SalesMenuHandler
             switch (option)
             {
                 case "Place Production Order":
-                    PlaceOrder(factory);
+                    PlaceOrder(factory, loggerService, loggedInUser);
                     break;
                 case "View Pending Orders":
                     ShowPendingOrders(factory);
+                    loggerService.LogInfo(LogOrigin.USER, LogEvent.PendingOrdersViewed, loggedInUser.Username);
                     break;
                 case "Record Sale for Batch":
-                    RecordSale(factory);
+                    RecordSale(factory, loggerService, loggedInUser);
                     productRepo.Save(factory.Inventory);
                     break;
                 case "Return to Main Menu":
@@ -48,7 +49,7 @@ internal static class SalesMenuHandler
         }
     }
 
-    private static void PlaceOrder(Factory factory)
+    private static void PlaceOrder(Factory factory, ILoggerService loggerService, Employee loggedInUser)
     {
         AnsiConsole.WriteLine();
         var productChoice = AnsiConsole.Prompt(
@@ -91,6 +92,8 @@ internal static class SalesMenuHandler
 
         AnsiConsole.MarkupLine(
             $"[green]✔ Order placed: {order.OrderId} - {order.ProductName} x{order.Quantity} assigned to tech #{order.AssignedTechnicianId}[/]");
+        loggerService.LogInfo(LogOrigin.USER, LogEvent.OrderPlaced,
+            $"Order {order.OrderId}: {order.ProductName} x{order.Quantity} (Assigned Tech: {order.AssignedTechnicianId}) by {loggedInUser.Username}");
     }
 
     private static List<Employee> GetTechnicians(Factory factory)
@@ -129,7 +132,7 @@ internal static class SalesMenuHandler
         AnsiConsole.Write(table);
     }
 
-    private static void RecordSale(Factory factory)
+    private static void RecordSale(Factory factory, ILoggerService loggerService, Employee loggedInUser)
     {
         // Offer selling either from completed batches or from existing inventory
         var options = new List<string>();
@@ -166,6 +169,8 @@ internal static class SalesMenuHandler
                     factory.Inventory[idx].UpdateSellingPrice(soldPrice);
             AnsiConsole.MarkupLine(
                 $"[green]✔ Recorded sale for batch {chosen.BatchId} at ${soldPrice:F2} per unit.[/]");
+            loggerService.LogInfo(LogOrigin.USER, LogEvent.SaleRecorded,
+                $"Batch {chosen.BatchId} sold at ${soldPrice:F2}/unit by {loggedInUser.Username}");
         }
         else if (pickContext == "Sell from Inventory")
         {
@@ -215,6 +220,8 @@ internal static class SalesMenuHandler
 
             AnsiConsole.MarkupLine(
                 $"[green]✔ Sold {qty} units of {chosen.Name} at ${soldPrice:F2} per unit. Batch {batch.BatchId} recorded.[/]");
+            loggerService.LogInfo(LogOrigin.USER, LogEvent.SaleRecorded,
+                $"{qty} units of {chosen.Name} sold at ${soldPrice:F2}/unit by {loggedInUser.Username}");
         }
     }
 }
