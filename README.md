@@ -18,16 +18,10 @@ The system is cleanly decoupled into three main projects (namespaces):
 - **UI:** A rich console application utilizing `Spectre.Console` for interactive menus, tables, and prompts, organized by domain handlers (`ProductMenuHandler`, `ProductionMenuHandler`, etc.).
 
 ## Installation / Setup Instructions
-1. Ensure you have [.NET 9.0 SDK](https://dotnet.microsoft.com/download) or higher installed.
-2. Clone the repository and navigate to the root directory.
-3. To restore dependencies and build the project, run:
-   ```bash
-   dotnet build
-   ```
-4. To run the application, use:
-   ```bash
-   dotnet run
-   ```
+1. Navigate to the project's **Releases** page on GitHub.
+2. Download the latest `.zip` release.
+3. Extract the contents of the `.zip` file to a directory of your choice.
+4. Run the executable (`SmartFactory_ManagementSystem.exe` or equivalent depending on your OS) directly from the extracted folder.
 *(Note: Ensure your terminal supports ANSI escape sequences for the best TUI experience.)*
 
 ## Usage
