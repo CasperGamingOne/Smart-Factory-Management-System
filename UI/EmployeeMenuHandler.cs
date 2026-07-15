@@ -1,10 +1,10 @@
-﻿using Spectre.Console;
+using Spectre.Console;
 
 namespace Smart_Factory_Management_System;
 
 internal static class EmployeeMenuHandler
 {
-    public static void Run(Factory factory, Employee loggedInUser, IAuthRepository<Employee> repository)
+    public static void Run(Factory factory, Employee loggedInUser, IJsonRepository<Employee> repository)
     {
         var inRoom = true;
         while (inRoom)
@@ -56,18 +56,18 @@ internal static class EmployeeMenuHandler
         table.AddColumn("[yellow]Assigned Role[/]");
         table.AddColumn("[yellow]Activity[/]");
 
-        for (var i = 0; i < factory.EmployeeCount; i++)
+        foreach (var e in factory.Employees)
             table.AddRow(
-                factory.Employees[i].Id.ToString(),
-                factory.Employees[i].Name,
-                factory.Employees[i].Role,
-                factory.Employees[i].ShowActivity()
+                e.Id.ToString(),
+                e.Name,
+                e.Role,
+                e.ShowActivity()
             );
 
         AnsiConsole.Write(table);
     }
 
-    private static void AddNewEmployeeFlow(Factory factory, IAuthRepository<Employee> repository)
+    private static void AddNewEmployeeFlow(Factory factory, IJsonRepository<Employee> repository)
     {
         var name = AnsiConsole.Ask<string>("Enter Employee Full Name:");
         var username = AnsiConsole.Ask<string>("Enter Employee Username:");
@@ -97,12 +97,11 @@ internal static class EmployeeMenuHandler
                 return;
         }
 
-        newEmployee.IsFirstTimeLogin = true;
         factory.AddEmployee(newEmployee);
 
-        var users = repository.LoadUsers();
+        var users = repository.Load();
         users.Add(newEmployee);
-        repository.SaveUsers(users);
+        repository.Save(users);
 
         AnsiConsole.MarkupLine($"[green]✔ Employee '{name}' registered successfully![/]");
     }

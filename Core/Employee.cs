@@ -11,25 +11,45 @@ public abstract class Employee
     private static int _idCounter;
 
 
-    protected Employee(string name, string username, string passwordHash)
+    protected Employee(string name, string username, string passwordHash, bool isFirstTimeLogin = true)
     {
         _idCounter++;
         Id = _idCounter;
         Name = name;
         Username = username;
         PasswordHash = passwordHash;
+        IsFirstTimeLogin = isFirstTimeLogin;
     }
 
     public int Id { get; init; }
-    public string Name { get; set; }
-    public string Username { get; set; }
-    public string PasswordHash { get; set; }
-    public bool IsPasswordHashed { get; set; } = true;
+    public string Name { get; private set; }
+    public string Username { get; private set; }
+    public string PasswordHash { get; private set; }
 
-    [JsonPropertyName("IsFirstTimeLogin")] public bool IsFirstTimeLogin { get; set; } = true;
+    [JsonPropertyName("IsFirstTimeLogin")] public bool IsFirstTimeLogin { get; private set; }
 
     public string Role { get; protected init; } = string.Empty;
     public abstract string QuickActionName { get; }
+
+    public void UpdateName(string newName)
+    {
+        if (string.IsNullOrWhiteSpace(newName))
+            throw new ArgumentException("Name cannot be empty.", nameof(newName));
+        Name = newName;
+    }
+
+    public void UpdateUsername(string newUsername)
+    {
+        if (string.IsNullOrWhiteSpace(newUsername))
+            throw new ArgumentException("Username cannot be empty.", nameof(newUsername));
+        Username = newUsername;
+    }
+
+    public void ChangePassword(string newPasswordHash)
+    {
+        PasswordHash = newPasswordHash;
+        IsFirstTimeLogin = false;
+    }
 
     public static void InitializeIdCounter(int maxId)
     {
@@ -42,7 +62,8 @@ public abstract class Employee
 
 public class Director : Employee
 {
-    public Director(string name, string username, string passwordHash) : base(name, username, passwordHash)
+    public Director(string name, string username, string passwordHash, bool isFirstTimeLogin = true) : base(name,
+        username, passwordHash, isFirstTimeLogin)
     {
         Role = "Director";
     }
@@ -60,6 +81,7 @@ public class Director : Employee
         [
             "Quick Actions",
             "Employee Management",
+            "View Operation History",
             "Reports",
             "Log Out / Exit Session"
         ];
@@ -68,7 +90,8 @@ public class Director : Employee
 
 public class Technician : Employee
 {
-    public Technician(string name, string username, string passwordHash) : base(name, username, passwordHash)
+    public Technician(string name, string username, string passwordHash, bool isFirstTimeLogin = true) : base(name,
+        username, passwordHash, isFirstTimeLogin)
     {
         Role = "Technician";
     }
@@ -95,7 +118,8 @@ public class Technician : Employee
 
 public class SalesAgent : Employee
 {
-    public SalesAgent(string name, string username, string passwordHash) : base(name, username, passwordHash)
+    public SalesAgent(string name, string username, string passwordHash, bool isFirstTimeLogin = true) : base(name,
+        username, passwordHash, isFirstTimeLogin)
     {
         Role = "Sales Agent";
     }
@@ -120,7 +144,8 @@ public class SalesAgent : Employee
 
 public class Accountant : Employee
 {
-    public Accountant(string name, string username, string passwordHash) : base(name, username, passwordHash)
+    public Accountant(string name, string username, string passwordHash, bool isFirstTimeLogin = true) : base(name,
+        username, passwordHash, isFirstTimeLogin)
     {
         Role = "Accountant";
     }

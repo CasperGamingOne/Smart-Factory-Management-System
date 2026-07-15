@@ -4,7 +4,7 @@ namespace Smart_Factory_Management_System;
 
 internal static class AccountingMenuHandler
 {
-    public static void Run(Factory factory, Employee loggedInUser)
+    public static void Run(Factory factory, Employee loggedInUser, ILoggerService loggerService)
     {
         if (loggedInUser is not Accountant)
         {
@@ -80,12 +80,12 @@ internal static class AccountingMenuHandler
 
         var chosen = AnsiConsole.Prompt(selector);
         var price = AnsiConsole.Ask<double>("Set unit selling price for this batch ($):");
-        chosen.UnitSellPrice = price;
+        chosen.SetUnitSellPrice(price);
 
         // Apply price to linked inventory items
         foreach (var idx in chosen.InventoryIndexes)
-            if (idx >= 0 && idx < factory.ProductCount)
-                factory.Inventory[idx].SellingPrice = price;
+            if (idx >= 0 && idx < factory.Inventory.Count)
+                factory.Inventory[idx].UpdateSellingPrice(price);
 
         AnsiConsole.MarkupLine($"[green]✔ Batch {chosen.BatchId} priced at ${price:F2} per unit.[/]");
     }
@@ -110,7 +110,7 @@ internal static class AccountingMenuHandler
 
         var chosen = AnsiConsole.Prompt(selector);
 
-        chosen.Status = ReportStatus.Fulfilled;
+        chosen.Fulfill();
 
         AnsiConsole.MarkupLine(
             $"[green]✔ Report '{chosen.ReportType}' (Req ID: {chosen.RequestId}) fulfilled by {accountant.Name}.[/]");

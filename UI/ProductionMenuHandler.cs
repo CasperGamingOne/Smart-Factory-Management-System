@@ -1,16 +1,17 @@
-﻿using Spectre.Console;
+using Spectre.Console;
 
 namespace Smart_Factory_Management_System;
 
 internal static class ProductionMenuHandler
 {
-    public static void Run(Factory factory, Employee loggedInUser)
+    public static void Run(Factory factory, Employee loggedInUser, ILoggerService loggerService,
+        IJsonRepository<Machine> machineRepo, IJsonRepository<Product> productRepo)
     {
         AnsiConsole.Clear();
         AnsiConsole.Write(Align.Left(new Rule("[yellow]🏭 Active Production Control Deck[/]")));
         AnsiConsole.WriteLine();
 
-        if (factory.MachineCount == 0)
+        if (factory.Machines.Count == 0)
         {
             AnsiConsole.Write(new Markup(
                 "[yellow]⚠ No production machinery has been seeded in the factory layout yet.[/]\n"));
@@ -47,6 +48,8 @@ internal static class ProductionMenuHandler
         if (order.ProductName == "Motherboard")
         {
             RunMotherboardWorkflow(factory, order);
+            machineRepo.Save(factory.Machines);
+            productRepo.Save(factory.Inventory);
             AnsiConsole.WriteLine();
             AnsiConsole.Write(new Markup("[grey]Press any key to return to production deck...[/]"));
             Console.ReadKey(true);
@@ -54,9 +57,8 @@ internal static class ProductionMenuHandler
         }
 
         Machine? selectedMachine = null;
-        for (var i = 0; i < factory.MachineCount; i++)
+        foreach (var mach in factory.Machines)
         {
-            var mach = factory.Machines[i];
             if (mach.SupportedProductType.Name.Contains(order.ProductName, StringComparison.OrdinalIgnoreCase))
             {
                 selectedMachine = mach;
@@ -67,7 +69,9 @@ internal static class ProductionMenuHandler
         if (selectedMachine == null)
         {
             var machineSelector = new SelectionPrompt<Machine>().Title("Select machine to use:");
-            for (var i = 0; i < factory.MachineCount; i++) machineSelector.AddChoice(factory.Machines[i]);
+            foreach (var m in factory.Machines)
+                machineSelector.AddChoice(m);
+
             selectedMachine = AnsiConsole.Prompt(machineSelector);
         }
 
@@ -79,9 +83,8 @@ internal static class ProductionMenuHandler
         }
 
         double unitCost = 0;
-        for (var i = 0; i < factory.ProductCount; i++)
+        foreach (var p in factory.Inventory)
         {
-            var p = factory.Inventory[i];
             if (p.Name != null && p.Name.Contains(order.ProductName, StringComparison.OrdinalIgnoreCase))
             {
                 unitCost = p.ProductionCost;
@@ -111,6 +114,8 @@ internal static class ProductionMenuHandler
 
             selectedMachine.StartOrder(order);
             selectedMachine.Produce(produced);
+            loggerService.LogInfo(LogOrigin.USER, LogEvent.ProductionStarted,
+                $"${order.ProductName} * {order.Quantity}");
 
             if (selectedMachine.Status == MachineStatus.Running)
             {
@@ -125,10 +130,23 @@ internal static class ProductionMenuHandler
             }
         }
 
-        AnsiConsole.MarkupLine(
-            order.IsComplete
-                ? $"[green]Batch complete. Created batch {batch.BatchId} with {batch.InventoryIndexes.Count} items.[/]"
-                : $"[yellow]Order incomplete. Produced {order.CompletedCount}/{order.Quantity} so far.[/]");
+        if (order.IsComplete)
+        {
+            loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.ProductionCompleted,
+                $"{batch.ProductName} * {batch.Quantity}");
+            AnsiConsole.MarkupLine(
+                $"[green]Batch complete. Created batch {batch.BatchId} with {batch.InventoryIndexes.Count} items.[/]");
+        }
+        else
+        {
+            loggerService.LogWarning(LogOrigin.SYSTEM, LogEvent.ProductionInterrupted,
+                $"{order.ProductName} * {order.Quantity}");
+            AnsiConsole.MarkupLine(
+                $"[yellow]Order incomplete. Produced {order.CompletedCount}/{order.Quantity} so far.[/]");
+        }
+
+        machineRepo.Save(factory.Machines);
+        productRepo.Save(factory.Inventory);
 
         AnsiConsole.WriteLine();
         AnsiConsole.Write(new Markup("[grey]Press any key to return to production deck...[/]"));
@@ -266,6 +284,7 @@ internal static class ProductionMenuHandler
                 pendingOrders.Add(order);
             }
         }
+
         return pendingOrders;
     }
 
@@ -279,15 +298,15 @@ internal static class ProductionMenuHandler
     private static int CommitProducedUnit(Factory factory, ProductionOrder order, ProductionBatch batch,
         Product produced)
     {
-        order.CompletedCount++;
+        order.IncrementCompletedCount();
         factory.AddProduct(produced, batch.BatchId);
         return order.CompletedCount;
     }
 
     private static T? FindMachine<T>(Factory factory) where T : Machine
     {
-        for (var i = 0; i < factory.MachineCount; i++)
-            if (factory.Machines[i] is T typedMachine)
+        foreach (var m in factory.Machines)
+            if (m is T typedMachine)
                 return typedMachine;
 
         return null;

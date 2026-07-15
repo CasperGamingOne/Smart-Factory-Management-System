@@ -4,7 +4,7 @@ namespace Smart_Factory_Management_System;
 
 internal static class PasswordChangeHandler
 {
-    public static void Run(Employee user, IAuthRepository<Employee> repository)
+    public static void Run(Employee user, IJsonRepository<Employee> repository)
     {
         AnsiConsole.Clear();
         AnsiConsole.Write(new Rule("[yellow]FIRST-TIME PASSWORD SETUP[/]").Centered());
@@ -30,23 +30,21 @@ internal static class PasswordChangeHandler
             AnsiConsole.MarkupLine("[red]❌ Passwords do not match. Please try again.[/]");
         }
 
-        user.PasswordHash = SecurityHelper.HashPassword(newPassword);
-        user.IsFirstTimeLogin = false;
+        var hashedPassword = SecurityHelper.HashPassword(newPassword);
+        user.ChangePassword(hashedPassword);
 
         // Need to save the changes
         // Persist changes
-        var users = repository.LoadUsers();
+        var users = repository.Load();
         var userToUpdate = users.FirstOrDefault(u => u.Id == user.Id);
 
         if (userToUpdate != null)
         {
-            userToUpdate.PasswordHash = SecurityHelper.HashPassword(newPassword);
-            userToUpdate.IsFirstTimeLogin = false;
+            userToUpdate.ChangePassword(hashedPassword);
 
             try
             {
-                repository.SaveUsers(users);
-                AnsiConsole.MarkupLine("[green]✅ Password updated successfully.[/]");
+                repository.Save(users);
             }
             catch (IOException)
             {

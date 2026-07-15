@@ -4,7 +4,7 @@ namespace Smart_Factory_Management_System;
 
 internal static class LoginMenuHandler
 {
-    public static Employee? ShowLoginScreen(IAuthRepository<Employee> repository, ILoggerService logger)
+    public static Employee? ShowLoginScreen(IJsonRepository<Employee> repository, ILoggerService loggerService)
     {
         while (true)
         {
@@ -40,14 +40,14 @@ internal static class LoginMenuHandler
             // Authentication logic
             if (matchedEmployee != null)
             {
-                logger.LogInfo(LogOrigin.SYSTEM, LogEvent.LoginSuccess, matchedEmployee.Username);
+                loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.LoginSuccess, matchedEmployee.Username);
                 AnsiConsole.MarkupLine("[green]✔ Access Granted successfully![/]");
                 Thread.Sleep(600); // Visual feedback pause
                 return matchedEmployee;
             }
 
             // Error boundary feedback
-            logger.LogInfo(LogOrigin.SYSTEM, LogEvent.LoginFailed, username);
+            loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.LoginFailed, username);
             AnsiConsole.MarkupLine("[red]❌ Error: Invalid username or password.[/]");
             AnsiConsole.MarkupLine("[grey]Press any key to try again...[/]");
 

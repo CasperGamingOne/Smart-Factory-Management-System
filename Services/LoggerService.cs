@@ -1,4 +1,6 @@
-﻿namespace Smart_Factory_Management_System;
+using Spectre.Console;
+
+namespace Smart_Factory_Management_System;
 
 public enum LogOrigin
 {
@@ -10,45 +12,119 @@ public enum LogEvent
 {
     LoginSuccess,
     LoginFailed,
-    MachineStarted,
+    Logout,
     ProductionStarted,
+    ProductionInterrupted,
     ProductionCompleted,
-    MaintenancePerformed
+    MaintenancePerformed,
+    ClosingApplication
 }
 
 public class LoggerService(IFileSystemService fileService) : ILoggerService
 {
     private const string LogFileName = "operations.log";
 
-    public void LogInfo(LogOrigin origin, LogEvent eventType, string context = "")
+    public void LogInfo(LogOrigin origin, LogEvent eventType, string? context = "")
     {
         var message = eventType switch
         {
-            LogEvent.LoginSuccess => $"[{origin}] Successful login: User '{context}'",
-            LogEvent.LoginFailed => $"[{origin}] Failed login attempt: Username '{context}'",
-            LogEvent.MachineStarted => $"[{origin}] Machine started: {context}",
-            LogEvent.ProductionStarted => $"[{origin}] Production operation started: {context}",
-            LogEvent.ProductionCompleted => $"[{origin}] Production operation completed: {context}",
-            LogEvent.MaintenancePerformed => $"[{origin}] Maintenance performed on: {context}",
+            LogEvent.LoginSuccess => $"Successful login: User '{context}'",
+            LogEvent.LoginFailed => $"Failed login attempt: Username '{context}'",
+            LogEvent.Logout => $"User {context} logged out.",
+            LogEvent.ProductionStarted => $"Production operation started for {context}",
+            LogEvent.ProductionCompleted => $"Production operation completed for {context}",
+            LogEvent.MaintenancePerformed => $"Maintenance performed on the machine {context}",
+            LogEvent.ClosingApplication => "Closing application...",
             _ => "Unknown event occurred"
         };
 
-        WriteToFile("INFO", message);
+        WriteToFile("INFO", origin, message);
     }
 
-    public void LogWarning(string message)
+    public void LogWarning(LogOrigin origin, LogEvent eventType, string context = "")
     {
-        WriteToFile("[WARN] [SYSTEM] ", message);
+        var message = eventType switch
+        {
+            LogEvent.ProductionInterrupted => $"Production operation interrupted for {context}",
+            _ => "Unknown event occurred"
+        };
+
+        WriteToFile("WARN", origin, message);
     }
 
     public void LogError(string message)
     {
-        WriteToFile("[ERROR] [SYSTEM] ", message);
+        WriteToFile("ERROR", LogOrigin.SYSTEM, message);
     }
 
-    private void WriteToFile(string level, string message)
+    public void ShowOperationHistory()
     {
-        var entry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{level}] {message}";
+        AnsiConsole.Clear();
+        AnsiConsole.Write(new Rule("[cyan]Operation History Log[/]").Centered());
+
+        var logContent = fileService.ReadFromFile(LogFileName);
+        if (string.IsNullOrEmpty(logContent))
+        {
+            AnsiConsole.MarkupLine("[yellow]No operation history found yet.[/]");
+            return;
+        }
+
+        var lines = logContent.Split([Environment.NewLine], StringSplitOptions.RemoveEmptyEntries);
+
+        var table = new Table().Border(TableBorder.Rounded);
+        table.AddColumn("Timestamp");
+        table.AddColumn("Level");
+        table.AddColumn("Origin");
+        table.AddColumn("Description");
+
+        foreach (var line in lines)
+        {
+            if (string.IsNullOrWhiteSpace(line)) continue;
+
+            var firstClose = line.IndexOf(']');
+            if (firstClose > 1)
+            {
+                var timestamp = line.Substring(1, firstClose - 1);
+                var secondOpen = line.IndexOf('[', firstClose);
+                var secondClose = line.IndexOf(']', firstClose + 1);
+                if (secondOpen >= 0 && secondClose > secondOpen)
+                {
+                    var level = line.Substring(secondOpen + 1, secondClose - secondOpen - 1);
+
+                    var thirdOpen = line.IndexOf('[', secondClose);
+                    var thirdClose = line.IndexOf(']', secondClose + 1);
+                    if (thirdOpen >= 0 && thirdClose > thirdOpen)
+                    {
+                        var origin = line.Substring(thirdOpen + 1, thirdClose - thirdOpen - 1);
+                        var description = line.Substring(thirdClose + 1).Trim();
+                        table.AddRow(Markup.Escape(timestamp), Markup.Escape(level), Markup.Escape(origin),
+                            Markup.Escape(description));
+                    }
+                    else
+                    {
+                        var description = line.Substring(secondClose + 1).Trim();
+                        table.AddRow(Markup.Escape(timestamp), Markup.Escape(level), "SYSTEM",
+                            Markup.Escape(description));
+                    }
+                }
+                else
+                {
+                    var description = line.Substring(firstClose + 1).Trim();
+                    table.AddRow(Markup.Escape(timestamp), "INFO", "SYSTEM", Markup.Escape(description));
+                }
+            }
+            else
+            {
+                table.AddRow("-", "-", "-", Markup.Escape(line));
+            }
+        }
+
+        AnsiConsole.Write(table);
+    }
+
+    private void WriteToFile(string level, LogOrigin origin, string message)
+    {
+        var entry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{level}] [{origin}] {message}";
         fileService.AppendToFile(LogFileName, entry);
     }
 }

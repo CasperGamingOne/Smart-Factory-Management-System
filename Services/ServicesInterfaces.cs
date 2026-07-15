@@ -1,20 +1,22 @@
-﻿namespace Smart_Factory_Management_System;
+namespace Smart_Factory_Management_System;
 
-public interface IAuthService
+public interface IJsonRepository<T>
 {
-    // Your existing flawless auth logic goes behind this interface
-    Employee Authenticate(string username, string rawPassword);
-}
-
-public interface IAuthRepository<T>
-{
-    List<T> LoadUsers();
-    void SaveUsers(List<T> users);
+    List<T> Load();
+    void Save(IEnumerable<T> data);
 }
 
 public interface ILoggerService
 {
     void LogInfo(LogOrigin origin, LogEvent eventType, string context = "");
-    void LogWarning(string message);
+    void LogWarning(LogOrigin origin, LogEvent eventType, string context = "");
     void LogError(string message);
+    void ShowOperationHistory();
+}
+
+public interface IAccountService
+{
+    bool UpdateFullName(Employee user, string newName);
+    bool UpdateUsername(Employee user, string newUsername);
+    bool UpdatePassword(Employee user, string newPassword);
 }

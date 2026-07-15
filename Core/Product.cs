@@ -1,20 +1,24 @@
-﻿namespace Smart_Factory_Management_System;
+using System.Text.Json.Serialization;
 
+namespace Smart_Factory_Management_System;
+
+[JsonDerivedType(typeof(Microprocessor), "microprocessor")]
+[JsonDerivedType(typeof(Motherboard), "motherboard")]
 public abstract class Product
 {
     private readonly double _productionCost;
     private int _quantity;
     private double _sellingPrice;
 
-    protected Product(string name, double cost, double price, int quantity)
+    protected Product(string name, double productionCost, double sellingPrice, int quantity)
     {
         Name = name;
-        ProductionCost = cost;
-        SellingPrice = price;
+        ProductionCost = productionCost;
+        SellingPrice = sellingPrice;
         Quantity = quantity;
     }
 
-    public string? Name { get; protected set; }
+    public string? Name { get; init; }
 
     public double ProductionCost
     {
@@ -25,13 +29,13 @@ public abstract class Product
     public double SellingPrice
     {
         get => _sellingPrice;
-        set => _sellingPrice = value >= 0 ? value : 0;
+        private set => _sellingPrice = value >= 0 ? value : 0;
     }
 
     public int Quantity
     {
         get => _quantity;
-        set
+        private set
         {
             if (value < 0)
             {
@@ -42,15 +46,42 @@ public abstract class Product
         }
     }
 
+    public void UpdateSellingPrice(double price)
+    {
+        SellingPrice = price;
+    }
+
+    public void AddQuantity(int amount)
+    {
+        if (amount <= 0)
+            throw new ArgumentException("Amount to add must be positive.", nameof(amount));
+        Quantity += amount;
+    }
+
+    public void DeductQuantity(int amount)
+    {
+        if (amount <= 0)
+            throw new ArgumentException("Amount to deduct must be positive.", nameof(amount));
+        if (Quantity < amount)
+            throw new InvalidOperationException("Insufficient stock to deduct.");
+        Quantity -= amount;
+    }
+
     public abstract string GetTechnicalSpecifications();
 }
 
-public class Microprocessor(string name, double cost, double price, int quantity, int cores, double clockSpeed)
-    : Product(name, cost, price, quantity)
+public class Microprocessor(
+    string name,
+    double productionCost,
+    double sellingPrice,
+    int quantity,
+    int? cores,
+    double clockSpeed)
+    : Product(name, productionCost, sellingPrice, quantity)
 {
-    public string? Architecture { get; set; }
-    public int? Cores { get; protected set; } = cores;
-    public double ClockSpeed { get; protected set; } = clockSpeed;
+    public string? Architecture { get; init; }
+    public int? Cores { get; init; } = cores;
+    public double ClockSpeed { get; init; } = clockSpeed;
 
     public override string GetTechnicalSpecifications()
     {
@@ -70,13 +101,19 @@ public enum BoardState
     BakedAndSoldered
 }
 
-public class Motherboard(string name, double cost, double price, int quantity, string socket, string type)
-    : Product(name, cost, price, quantity)
+public class Motherboard(
+    string name,
+    double productionCost,
+    double sellingPrice,
+    int quantity,
+    string socketStandard,
+    string physicalForm)
+    : Product(name, productionCost, sellingPrice, quantity)
 {
     public BoardState CurrentState { get; private set; } = BoardState.BlankBoard;
 
-    public string? SocketStandard { get; set; } = socket;
-    public string? PhysicalForm { get; set; } = type;
+    public string? SocketStandard { get; init; } = socketStandard;
+    public string? PhysicalForm { get; init; } = physicalForm;
 
     // Only the machines will call this
     public void TransitionTo(BoardState nextState)

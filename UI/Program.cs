@@ -14,23 +14,34 @@ internal static class Program
         var fileSystem = new FileSystemService();
         var factory = new Factory();
         var loggerService = new LoggerService(fileSystem);
-        var authRepository = new JsonAuthRepository(fileSystem);
-        var employees = authRepository.LoadUsers();
-        foreach (var employee in employees) factory.AddEmployee(employee);
+        var employeeRepo = new JsonRepository<Employee>(fileSystem, "employees.json");
+        var machinesRepo = new JsonRepository<Machine>(fileSystem, "machines.json");
+        var productsRepo = new JsonRepository<Product>(fileSystem, "products.json");
+        var accountService = new AccountService(employeeRepo);
+
+        var dataSeeder = new DataSeeder(employeeRepo, machinesRepo, productsRepo, fileSystem);
+        dataSeeder.Seed();
+
+        factory.LoadFromRepository(
+            employeeRepo.Load(),
+            machinesRepo.Load(),
+            productsRepo.Load()
+        );
 
         while (true)
         {
             AnsiConsole.Clear();
             AnsiConsole.Write(new Rule("[yellow]SMART FACTORY SYSTEM - LOGIN GATEWAY[/]").Centered());
 
-            var loggedInUser = LoginMenuHandler.ShowLoginScreen(authRepository, loggerService);
+            var loggedInUser = LoginMenuHandler.ShowLoginScreen(employeeRepo, loggerService);
             if (loggedInUser == null)
             {
+                loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.ClosingApplication, loggedInUser?.Username);
                 AnsiConsole.MarkupLine("[red]Application shutting down...[/]");
                 break;
             }
 
-            if (loggedInUser.IsFirstTimeLogin) PasswordChangeHandler.Run(loggedInUser, authRepository);
+            if (loggedInUser.IsFirstTimeLogin) PasswordChangeHandler.Run(loggedInUser, employeeRepo);
 
             AnsiConsole.MarkupLine($"[green]Welcome back, {loggedInUser.Name} ({loggedInUser.Role})![/]");
             AnsiConsole.Status().Start("Booting production environment...", _ => { Thread.Sleep(800); });
@@ -42,7 +53,13 @@ internal static class Program
                 TuiHelper.RenderSessionHeader(loggedInUser, factory);
 
                 // Build role-filtered main menu
-                var available = loggedInUser.GetAvailableMenuOptions();
+                var available = loggedInUser.GetAvailableMenuOptions().ToList();
+                var logoutIndex = available.IndexOf("Log Out / Exit Session");
+                if (logoutIndex >= 0)
+                    available.Insert(logoutIndex, "Account Settings");
+                else
+                    available.Add("Account Settings");
+
                 var indexedAvailable = available.Select((item, index) => $"{index + 1}. {item}").ToList();
 
                 var choice = AnsiConsole.Prompt(
@@ -55,31 +72,40 @@ internal static class Program
 
                 if (option == loggedInUser.QuickActionName)
                 {
-                    ExecuteQuickAction(loggedInUser, factory, authRepository);
+                    ExecuteQuickAction(loggedInUser, factory, employeeRepo, loggerService, machinesRepo, productsRepo);
                 }
                 else
                 {
                     switch (option)
                     {
                         case "Employee Management":
-                            EmployeeMenuHandler.Run(factory, loggedInUser, authRepository);
+                            EmployeeMenuHandler.Run(factory, loggedInUser, employeeRepo);
                             break;
                         case "Machine Management":
-                            MachineMenuHandler.Run(factory, loggedInUser);
+                            MachineMenuHandler.Run(factory, loggedInUser, loggerService, machinesRepo, productsRepo);
                             break;
                         case "Product Management":
-                            ProductMenuHandler.Run(factory, loggedInUser);
+                            ProductMenuHandler.Run(factory, loggedInUser, loggerService, productsRepo);
+                            break;
+                        case "View Operation History":
+                            loggerService.ShowOperationHistory();
+                            AnsiConsole.MarkupLine("\n[grey]Press any key to continue...[/]");
+                            Console.ReadKey(true);
                             break;
                         case "Accounting":
-                            AccountingMenuHandler.Run(factory, loggedInUser);
+                            AccountingMenuHandler.Run(factory, loggedInUser, loggerService);
                             break;
                         case "Reports":
-                            ReportMenuHandler.Run(factory, loggedInUser);
+                            ReportMenuHandler.Run(factory, loggedInUser, loggerService);
                             break;
                         case "Factory Information":
-                            FactoryReportMenuHandler.Run(factory, loggedInUser);
+                            FactoryReportMenuHandler.Run(factory, loggedInUser, loggerService);
+                            break;
+                        case "Account Settings":
+                            AccountSettingsMenuHandler.Run(loggedInUser, accountService);
                             break;
                         case "Log Out / Exit Session":
+                            loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.Logout, loggedInUser.Username);
                             AnsiConsole.MarkupLine("[yellow]Logging out of current profile...[/]");
                             Thread.Sleep(600);
                             sessionActive = false;
@@ -90,11 +116,12 @@ internal static class Program
         }
     }
 
-    private static void ExecuteQuickAction(Employee user, Factory factory, IAuthRepository<Employee> authRepository)
+    private static void ExecuteQuickAction(Employee user, Factory factory, IJsonRepository<Employee> authRepository,
+        ILoggerService loggerService, IJsonRepository<Machine> machinesRepo, IJsonRepository<Product> productsRepo)
     {
         if (user is Director) EmployeeMenuHandler.Run(factory, user, authRepository);
-        else if (user is Technician) MachineMenuHandler.Run(factory, user);
-        else if (user is SalesAgent) SalesMenuHandler.Run(factory, user);
-        else if (user is Accountant) AccountingMenuHandler.Run(factory, user);
+        else if (user is Technician) MachineMenuHandler.Run(factory, user, loggerService, machinesRepo, productsRepo);
+        else if (user is SalesAgent) SalesMenuHandler.Run(factory, user, loggerService, productsRepo);
+        else if (user is Accountant) AccountingMenuHandler.Run(factory, user, loggerService);
     }
 }

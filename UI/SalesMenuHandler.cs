@@ -4,7 +4,8 @@ namespace Smart_Factory_Management_System;
 
 internal static class SalesMenuHandler
 {
-    public static void Run(Factory factory, Employee loggedInUser)
+    public static void Run(Factory factory, Employee loggedInUser, ILoggerService loggerService,
+        IJsonRepository<Product> productRepo)
     {
         if (loggedInUser is not SalesAgent && loggedInUser is not Director)
         {
@@ -36,6 +37,7 @@ internal static class SalesMenuHandler
                     break;
                 case "Record Sale for Batch":
                     RecordSale(factory);
+                    productRepo.Save(factory.Inventory);
                     break;
                 case "Return to Main Menu":
                     return;
@@ -95,9 +97,9 @@ internal static class SalesMenuHandler
     {
         var technicians = new List<Employee>();
 
-        for (var i = 0; i < factory.EmployeeCount; i++)
-            if (factory.Employees[i] is Technician)
-                technicians.Add(factory.Employees[i]);
+        foreach (var t in factory.Employees)
+            if (t is Technician)
+                technicians.Add(t);
 
         return technicians;
     }
@@ -116,7 +118,7 @@ internal static class SalesMenuHandler
         foreach (var o in factory.PendingOrders)
         {
             table.AddRow(
-                o.OrderId.ToString(),
+                o.OrderId,
                 o.ProductName,
                 o.Quantity.ToString(),
                 o.CompletedCount.ToString(),
@@ -132,7 +134,7 @@ internal static class SalesMenuHandler
         // Offer selling either from completed batches or from existing inventory
         var options = new List<string>();
         if (factory.BatchCount > 0) options.Add("Sell from Batch");
-        if (factory.ProductCount > 0) options.Add("Sell from Inventory");
+        if (factory.Inventory.Count > 0) options.Add("Sell from Inventory");
         if (options.Count == 0)
         {
             AnsiConsole.MarkupLine("[yellow]No available inventory or batches to sell.[/]");
@@ -155,22 +157,21 @@ internal static class SalesMenuHandler
             }
 
             var soldPrice = AnsiConsole.Ask<double>("Enter unit sold price ($):");
-            chosen.IsSold = true;
-            chosen.UnitSellPrice = soldPrice;
+            chosen.MarkAsSold();
+            chosen.SetUnitSellPrice(soldPrice);
 
             // Apply price to linked inventory items
             foreach (var idx in chosen.InventoryIndexes)
-                if (idx >= 0 && idx < factory.ProductCount)
-                    factory.Inventory[idx].SellingPrice = soldPrice;
+                if (idx >= 0 && idx < factory.Inventory.Count)
+                    factory.Inventory[idx].UpdateSellingPrice(soldPrice);
             AnsiConsole.MarkupLine(
                 $"[green]✔ Recorded sale for batch {chosen.BatchId} at ${soldPrice:F2} per unit.[/]");
         }
         else if (pickContext == "Sell from Inventory")
         {
             var products = new List<Product>();
-            for (var i = 0; i < factory.ProductCount; i++)
+            foreach (var p in factory.Inventory)
             {
-                var p = factory.Inventory[i];
                 if (p.Quantity > 0)
                     products.Add(p);
             }
@@ -187,24 +188,29 @@ internal static class SalesMenuHandler
 
             var chosen = AnsiConsole.Prompt(prodSelector);
             var qty = AnsiConsole.Ask<int>($"Enter quantity to sell (available: {chosen.Quantity}):");
-            if (qty <= 0 || qty > chosen.Quantity)
+            if (qty <= 0)
             {
-                AnsiConsole.MarkupLine("[red]Invalid quantity specified.[/]");
+                AnsiConsole.MarkupLine("[red]Quantity to sell must be greater than zero.[/]");
+                return;
+            }
+
+            if (qty > chosen.Quantity)
+            {
+                AnsiConsole.MarkupLine(
+                    $"[red]Error: Cannot sell {qty} units. Only {chosen.Quantity} units are available in inventory.[/]");
                 return;
             }
 
             var soldPrice = AnsiConsole.Ask<double>("Enter unit sold price ($):");
 
             // Update product selling price
-            chosen.SellingPrice = soldPrice;
+            chosen.UpdateSellingPrice(soldPrice);
 
             // Decrease stock and create a record batch for accounting
-            chosen.Quantity -= qty;
-            var batch = new ProductionBatch(chosen.Name ?? "Inventory Sale", qty, chosen.ProductionCost)
-            {
-                IsSold = true,
-                UnitSellPrice = soldPrice
-            };
+            chosen.DeductQuantity(qty);
+            var batch = new ProductionBatch(chosen.Name ?? "Inventory Sale", qty, chosen.ProductionCost);
+            batch.MarkAsSold();
+            batch.SetUnitSellPrice(soldPrice);
             factory.AddBatch(batch);
 
             AnsiConsole.MarkupLine(
