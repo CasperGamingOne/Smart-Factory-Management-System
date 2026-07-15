@@ -2,9 +2,9 @@ using Spectre.Console;
 
 namespace Smart_Factory_Management_System;
 
-internal static class AccountSettingsHandler
+internal static class AccountSettingsMenuHandler
 {
-    public static void Run(Employee user, IJsonRepository<Employee> repository)
+    public static void Run(Employee user, IAccountService accountService)
     {
         var inSettings = true;
         while (inSettings)
@@ -33,13 +33,13 @@ internal static class AccountSettingsHandler
             switch (choice)
             {
                 case "1. Change Full Name":
-                    ChangeFullName(user, repository);
+                    ChangeFullName(user, accountService);
                     break;
                 case "2. Change Username":
-                    ChangeUsername(user, repository);
+                    ChangeUsername(user, accountService);
                     break;
                 case "3. Change Password":
-                    ChangePassword(user, repository);
+                    ChangePassword(user, accountService);
                     break;
                 case "4. Return to Main Menu":
                     inSettings = false;
@@ -48,50 +48,47 @@ internal static class AccountSettingsHandler
         }
     }
 
-    private static void ChangeFullName(Employee user, IJsonRepository<Employee> repository)
+    private static void ChangeFullName(Employee user, IAccountService accountService)
     {
         AnsiConsole.WriteLine();
         var newName = AnsiConsole.Ask<string>("Enter your new Full Name:");
-        if (string.IsNullOrWhiteSpace(newName))
+
+        try
         {
-            AnsiConsole.MarkupLine("[red]❌ Full Name cannot be empty.[/]");
-            Thread.Sleep(1000);
-            return;
+            AnsiConsole.MarkupLine(accountService.UpdateFullName(user, newName)
+                ? "[green]✅ Full Name updated successfully![/]"
+                : "[red]❌ Critical error: Could not write to the database file.[/]");
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        {
+            AnsiConsole.MarkupLine($"[red]❌ {ex.Message}[/]");
         }
 
-        user.UpdateName(newName);
-        PersistChanges(user, repository);
-        AnsiConsole.MarkupLine("[green]✅ Full Name updated successfully![/]");
         Thread.Sleep(1000);
     }
 
-    private static void ChangeUsername(Employee user, IJsonRepository<Employee> repository)
+    private static void ChangeUsername(Employee user, IAccountService accountService)
     {
         AnsiConsole.WriteLine();
         var newUsername = AnsiConsole.Ask<string>("Enter your new Username:");
-        if (string.IsNullOrWhiteSpace(newUsername))
-        {
-            AnsiConsole.MarkupLine("[red]❌ Username cannot be empty.[/]");
-            Thread.Sleep(1000);
-            return;
-        }
 
-        // Verify uniqueness
-        var users = repository.Load();
-        if (users.Any(u => u.Id != user.Id && u.Username.Equals(newUsername, StringComparison.OrdinalIgnoreCase)))
+        try
         {
-            AnsiConsole.MarkupLine("[red]❌ This username is already taken by another account.[/]");
+            AnsiConsole.MarkupLine(accountService.UpdateUsername(user, newUsername)
+                ? "[green]✅ Username updated successfully![/]"
+                : "[red]❌ Critical error: Could not write to the database file.[/]");
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        {
+            AnsiConsole.MarkupLine($"[red]❌ {ex.Message}[/]");
             Thread.Sleep(1500);
             return;
         }
 
-        user.UpdateUsername(newUsername);
-        PersistChanges(user, repository);
-        AnsiConsole.MarkupLine("[green]✅ Username updated successfully![/]");
         Thread.Sleep(1000);
     }
 
-    private static void ChangePassword(Employee user, IJsonRepository<Employee> repository)
+    private static void ChangePassword(Employee user, IAccountService accountService)
     {
         AnsiConsole.WriteLine();
         string newPassword;
@@ -114,30 +111,17 @@ internal static class AccountSettingsHandler
             AnsiConsole.MarkupLine("[red]❌ Passwords do not match. Please try again.[/]");
         }
 
-        user.ChangePassword(SecurityHelper.HashPassword(newPassword));
-        PersistChanges(user, repository);
-        AnsiConsole.MarkupLine("[green]✅ Password updated successfully![/]");
-        Thread.Sleep(1000);
-    }
-
-    private static void PersistChanges(Employee user, IJsonRepository<Employee> repository)
-    {
-        var users = repository.Load();
-        var dbUser = users.FirstOrDefault(u => u.Id == user.Id);
-        if (dbUser != null)
+        try
         {
-            dbUser.UpdateName(user.Name);
-            dbUser.UpdateUsername(user.Username);
-            dbUser.ChangePassword(user.PasswordHash);
-
-            try
-            {
-                repository.Save(users);
-            }
-            catch (IOException)
-            {
-                AnsiConsole.MarkupLine("[red]❌ Critical error: Could not write to the database file.[/]");
-            }
+            AnsiConsole.MarkupLine(accountService.UpdatePassword(user, newPassword)
+                ? "[green]✅ Password updated successfully![/]"
+                : "[red]❌ Critical error: Could not write to the database file.[/]");
         }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        {
+            AnsiConsole.MarkupLine($"[red]❌ {ex.Message}[/]");
+        }
+
+        Thread.Sleep(1000);
     }
 }

@@ -13,3 +13,10 @@ public interface ILoggerService
     void LogError(string message);
     void ShowOperationHistory();
 }
+
+public interface IAccountService
+{
+    bool UpdateFullName(Employee user, string newName);
+    bool UpdateUsername(Employee user, string newUsername);
+    bool UpdatePassword(Employee user, string newPassword);
+}

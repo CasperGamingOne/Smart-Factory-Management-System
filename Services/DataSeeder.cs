@@ -23,7 +23,7 @@ public class DataSeeder(
                 new SalesAgent("Alexandru Dumitru", "alex", SecurityHelper.HashPassword("password"),
                     false),
                 new Accountant("Elena Vasilescu", "elena", SecurityHelper.HashPassword("password"),
-                    true)
+                    false)
             };
             employeeRepo.Save(initialEmployees);
         }

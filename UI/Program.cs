@@ -17,6 +17,7 @@ internal static class Program
         var employeeRepo = new JsonRepository<Employee>(fileSystem, "employees.json");
         var machinesRepo = new JsonRepository<Machine>(fileSystem, "machines.json");
         var productsRepo = new JsonRepository<Product>(fileSystem, "products.json");
+        var accountService = new AccountService(employeeRepo);
 
         var dataSeeder = new DataSeeder(employeeRepo, machinesRepo, productsRepo, fileSystem);
         dataSeeder.Seed();
@@ -101,7 +102,7 @@ internal static class Program
                             FactoryReportMenuHandler.Run(factory, loggedInUser, loggerService);
                             break;
                         case "Account Settings":
-                            AccountSettingsHandler.Run(loggedInUser, employeeRepo);
+                            AccountSettingsMenuHandler.Run(loggedInUser, accountService);
                             break;
                         case "Log Out / Exit Session":
                             loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.Logout, loggedInUser.Username);

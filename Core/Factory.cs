@@ -9,9 +9,11 @@ public class Factory
     private readonly List<Product> _inventory = new();
 
     private readonly List<Machine> _machines = new();
+
     private readonly Queue<ProductionOrder> _pendingOrders = new();
 
     private readonly Queue<ReportRequest> _pendingReportRequests = new();
+
     public IEnumerable<ProductionOrder> PendingOrders => _pendingOrders;
     public int OrderCount => _pendingOrders.Count;
     public IEnumerable<ReportRequest> PendingReportRequests => _pendingReportRequests;

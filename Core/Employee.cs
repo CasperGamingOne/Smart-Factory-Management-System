@@ -25,9 +25,8 @@ public abstract class Employee
     public string Name { get; private set; }
     public string Username { get; private set; }
     public string PasswordHash { get; private set; }
-    public bool IsPasswordHashed { get; private set; } = true;
 
-    [JsonPropertyName("IsFirstTimeLogin")] public bool IsFirstTimeLogin { get; private set; } = true;
+    [JsonPropertyName("IsFirstTimeLogin")] public bool IsFirstTimeLogin { get; private set; }
 
     public string Role { get; protected init; } = string.Empty;
     public abstract string QuickActionName { get; }
@@ -49,7 +48,6 @@ public abstract class Employee
     public void ChangePassword(string newPasswordHash)
     {
         PasswordHash = newPasswordHash;
-        IsPasswordHashed = true;
         IsFirstTimeLogin = false;
     }
 

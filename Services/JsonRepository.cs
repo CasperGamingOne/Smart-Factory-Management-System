@@ -4,9 +4,7 @@ namespace Smart_Factory_Management_System;
 
 public class JsonRepository<T>(IFileSystemService fileService, string fileName) : IJsonRepository<T>
 {
-    //private const string AuthFileName = "employees.json";
-
-    private static readonly JsonSerializerOptions SerializerOptions = new()
+    private readonly JsonSerializerOptions _serializerOptions = new()
     {
         WriteIndented = true
     };
@@ -16,12 +14,12 @@ public class JsonRepository<T>(IFileSystemService fileService, string fileName) 
         var json = fileService.ReadFromFile(fileName);
         return string.IsNullOrEmpty(json)
             ? new List<T>()
-            : JsonSerializer.Deserialize<List<T>>(json, SerializerOptions) ?? new List<T>();
+            : JsonSerializer.Deserialize<List<T>>(json, _serializerOptions) ?? new List<T>();
     }
 
     public void Save(IEnumerable<T> items)
     {
-        var json = JsonSerializer.Serialize(items, SerializerOptions);
+        var json = JsonSerializer.Serialize(items, _serializerOptions);
         fileService.WriteToFile(fileName, json);
     }
 }

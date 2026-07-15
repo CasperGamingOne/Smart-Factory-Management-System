@@ -47,11 +47,11 @@ public abstract class Machine
 
     public string? Manufacturer { get; init; }
 
-    public string? SerialNumber { get; init; }
+    private string? SerialNumber { get; }
 
-    public DateTime InstallationDate { get; init; }
+    private DateTime InstallationDate { get; }
 
-    public MachinePart[]? Parts { get; init; }
+    private MachinePart[]? Parts { get; }
 
     public MachineStatus Status { get; private protected set; } = MachineStatus.Stopped;
 
