@@ -1,12 +1,34 @@
-﻿namespace Smart_Factory_Management_System;
+namespace Smart_Factory_Management_System;
 
-public class DataSeeder(IJsonRepository<Machine> machineRepo, IJsonRepository<Product> productRepo)
+public class DataSeeder(
+    IJsonRepository<Employee> employeeRepo,
+    IJsonRepository<Machine> machineRepo,
+    IJsonRepository<Product> productRepo,
+    IFileSystemService fileSystem)
 {
     public void Seed()
     {
-        var machines = machineRepo.Load();
+        var employeesFile = Path.Combine(fileSystem.BaseDirectory, "employees.json");
+        var machinesFile = Path.Combine(fileSystem.BaseDirectory, "machines.json");
+        var productsFile = Path.Combine(fileSystem.BaseDirectory, "products.json");
 
-        if (machines.Count == 0)
+        if (!File.Exists(employeesFile))
+        {
+            var initialEmployees = new List<Employee>
+            {
+                new Director("Andrei Popescu", "andrei", SecurityHelper.HashPassword("password"),
+                    false),
+                new Technician("Maria Ionescu", "maria", SecurityHelper.HashPassword("password"),
+                    false),
+                new SalesAgent("Alexandru Dumitru", "alex", SecurityHelper.HashPassword("password"),
+                    false),
+                new Accountant("Elena Vasilescu", "elena", SecurityHelper.HashPassword("password"),
+                    true)
+            };
+            employeeRepo.Save(initialEmployees);
+        }
+
+        if (!File.Exists(machinesFile))
         {
             MachinePart litoPower = new PowerSupply("ASML High-Voltage Grid", PartCondition.Excellent, 400);
             MachinePart litoCooling = new CoolingSystem("CryoHelix Sub-Zero", PartCondition.Excellent, "Liquid Helium");
@@ -58,20 +80,17 @@ public class DataSeeder(IJsonRepository<Machine> machineRepo, IJsonRepository<Pr
                 new ReflowOven("OmniMax Thermal Tunnel", "Heller Industries", "SN-HLR-5542-Z9", ovenParts,
                     MachineCondition.Critical)
             };
-            foreach (var m in initialMachines) machines.Add(m);
-            machineRepo.Save(machines);
+            machineRepo.Save(initialMachines);
         }
 
-        var products = productRepo.Load();
-        if (products.Count == 0)
+        if (!File.Exists(productsFile))
         {
             var initialProducts = new List<Product>
             {
                 new Microprocessor("ARM Cortex-M4", 50, 74.99, 10, 4, 2.5),
                 new Motherboard("Motherboard ATX", 50.00, 99.99, 5, "AM4", "ATX")
             };
-            foreach (var p in initialProducts) products.Add(p);
-            productRepo.Save(products);
+            productRepo.Save(initialProducts);
         }
     }
 }

@@ -1,10 +1,11 @@
-﻿using Spectre.Console;
+using Spectre.Console;
 
 namespace Smart_Factory_Management_System;
 
 internal static class ProductionMenuHandler
 {
-    public static void Run(Factory factory, Employee loggedInUser, ILoggerService loggerService)
+    public static void Run(Factory factory, Employee loggedInUser, ILoggerService loggerService,
+        IJsonRepository<Machine> machineRepo, IJsonRepository<Product> productRepo)
     {
         AnsiConsole.Clear();
         AnsiConsole.Write(Align.Left(new Rule("[yellow]🏭 Active Production Control Deck[/]")));
@@ -47,6 +48,8 @@ internal static class ProductionMenuHandler
         if (order.ProductName == "Motherboard")
         {
             RunMotherboardWorkflow(factory, order);
+            machineRepo.Save(factory.Machines);
+            productRepo.Save(factory.Inventory);
             AnsiConsole.WriteLine();
             AnsiConsole.Write(new Markup("[grey]Press any key to return to production deck...[/]"));
             Console.ReadKey(true);
@@ -146,6 +149,9 @@ internal static class ProductionMenuHandler
             order.IsComplete
                 ? $"[green]Batch complete. Created batch {batch.BatchId} with {batch.InventoryIndexes.Count} items.[/]"
                 : $"[yellow]Order incomplete. Produced {order.CompletedCount}/{order.Quantity} so far.[/]");
+
+        machineRepo.Save(factory.Machines);
+        productRepo.Save(factory.Inventory);
 
         AnsiConsole.WriteLine();
         AnsiConsole.Write(new Markup("[grey]Press any key to return to production deck...[/]"));
@@ -297,14 +303,14 @@ internal static class ProductionMenuHandler
     private static int CommitProducedUnit(Factory factory, ProductionOrder order, ProductionBatch batch,
         Product produced)
     {
-        order.CompletedCount++;
+        order.IncrementCompletedCount();
         factory.AddProduct(produced, batch.BatchId);
         return order.CompletedCount;
     }
 
     private static T? FindMachine<T>(Factory factory) where T : Machine
     {
-        for (var i = 0; i < factory.Inventory.Count; i++)
+        for (var i = 0; i < factory.Machines.Count; i++)
             if (factory.Machines[i] is T typedMachine)
                 return typedMachine;
 

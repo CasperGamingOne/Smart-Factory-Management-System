@@ -9,9 +9,14 @@ public enum ReportStatus
 public class ReportRequest(string reportType, string requestedByDirectorName)
 {
     public string RequestId { get; } = Guid.NewGuid().ToString().Substring(0, 8);
-    public string ReportType { get; set; } = reportType;
+    public string ReportType { get; init; } = reportType;
     private string RequestedByDirectorName { get; } = requestedByDirectorName;
-    public ReportStatus Status { get; set; } = ReportStatus.Pending;
+    public ReportStatus Status { get; private set; } = ReportStatus.Pending;
+
+    public void Fulfill()
+    {
+        Status = ReportStatus.Fulfilled;
+    }
 
     public override string ToString()
     {

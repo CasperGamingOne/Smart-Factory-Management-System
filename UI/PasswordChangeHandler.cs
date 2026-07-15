@@ -30,8 +30,7 @@ internal static class PasswordChangeHandler
             AnsiConsole.MarkupLine("[red]❌ Passwords do not match. Please try again.[/]");
         }
 
-        user.PasswordHash = SecurityHelper.HashPassword(newPassword);
-        user.IsFirstTimeLogin = false;
+        user.ChangePassword(SecurityHelper.HashPassword(newPassword));
 
         // Need to save the changes
         // Persist changes
@@ -40,8 +39,7 @@ internal static class PasswordChangeHandler
 
         if (userToUpdate != null)
         {
-            userToUpdate.PasswordHash = SecurityHelper.HashPassword(newPassword);
-            userToUpdate.IsFirstTimeLogin = false;
+            userToUpdate.ChangePassword(SecurityHelper.HashPassword(newPassword));
 
             try
             {

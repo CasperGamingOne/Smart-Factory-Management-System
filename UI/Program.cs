@@ -18,6 +18,9 @@ internal static class Program
         var machinesRepo = new JsonRepository<Machine>(fileSystem, "machines.json");
         var productsRepo = new JsonRepository<Product>(fileSystem, "products.json");
 
+        var dataSeeder = new DataSeeder(employeeRepo, machinesRepo, productsRepo, fileSystem);
+        dataSeeder.Seed();
+
         factory.LoadFromRepository(
             employeeRepo.Load(),
             machinesRepo.Load(),
@@ -49,7 +52,13 @@ internal static class Program
                 TuiHelper.RenderSessionHeader(loggedInUser, factory);
 
                 // Build role-filtered main menu
-                var available = loggedInUser.GetAvailableMenuOptions();
+                var available = loggedInUser.GetAvailableMenuOptions().ToList();
+                var logoutIndex = available.IndexOf("Log Out / Exit Session");
+                if (logoutIndex >= 0)
+                    available.Insert(logoutIndex, "Account Settings");
+                else
+                    available.Add("Account Settings");
+
                 var indexedAvailable = available.Select((item, index) => $"{index + 1}. {item}").ToList();
 
                 var choice = AnsiConsole.Prompt(
@@ -62,7 +71,7 @@ internal static class Program
 
                 if (option == loggedInUser.QuickActionName)
                 {
-                    ExecuteQuickAction(loggedInUser, factory, employeeRepo, loggerService);
+                    ExecuteQuickAction(loggedInUser, factory, employeeRepo, loggerService, machinesRepo, productsRepo);
                 }
                 else
                 {
@@ -72,10 +81,15 @@ internal static class Program
                             EmployeeMenuHandler.Run(factory, loggedInUser, employeeRepo);
                             break;
                         case "Machine Management":
-                            MachineMenuHandler.Run(factory, loggedInUser, loggerService);
+                            MachineMenuHandler.Run(factory, loggedInUser, loggerService, machinesRepo, productsRepo);
                             break;
                         case "Product Management":
-                            ProductMenuHandler.Run(factory, loggedInUser, loggerService);
+                            ProductMenuHandler.Run(factory, loggedInUser, loggerService, productsRepo);
+                            break;
+                        case "View Operation History":
+                            loggerService.ShowOperationHistory();
+                            AnsiConsole.MarkupLine("\n[grey]Press any key to continue...[/]");
+                            Console.ReadKey(true);
                             break;
                         case "Accounting":
                             AccountingMenuHandler.Run(factory, loggedInUser, loggerService);
@@ -85,6 +99,9 @@ internal static class Program
                             break;
                         case "Factory Information":
                             FactoryReportMenuHandler.Run(factory, loggedInUser, loggerService);
+                            break;
+                        case "Account Settings":
+                            AccountSettingsHandler.Run(loggedInUser, employeeRepo);
                             break;
                         case "Log Out / Exit Session":
                             loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.Logout, loggedInUser.Username);
@@ -99,11 +116,11 @@ internal static class Program
     }
 
     private static void ExecuteQuickAction(Employee user, Factory factory, IJsonRepository<Employee> authRepository,
-        ILoggerService loggerService)
+        ILoggerService loggerService, IJsonRepository<Machine> machinesRepo, IJsonRepository<Product> productsRepo)
     {
         if (user is Director) EmployeeMenuHandler.Run(factory, user, authRepository);
-        else if (user is Technician) MachineMenuHandler.Run(factory, user, loggerService);
-        else if (user is SalesAgent) SalesMenuHandler.Run(factory, user, loggerService);
+        else if (user is Technician) MachineMenuHandler.Run(factory, user, loggerService, machinesRepo, productsRepo);
+        else if (user is SalesAgent) SalesMenuHandler.Run(factory, user, loggerService, productsRepo);
         else if (user is Accountant) AccountingMenuHandler.Run(factory, user, loggerService);
     }
 }

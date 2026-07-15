@@ -1,10 +1,11 @@
-﻿using Spectre.Console;
+using Spectre.Console;
 
 namespace Smart_Factory_Management_System;
 
 internal static class ProductMenuHandler
 {
-    public static void Run(Factory factory, Employee currentUser, ILoggerService loggerService)
+    public static void Run(Factory factory, Employee currentUser, ILoggerService loggerService,
+        IJsonRepository<Product> productRepo)
     {
         while (true)
         {
@@ -17,7 +18,7 @@ internal static class ProductMenuHandler
             summaryGrid.AddRow(new Markup(
                 $"[grey]Operator Session:[/] [cyan]{currentUser.Name}[/] ([yellow]{currentUser.Role}[/])"));
             summaryGrid.AddRow(new Markup(
-                $"[grey]Warehouse Storage Stock:[/] [green]{factory.Inventory.Count} / {factory.Inventory.Capacity} units[/]"));
+                $"[grey]Warehouse Storage Stock:[/] [green]{factory.Inventory.Count} / {factory.InventoryCapacity} units[/]"));
 
             AnsiConsole.Write(
                 new Panel(summaryGrid)
@@ -46,7 +47,7 @@ internal static class ProductMenuHandler
                 case "Sales & Orders":
                     // Reuse Sales menu view; if user is SalesAgent, open full Sales UI
                     if (currentUser is SalesAgent || currentUser is Director)
-                        SalesMenuHandler.Run(factory, currentUser, loggerService);
+                        SalesMenuHandler.Run(factory, currentUser, loggerService, productRepo);
                     else
                         SalesMenuHandler.ShowPendingOrders(factory);
                     break;
@@ -125,7 +126,7 @@ internal static class ProductMenuHandler
 
         var storageUtilization = factory.Inventory.Count == 0
             ? 0.0
-            : (double)factory.Inventory.Count / factory.Inventory.Capacity * 100;
+            : (double)factory.Inventory.Count / factory.InventoryCapacity * 100;
 
         var statsGrid = new Grid().AddColumns(2);
         statsGrid.AddRow("[bold white]Total Volume Level:[/]",

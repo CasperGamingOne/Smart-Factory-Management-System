@@ -1,4 +1,6 @@
-﻿namespace Smart_Factory_Management_System;
+using Spectre.Console;
+
+namespace Smart_Factory_Management_System;
 
 public enum LogOrigin
 {
@@ -53,6 +55,71 @@ public class LoggerService(IFileSystemService fileService) : ILoggerService
     public void LogError(string message)
     {
         WriteToFile("[ERROR] [SYSTEM] ", message);
+    }
+
+    public void ShowOperationHistory()
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.Write(new Rule("[cyan]Operation History Log[/]").Centered());
+
+        var logContent = fileService.ReadFromFile(LogFileName);
+        if (string.IsNullOrEmpty(logContent))
+        {
+            AnsiConsole.MarkupLine("[yellow]No operation history found yet.[/]");
+            return;
+        }
+
+        var lines = logContent.Split([Environment.NewLine], StringSplitOptions.RemoveEmptyEntries);
+
+        var table = new Table().Border(TableBorder.Rounded);
+        table.AddColumn("Timestamp");
+        table.AddColumn("Level");
+        table.AddColumn("Origin");
+        table.AddColumn("Description");
+
+        foreach (var line in lines)
+        {
+            if (string.IsNullOrWhiteSpace(line)) continue;
+
+            var firstClose = line.IndexOf(']');
+            if (firstClose > 1)
+            {
+                var timestamp = line.Substring(1, firstClose - 1);
+                var secondOpen = line.IndexOf('[', firstClose);
+                var secondClose = line.IndexOf(']', firstClose + 1);
+                if (secondOpen >= 0 && secondClose > secondOpen)
+                {
+                    var level = line.Substring(secondOpen + 1, secondClose - secondOpen - 1);
+
+                    var thirdOpen = line.IndexOf('[', secondClose);
+                    var thirdClose = line.IndexOf(']', secondClose + 1);
+                    if (thirdOpen >= 0 && thirdClose > thirdOpen)
+                    {
+                        var origin = line.Substring(thirdOpen + 1, thirdClose - thirdOpen - 1);
+                        var description = line.Substring(thirdClose + 1).Trim();
+                        table.AddRow(Markup.Escape(timestamp), Markup.Escape(level), Markup.Escape(origin),
+                            Markup.Escape(description));
+                    }
+                    else
+                    {
+                        var description = line.Substring(secondClose + 1).Trim();
+                        table.AddRow(Markup.Escape(timestamp), Markup.Escape(level), "SYSTEM",
+                            Markup.Escape(description));
+                    }
+                }
+                else
+                {
+                    var description = line.Substring(firstClose + 1).Trim();
+                    table.AddRow(Markup.Escape(timestamp), "INFO", "SYSTEM", Markup.Escape(description));
+                }
+            }
+            else
+            {
+                table.AddRow("-", "-", "-", Markup.Escape(line));
+            }
+        }
+
+        AnsiConsole.Write(table);
     }
 
     private void WriteToFile(string level, string message)

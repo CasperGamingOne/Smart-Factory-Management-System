@@ -1,4 +1,5 @@
-﻿using Spectre.Console;
+using System.Text.Json.Serialization;
+using Spectre.Console;
 
 namespace Smart_Factory_Management_System;
 
@@ -16,43 +17,47 @@ public enum MachineCondition
     Critical
 }
 
+[JsonDerivedType(typeof(LitographyMachine), "litographyMachine")]
+[JsonDerivedType(typeof(SmtMachine), "smtMachine")]
+[JsonDerivedType(typeof(PaPMachine), "papMachine")]
+[JsonDerivedType(typeof(ReflowOven), "reflowOven")]
 public abstract class Machine
 {
     private static int _idCounter;
 
     private static readonly Random Random = new();
 
-    protected Machine(string machineName, string machineManufacturer, string machineSerial, MachinePart[] parts,
+    protected Machine(string name, string manufacturer, string serialNumber, MachinePart[] parts,
         MachineCondition condition)
     {
         _idCounter++;
         Id = _idCounter;
-        Name = machineName;
-        Manufacturer = machineManufacturer;
-        SerialNumber = machineSerial;
+        Name = name;
+        Manufacturer = manufacturer;
+        SerialNumber = serialNumber;
         InstallationDate = DateTime.Now.AddYears(-7);
         Parts = parts;
         Condition = condition;
         SupportedProductType = typeof(Product);
     }
 
-    public int Id { get; private protected set; }
+    public int Id { get; set; }
 
-    public string? Name { get; private protected set; }
+    public string? Name { get; init; }
 
-    public string? Manufacturer { get; private protected set; }
+    public string? Manufacturer { get; init; }
 
-    private string? SerialNumber { get; }
+    public string? SerialNumber { get; init; }
 
-    private DateTime InstallationDate { get; }
+    public DateTime InstallationDate { get; init; }
 
-    private MachinePart[]? Parts { get; }
+    public MachinePart[]? Parts { get; init; }
 
     public MachineStatus Status { get; private protected set; } = MachineStatus.Stopped;
 
     public MachineCondition Condition { get; private set; }
 
-    public Type SupportedProductType { get; private protected init; }
+    [JsonIgnore] public Type SupportedProductType { get; private protected init; }
 
     protected ProductionOrder? ActiveOrder { get; private set; }
 
@@ -350,9 +355,9 @@ public abstract class Machine
 
 public class LitographyMachine : Machine
 {
-    public LitographyMachine(string machineName, string machineManufacturer, string machineSerial,
+    public LitographyMachine(string name, string manufacturer, string serialNumber,
         MachinePart[] parts, MachineCondition condition)
-        : base(machineName, machineManufacturer, machineSerial, parts, condition)
+        : base(name, manufacturer, serialNumber, parts, condition)
     {
         SupportedProductType = typeof(Microprocessor);
     }
@@ -390,9 +395,9 @@ public class LitographyMachine : Machine
 
 public class SmtMachine : Machine // Solder Paste Printer
 {
-    public SmtMachine(string machineName, string machineManufacturer, string machineSerial, MachinePart[] parts,
+    public SmtMachine(string name, string manufacturer, string serialNumber, MachinePart[] parts,
         MachineCondition condition)
-        : base(machineName, machineManufacturer, machineSerial, parts, condition)
+        : base(name, manufacturer, serialNumber, parts, condition)
     {
         SupportedProductType = typeof(Motherboard);
     }
@@ -405,12 +410,12 @@ public class SmtMachine : Machine // Solder Paste Printer
 }
 
 public class PaPMachine(
-    string machineName,
-    string machineManufacturer,
-    string machineSerial,
+    string name,
+    string manufacturer,
+    string serialNumber,
     MachinePart[] parts,
     MachineCondition condition)
-    : Machine(machineName, machineManufacturer, machineSerial, parts, condition) // Pick and Place
+    : Machine(name, manufacturer, serialNumber, parts, condition) // Pick and Place
 {
     public override bool Produce(Product product)
     {
@@ -420,12 +425,12 @@ public class PaPMachine(
 }
 
 public class ReflowOven(
-    string machineName,
-    string machineManufacturer,
-    string machineSerial,
+    string name,
+    string manufacturer,
+    string serialNumber,
     MachinePart[] parts,
     MachineCondition condition)
-    : Machine(machineName, machineManufacturer, machineSerial, parts, condition)
+    : Machine(name, manufacturer, serialNumber, parts, condition)
 {
     public override bool Produce(Product product)
     {

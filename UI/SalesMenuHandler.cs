@@ -4,7 +4,8 @@ namespace Smart_Factory_Management_System;
 
 internal static class SalesMenuHandler
 {
-    public static void Run(Factory factory, Employee loggedInUser, ILoggerService loggerService)
+    public static void Run(Factory factory, Employee loggedInUser, ILoggerService loggerService,
+        IJsonRepository<Product> productRepo)
     {
         if (loggedInUser is not SalesAgent && loggedInUser is not Director)
         {
@@ -36,6 +37,7 @@ internal static class SalesMenuHandler
                     break;
                 case "Record Sale for Batch":
                     RecordSale(factory);
+                    productRepo.Save(factory.Inventory);
                     break;
                 case "Return to Main Menu":
                     return;
@@ -155,13 +157,13 @@ internal static class SalesMenuHandler
             }
 
             var soldPrice = AnsiConsole.Ask<double>("Enter unit sold price ($):");
-            chosen.IsSold = true;
-            chosen.UnitSellPrice = soldPrice;
+            chosen.MarkAsSold();
+            chosen.SetUnitSellPrice(soldPrice);
 
             // Apply price to linked inventory items
             foreach (var idx in chosen.InventoryIndexes)
                 if (idx >= 0 && idx < factory.Inventory.Count)
-                    factory.Inventory[idx].SellingPrice = soldPrice;
+                    factory.Inventory[idx].UpdateSellingPrice(soldPrice);
             AnsiConsole.MarkupLine(
                 $"[green]✔ Recorded sale for batch {chosen.BatchId} at ${soldPrice:F2} per unit.[/]");
         }
@@ -195,15 +197,13 @@ internal static class SalesMenuHandler
             var soldPrice = AnsiConsole.Ask<double>("Enter unit sold price ($):");
 
             // Update product selling price
-            chosen.SellingPrice = soldPrice;
+            chosen.UpdateSellingPrice(soldPrice);
 
             // Decrease stock and create a record batch for accounting
-            chosen.Quantity -= qty;
-            var batch = new ProductionBatch(chosen.Name ?? "Inventory Sale", qty, chosen.ProductionCost)
-            {
-                IsSold = true,
-                UnitSellPrice = soldPrice
-            };
+            chosen.DeductQuantity(qty);
+            var batch = new ProductionBatch(chosen.Name ?? "Inventory Sale", qty, chosen.ProductionCost);
+            batch.MarkAsSold();
+            batch.SetUnitSellPrice(soldPrice);
             factory.AddBatch(batch);
 
             AnsiConsole.MarkupLine(

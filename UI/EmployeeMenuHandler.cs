@@ -1,4 +1,4 @@
-﻿using Spectre.Console;
+using Spectre.Console;
 
 namespace Smart_Factory_Management_System;
 
@@ -97,7 +97,6 @@ internal static class EmployeeMenuHandler
                 return;
         }
 
-        newEmployee.IsFirstTimeLogin = true;
         factory.AddEmployee(newEmployee);
 
         var users = repository.Load();

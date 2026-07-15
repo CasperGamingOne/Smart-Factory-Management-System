@@ -1,10 +1,11 @@
-﻿using Spectre.Console;
+using Spectre.Console;
 
 namespace Smart_Factory_Management_System;
 
 internal static class MachineMenuHandler
 {
-    public static void Run(Factory factory, Employee loggedInUser, ILoggerService loggerService)
+    public static void Run(Factory factory, Employee loggedInUser, ILoggerService loggerService,
+        IJsonRepository<Machine> machineRepo, IJsonRepository<Product> productRepo)
     {
         var inRoom = true;
         while (inRoom)
@@ -27,14 +28,20 @@ internal static class MachineMenuHandler
 
                 case "Run Deep Component Inspection":
                     if (loggedInUser is not Technician)
+                    {
                         AnsiConsole.MarkupLine(
                             $"[red]❌ Access Denied: {loggedInUser.Role} cannot perform this action.[/]");
+                    }
                     else
+                    {
                         RunInspection(factory, loggerService);
+                        machineRepo.Save(factory.Machines);
+                    }
+
                     break;
 
                 case "Fulfill Pending Orders":
-                    ProductionMenuHandler.Run(factory, loggedInUser, loggerService);
+                    ProductionMenuHandler.Run(factory, loggedInUser, loggerService, machineRepo, productRepo);
                     break;
                 case "Return to Main Menu":
                     inRoom = false;
