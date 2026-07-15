@@ -133,7 +133,7 @@ internal static class ProductionMenuHandler
         if (order.IsComplete)
         {
             loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.ProductionCompleted,
-                $"{order.ProductName} * {order.Quantity}");
+                $"{batch.ProductName} * {batch.Quantity}");
             AnsiConsole.MarkupLine(
                 "$\"[green]Batch complete. Created batch {batch.BatchId} with {batch.InventoryIndexes.Count} items.[/]\"");
         }
@@ -310,8 +310,8 @@ internal static class ProductionMenuHandler
 
     private static T? FindMachine<T>(Factory factory) where T : Machine
     {
-        for (var i = 0; i < factory.Machines.Count; i++)
-            if (factory.Machines[i] is T typedMachine)
+        foreach (var m in factory.Machines)
+            if (m is T typedMachine)
                 return typedMachine;
 
         return null;
