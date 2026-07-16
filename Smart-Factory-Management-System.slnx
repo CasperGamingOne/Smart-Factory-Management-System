@@ -2,4 +2,5 @@
     <Project Path="Core/Core.csproj" />
     <Project Path="Services/Services.csproj"/>
     <Project Path="UI/UI.csproj" />
+    <Project Path="Text/Text.csproj"/>
 </Solution>

@@ -11,18 +11,19 @@ internal static class EmployeeMenuHandler
         while (inRoom)
         {
             AnsiConsole.Clear();
-            AnsiConsole.Write(new Rule("[green]EMPLOYEE MANAGEMENT MODULE[/]").Centered());
+            AnsiConsole.Write(new Rule($"[green]{Employees.Title}[/]").Centered());
 
             var menuOptions = MenuOptions.EmployeeManagementMenu.Select((item, index) => $"{index + 1}. {item}")
                 .ToList();
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title("[yellow]Select an administrative action:[/]")
+                    .Title(Employees.SelectActionPrompt)
                     .AddChoices(menuOptions));
 
             var option = choice.Split(". ", 2)[1];
             switch (option)
             {
+                case "View Registered Staff":
                 case "View All Registered Staff":
                     DisplayStaffTable(factory);
                     loggerService.LogInfo(LogOrigin.USER, LogEvent.StaffViewed, loggedInUser.Username);
@@ -31,7 +32,7 @@ internal static class EmployeeMenuHandler
                 case "Add New Employee":
                     if (loggedInUser is not Director)
                         AnsiConsole.MarkupLine(
-                            $"[red]❌ Access Denied: {loggedInUser.Role} cannot perform this action.[/]");
+                            string.Format(Common.AccessDenied, loggedInUser.Role));
                     else
                         AddNewEmployeeFlow(factory, repository, loggerService, loggedInUser);
 
@@ -44,7 +45,7 @@ internal static class EmployeeMenuHandler
 
             if (inRoom)
             {
-                AnsiConsole.MarkupLine("\n[grey]Press any key to continue...[/]");
+                AnsiConsole.MarkupLine(Common.PressKeyToContinue);
                 Console.ReadKey(true);
             }
         }
@@ -53,10 +54,10 @@ internal static class EmployeeMenuHandler
     internal static void DisplayStaffTable(Factory factory)
     {
         var table = new Table().Border(TableBorder.Rounded);
-        table.AddColumn("[yellow]ID[/]");
-        table.AddColumn("[yellow]Name[/]");
-        table.AddColumn("[yellow]Assigned Role[/]");
-        table.AddColumn("[yellow]Activity[/]");
+        table.AddColumn(Employees.IdColumn);
+        table.AddColumn(Employees.NameColumn);
+        table.AddColumn(Employees.RoleColumn);
+        table.AddColumn(Employees.ActivityColumn);
 
         foreach (var e in factory.Employees)
             table.AddRow(
@@ -72,14 +73,14 @@ internal static class EmployeeMenuHandler
     private static void AddNewEmployeeFlow(Factory factory, IJsonRepository<Employee> repository,
         ILoggerService loggerService, Employee loggedInUser)
     {
-        var name = AnsiConsole.Ask<string>("Enter Employee Full Name:");
-        var username = AnsiConsole.Ask<string>("Enter Employee Username:");
-        var password = AnsiConsole.Ask<string>("Enter Employee Password:");
+        var name = AnsiConsole.Ask<string>(Employees.EnterFullName);
+        var username = AnsiConsole.Ask<string>(Employees.EnterUsername);
+        var password = AnsiConsole.Ask<string>(Employees.EnterPassword);
         var hashedPassword = SecurityHelper.HashPassword(password);
 
         var role = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
-                .Title("Select Job Title:")
+                .Title(Employees.SelectJobTitle)
                 .AddChoices(MenuOptions.EmployeeRoles));
 
         Employee newEmployee;
@@ -96,7 +97,7 @@ internal static class EmployeeMenuHandler
                 newEmployee = new Accountant(name, username, hashedPassword);
                 break;
             default:
-                AnsiConsole.MarkupLine("[red]❌ Invalid role selection. Operation aborted.[/]");
+                AnsiConsole.MarkupLine(Employees.InvalidRole);
                 return;
         }
 
@@ -106,7 +107,7 @@ internal static class EmployeeMenuHandler
         users.Add(newEmployee);
         repository.Save(users);
 
-        AnsiConsole.MarkupLine($"[green]✔ Employee '{name}' registered successfully![/]");
+        AnsiConsole.MarkupLine(string.Format(Employees.RegisteredSuccessfully, name));
         loggerService.LogInfo(LogOrigin.USER, LogEvent.EmployeeAdded,
             $"New user '{username}' ({role}) registered by '{loggedInUser.Username}'");
     }

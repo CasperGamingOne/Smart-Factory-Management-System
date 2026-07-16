@@ -8,8 +8,8 @@ internal static class AccountingMenuHandler
     {
         if (loggedInUser is not Accountant)
         {
-            AnsiConsole.MarkupLine($"[red]❌ Access Denied: {loggedInUser.Role} cannot access Accounting.[/]");
-            AnsiConsole.WriteLine("\nPress any key to return...");
+            AnsiConsole.MarkupLine(string.Format(Common.AccessDeniedSection, loggedInUser.Role, "Accounting"));
+            AnsiConsole.WriteLine(Common.PressKeyToReturn);
             Console.ReadKey(true);
             return;
         }
@@ -17,12 +17,12 @@ internal static class AccountingMenuHandler
         while (true)
         {
             AnsiConsole.Clear();
-            AnsiConsole.Write(new Rule("[magenta]ACCOUNTING - Price Produced Batches[/]").Centered());
+            AnsiConsole.Write(new Rule($"[magenta]{Accounting.Title}[/]").Centered());
 
             var menuOptions = MenuOptions.AccountingMenu.Select((item, index) => $"{index + 1}. {item}").ToList();
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title("Choose action:")
+                    .Title(Common.ChooseAction)
                     .AddChoices(menuOptions));
 
             var option = choice.Split(". ", 2)[1];
@@ -42,7 +42,7 @@ internal static class AccountingMenuHandler
                     return;
             }
 
-            AnsiConsole.MarkupLine("\n[grey]Press any key to continue...[/]");
+            AnsiConsole.MarkupLine(Common.PressKeyToContinue);
             Console.ReadKey(true);
         }
     }
@@ -52,7 +52,7 @@ internal static class AccountingMenuHandler
         AnsiConsole.WriteLine();
         if (factory.BatchCount == 0)
         {
-            AnsiConsole.MarkupLine("[yellow]No completed production batches yet.[/]");
+            AnsiConsole.MarkupLine(Accounting.NoBatches);
             return;
         }
 
@@ -72,15 +72,15 @@ internal static class AccountingMenuHandler
     {
         if (factory.BatchCount == 0)
         {
-            AnsiConsole.MarkupLine("[yellow]No batches available to price.[/]");
+            AnsiConsole.MarkupLine(Accounting.NoBatchesToPrice);
             return;
         }
 
-        var selector = new SelectionPrompt<ProductionBatch>().Title("Select batch to price:");
+        var selector = new SelectionPrompt<ProductionBatch>().Title(Accounting.SelectBatchToPrice);
         for (var i = 0; i < factory.BatchCount; i++) selector.AddChoice(factory.Batches[i]);
 
         var chosen = AnsiConsole.Prompt(selector);
-        var price = AnsiConsole.Ask<double>("Set unit selling price for this batch ($):");
+        var price = AnsiConsole.Ask<double>(Accounting.SetUnitPricePrompt);
         chosen.SetUnitSellPrice(price);
 
         // Apply price to linked inventory items
@@ -88,7 +88,7 @@ internal static class AccountingMenuHandler
             if (idx >= 0 && idx < factory.Inventory.Count)
                 factory.Inventory[idx].UpdateSellingPrice(price);
 
-        AnsiConsole.MarkupLine($"[green]✔ Batch {chosen.BatchId} priced at ${price:F2} per unit.[/]");
+        AnsiConsole.MarkupLine(string.Format(Accounting.BatchPriced, chosen.BatchId, price));
         loggerService.LogInfo(LogOrigin.USER, LogEvent.BatchPriceSet,
             $"Batch {chosen.BatchId} priced at ${price:F2} by {loggedInUser.Username}");
     }
@@ -96,19 +96,19 @@ internal static class AccountingMenuHandler
     private static void ProcessReportRequests(Factory factory, Employee accountant, ILoggerService loggerService)
     {
         AnsiConsole.Clear();
-        AnsiConsole.Write(new Rule("[magenta]Process Report Requests[/]").Centered());
+        AnsiConsole.Write(new Rule($"[magenta]{Accounting.ProcessReportRequestsTitle}[/]").Centered());
 
         var pendingRequests = factory.PendingReportRequests.Take(factory.ReportRequestCount)
             .Where(r => r.Status == ReportStatus.Pending).ToList();
 
         if (!pendingRequests.Any())
         {
-            AnsiConsole.MarkupLine("[yellow]No pending report requests.[/]");
+            AnsiConsole.MarkupLine(Accounting.NoPendingRequests);
             return;
         }
 
         var selector = new SelectionPrompt<ReportRequest>()
-            .Title("Select request to fulfill:")
+            .Title(Accounting.SelectRequestToFulfill)
             .AddChoices(pendingRequests);
 
         var chosen = AnsiConsole.Prompt(selector);
@@ -116,7 +116,7 @@ internal static class AccountingMenuHandler
         chosen.Fulfill();
 
         AnsiConsole.MarkupLine(
-            $"[green]✔ Report '{chosen.ReportType}' (Req ID: {chosen.RequestId}) fulfilled by {accountant.Name}.[/]");
+            string.Format(Accounting.RequestFulfilled, chosen.ReportType, chosen.RequestId, accountant.Name));
         loggerService.LogInfo(LogOrigin.USER, LogEvent.ReportRequestsProcessed,
             $"Report '{chosen.ReportType}' (Req ID: {chosen.RequestId}) fulfilled by {accountant.Username}");
     }

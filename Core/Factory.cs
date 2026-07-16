@@ -56,6 +56,7 @@ public class Factory
 
     public void AddProduct(Product product, string? batchId)
     {
+        product.BatchId = batchId;
         _inventory.Add(product);
         var index = _inventory.Count - 1;
 
