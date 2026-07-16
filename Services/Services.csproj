@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <RootNamespace>Smart_Factory_Management_System</RootNamespace>
@@ -13,6 +13,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Core\Core.csproj"/>
+        <ProjectReference Include="..\Text\Text.csproj"/>
     </ItemGroup>
 
 </Project>

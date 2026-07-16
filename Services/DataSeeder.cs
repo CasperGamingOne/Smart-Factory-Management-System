@@ -78,7 +78,7 @@ public class DataSeeder(
                 new PaPMachine("NXT-III High-Speed Mounter", "Fuji Corporation", "SN-FUJI-991A-040", papParts,
                     MachineCondition.Excellent),
                 new ReflowOven("OmniMax Thermal Tunnel", "Heller Industries", "SN-HLR-5542-Z9", ovenParts,
-                    MachineCondition.Critical)
+                    MachineCondition.Excellent)
             };
             machineRepo.Save(initialMachines);
         }

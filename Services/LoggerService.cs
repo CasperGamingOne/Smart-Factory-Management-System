@@ -108,22 +108,22 @@ public class LoggerService(IFileSystemService fileService) : ILoggerService
     public void ShowOperationHistory()
     {
         AnsiConsole.Clear();
-        AnsiConsole.Write(new Rule("[cyan]Operation History Log[/]").Centered());
+        AnsiConsole.Write(new Rule(History.Title).Centered());
 
         var logContent = fileService.ReadFromFile(LogFileName);
         if (string.IsNullOrEmpty(logContent))
         {
-            AnsiConsole.MarkupLine("[yellow]No operation history found yet.[/]");
+            AnsiConsole.MarkupLine(History.NoHistory);
             return;
         }
 
         var lines = logContent.Split([Environment.NewLine], StringSplitOptions.RemoveEmptyEntries);
 
         var table = new Table().Border(TableBorder.Rounded);
-        table.AddColumn("Timestamp");
-        table.AddColumn("Level");
-        table.AddColumn("Origin");
-        table.AddColumn("Description");
+        table.AddColumn(History.ColumnTimestamp);
+        table.AddColumn(History.ColumnLevel);
+        table.AddColumn(History.ColumnOrigin);
+        table.AddColumn(History.ColumnDescription);
 
         foreach (var line in lines)
         {

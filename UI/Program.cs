@@ -31,20 +31,20 @@ internal static class Program
         while (true)
         {
             AnsiConsole.Clear();
-            AnsiConsole.Write(new Rule("[yellow]SMART FACTORY SYSTEM - LOGIN GATEWAY[/]").Centered());
+            AnsiConsole.Write(new Rule($"[yellow]{Login.LoginGatewayTitle}[/]").Centered());
 
             var loggedInUser = LoginMenuHandler.ShowLoginScreen(employeeRepo, loggerService);
             if (loggedInUser == null)
             {
                 loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.ClosingApplication, loggedInUser?.Username);
-                AnsiConsole.MarkupLine("[red]Application shutting down...[/]");
+                AnsiConsole.MarkupLine(Login.AppShuttingDown);
                 break;
             }
 
             if (loggedInUser.IsFirstTimeLogin) PasswordChangeHandler.Run(loggedInUser, employeeRepo, loggerService);
 
-            AnsiConsole.MarkupLine($"[green]Welcome back, {loggedInUser.Name} ({loggedInUser.Role})![/]");
-            AnsiConsole.Status().Start("Booting production environment...", _ => { Thread.Sleep(800); });
+            AnsiConsole.MarkupLine(string.Format(Login.WelcomeBack, loggedInUser.Name, loggedInUser.Role));
+            AnsiConsole.Status().Start(Login.BootingEnvironment, _ => { Thread.Sleep(800); });
 
             var sessionActive = true;
             while (sessionActive)
@@ -106,7 +106,7 @@ internal static class Program
                             break;
                         case "Log Out / Exit Session":
                             loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.Logout, loggedInUser.Username);
-                            AnsiConsole.MarkupLine("[yellow]Logging out of current profile...[/]");
+                            AnsiConsole.MarkupLine(Login.LoggedOut);
                             Thread.Sleep(600);
                             sessionActive = false;
                             break;

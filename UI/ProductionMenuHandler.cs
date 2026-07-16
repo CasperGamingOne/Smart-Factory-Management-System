@@ -8,14 +8,13 @@ internal static class ProductionMenuHandler
         IJsonRepository<Machine> machineRepo, IJsonRepository<Product> productRepo)
     {
         AnsiConsole.Clear();
-        AnsiConsole.Write(Align.Left(new Rule("[yellow]🏭 Active Production Control Deck[/]")));
+        AnsiConsole.Write(Align.Left(new Rule($"[yellow]{Production.Title}[/]")));
         AnsiConsole.WriteLine();
 
         if (factory.Machines.Count == 0)
         {
-            AnsiConsole.Write(new Markup(
-                "[yellow]⚠ No production machinery has been seeded in the factory layout yet.[/]\n"));
-            AnsiConsole.Write(new Markup("[grey]Press any key to go back...[/]"));
+            AnsiConsole.Write(new Markup(Production.NoMachinerySeeded + "\n"));
+            AnsiConsole.Write(new Markup(Production.PressKeyToGoBack));
             Console.ReadKey(true);
             return;
         }
@@ -23,13 +22,13 @@ internal static class ProductionMenuHandler
         var pendingOrders = GetPendingOrders(factory);
         if (pendingOrders.Count == 0)
         {
-            AnsiConsole.MarkupLine("[yellow]No production orders are currently pending.[/]");
-            AnsiConsole.WriteLine("\nPress any key to return...");
+            AnsiConsole.MarkupLine(Reports.NoPendingOrders);
+            AnsiConsole.WriteLine(Common.PressKeyToReturn);
             Console.ReadKey(true);
             return;
         }
 
-        var orderSelector = new SelectionPrompt<ProductionOrder>().Title("Select a pending order to process:")
+        var orderSelector = new SelectionPrompt<ProductionOrder>().Title(Production.SelectOrderToProcess)
             .UseConverter(o =>
                 $"{o.OrderId} - {o.ProductName} x{o.Quantity} ({o.CompletedCount}/{o.Quantity}) assigned to #{o.AssignedTechnicianId}");
         foreach (var o in pendingOrders) orderSelector.AddChoice(o);
@@ -39,8 +38,8 @@ internal static class ProductionMenuHandler
         if (loggedInUser is not Director &&
             (loggedInUser is not Technician || order.AssignedTechnicianId != loggedInUser.Id))
         {
-            AnsiConsole.MarkupLine("[red]Only the assigned technician can start this order.[/]");
-            AnsiConsole.WriteLine("\nPress any key to return...");
+            AnsiConsole.MarkupLine(Production.OnlyAssignedTech);
+            AnsiConsole.WriteLine(Common.PressKeyToReturn);
             Console.ReadKey(true);
             return;
         }
@@ -51,7 +50,7 @@ internal static class ProductionMenuHandler
             machineRepo.Save(factory.Machines);
             productRepo.Save(factory.Inventory);
             AnsiConsole.WriteLine();
-            AnsiConsole.Write(new Markup("[grey]Press any key to return to production deck...[/]"));
+            AnsiConsole.Write(new Markup(Common.PressKeyToReturnProduction));
             Console.ReadKey(true);
             return;
         }
@@ -68,7 +67,7 @@ internal static class ProductionMenuHandler
 
         if (selectedMachine == null)
         {
-            var machineSelector = new SelectionPrompt<Machine>().Title("Select machine to use:");
+            var machineSelector = new SelectionPrompt<Machine>().Title(Production.SelectMachineToUse);
             foreach (var m in factory.Machines)
                 machineSelector.AddChoice(m);
 
@@ -77,7 +76,7 @@ internal static class ProductionMenuHandler
 
         if (selectedMachine.Status != MachineStatus.Running)
         {
-            var bootChoice = AnsiConsole.Confirm($"Machine {selectedMachine.Name} is not running. Boot it?");
+            var bootChoice = AnsiConsole.Confirm(string.Format(Production.MachineNotRunningBoot, selectedMachine.Name));
             if (!bootChoice) return;
             if (!selectedMachine.StartMachine()) return;
         }
@@ -99,14 +98,14 @@ internal static class ProductionMenuHandler
 
         if (template == null)
         {
-            AnsiConsole.MarkupLine("[red]Unknown product type for this order.[/]");
+            AnsiConsole.MarkupLine(Production.UnknownProductType);
             return;
         }
 
         var batch = StartProductionBatch(factory, order, unitCost);
 
         AnsiConsole.Write(new Markup(
-            $"[cyan]Starting production for order {order.OrderId} - {order.ProductName} x{order.Quantity}[/]"));
+            string.Format(Production.StartProduction, order.OrderId, order.ProductName, order.Quantity)));
 
         while (!order.IsComplete && selectedMachine.Status == MachineStatus.Running)
         {
@@ -121,11 +120,11 @@ internal static class ProductionMenuHandler
             {
                 var completedCount = CommitProducedUnit(factory, order, batch, produced);
                 AnsiConsole.MarkupLine(
-                    $"[green]Produced 1 unit ({produced.Name}). Completed {completedCount}/{order.Quantity}[/]");
+                    string.Format(Production.ProducedOneUnit, produced.Name, completedCount, order.Quantity));
             }
             else
             {
-                AnsiConsole.MarkupLine("[red]Machine tripped. Production paused.[/]");
+                AnsiConsole.MarkupLine(Production.MachineTripped);
                 break;
             }
         }
@@ -135,21 +134,21 @@ internal static class ProductionMenuHandler
             loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.ProductionCompleted,
                 $"{batch.ProductName} * {batch.Quantity}");
             AnsiConsole.MarkupLine(
-                $"[green]Batch complete. Created batch {batch.BatchId} with {batch.InventoryIndexes.Count} items.[/]");
+                string.Format(Production.BatchCompleted, batch.BatchId, batch.InventoryIndexes.Count));
         }
         else
         {
             loggerService.LogWarning(LogOrigin.SYSTEM, LogEvent.ProductionInterrupted,
                 $"{order.ProductName} * {order.Quantity}");
             AnsiConsole.MarkupLine(
-                $"[yellow]Order incomplete. Produced {order.CompletedCount}/{order.Quantity} so far.[/]");
+                string.Format(Production.OrderIncomplete, order.CompletedCount, order.Quantity));
         }
 
         machineRepo.Save(factory.Machines);
         productRepo.Save(factory.Inventory);
 
         AnsiConsole.WriteLine();
-        AnsiConsole.Write(new Markup("[grey]Press any key to return to production deck...[/]"));
+        AnsiConsole.Write(new Markup(Common.PressKeyToReturnProduction));
         Console.ReadKey(true);
     }
 
@@ -186,13 +185,12 @@ internal static class ProductionMenuHandler
 
         if (solderPrinter == null || pickAndPlace == null || reflowOven == null)
         {
-            AnsiConsole.MarkupLine(
-                "[red]Motherboard workflow requires SMT, Pick-and-Place, and Reflow machines to be registered.[/]");
+            AnsiConsole.MarkupLine(Production.MotherboardWorkflowNoMachines);
             return;
         }
 
         AnsiConsole.MarkupLine(
-            $"[cyan]Starting motherboard workflow for order {order.OrderId} - {order.ProductName} x{order.Quantity}[/]");
+            string.Format(Production.StartMotherboardWorkflow, order.OrderId, order.ProductName, order.Quantity));
         loggerService.LogInfo(LogOrigin.USER, LogEvent.ProductionStarted,
             $"{order.ProductName} * {order.Quantity}");
 
@@ -206,31 +204,31 @@ internal static class ProductionMenuHandler
                     solderPrinter,
                     order,
                     board,
-                    "Solder Paste Printing",
-                    "Exposing board to solder paste mesh...",
-                    "Motherboard workflow stopped during solder paste printing."))
+                    Production.SolderPastePrinting,
+                    Production.SolderPastePrintingSpinner,
+                    Production.SolderPastePrintingFail))
                 break;
 
             if (!RunMotherboardStage(
                     pickAndPlace,
                     order,
                     board,
-                    "Pick and Place Assembly",
-                    "Aligning and mounting components...",
-                    "Motherboard workflow stopped during pick-and-place assembly."))
+                    Production.PickAndPlace,
+                    Production.PickAndPlaceSpinner,
+                    Production.PickAndPlaceFail))
                 break;
 
             if (!RunMotherboardStage(
                     reflowOven,
                     order,
                     board,
-                    "Reflow Baking",
-                    "Heating solder joints to fuse the board...",
-                    "Motherboard workflow stopped during reflow baking."))
+                    Production.ReflowBaking,
+                    Production.ReflowBakingSpinner,
+                    Production.ReflowBakingFail))
                 break;
 
             var completedCount = CommitProducedUnit(factory, order, batch, board);
-            AnsiConsole.MarkupLine($"[green]Motherboard completed {completedCount}/{order.Quantity}.[/]");
+            AnsiConsole.MarkupLine(string.Format(Production.MotherboardCompleted, completedCount, order.Quantity));
         }
 
         if (order.IsComplete)
@@ -238,14 +236,14 @@ internal static class ProductionMenuHandler
             loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.ProductionCompleted,
                 $"{batch.ProductName} * {batch.Quantity}");
             AnsiConsole.MarkupLine(
-                $"[green]Batch complete. Created batch {batch.BatchId} with {batch.InventoryIndexes.Count} items.[/]");
+                string.Format(Production.BatchCompleted, batch.BatchId, batch.InventoryIndexes.Count));
         }
         else
         {
             loggerService.LogWarning(LogOrigin.SYSTEM, LogEvent.ProductionInterrupted,
                 $"{order.ProductName} * {order.Quantity}");
             AnsiConsole.MarkupLine(
-                $"[yellow]Order incomplete. Produced {order.CompletedCount}/{order.Quantity} so far.[/]");
+                string.Format(Production.OrderIncomplete, order.CompletedCount, order.Quantity));
         }
     }
 

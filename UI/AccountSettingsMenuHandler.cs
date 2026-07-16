@@ -10,22 +10,22 @@ internal static class AccountSettingsMenuHandler
         while (inSettings)
         {
             AnsiConsole.Clear();
-            AnsiConsole.Write(new Rule("[yellow]⚙️ ACCOUNT SETTINGS ⚙️[/]").Centered());
+            AnsiConsole.Write(new Rule($"[yellow]{AccountSettings.Title}[/]").Centered());
             AnsiConsole.WriteLine();
 
             // Display current details
             var infoTable = new Table().Border(TableBorder.Rounded);
-            infoTable.AddColumn("[cyan]Field[/]");
-            infoTable.AddColumn("[cyan]Current Value[/]");
-            infoTable.AddRow("Full Name", user.Name);
-            infoTable.AddRow("Username", user.Username);
-            infoTable.AddRow("Role", user.Role);
+            infoTable.AddColumn(AccountSettings.FieldColumn);
+            infoTable.AddColumn(AccountSettings.ValueColumn);
+            infoTable.AddRow(AccountSettings.FullNameRow, user.Name);
+            infoTable.AddRow(AccountSettings.UsernameRow, user.Username);
+            infoTable.AddRow(AccountSettings.RoleRow, user.Role);
             AnsiConsole.Write(infoTable);
             AnsiConsole.WriteLine();
 
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title("[white]Select settings action:[/]")
+                    .Title(AccountSettings.SelectActionPrompt)
                     .AddChoices("1. Change Full Name", "2. Change Username", "3. Change Password",
                         "4. Return to Main Menu")
             );
@@ -51,18 +51,18 @@ internal static class AccountSettingsMenuHandler
     private static void ChangeFullName(Employee user, IAccountService accountService, ILoggerService loggerService)
     {
         AnsiConsole.WriteLine();
-        var newName = AnsiConsole.Ask<string>("Enter your new Full Name:");
+        var newName = AnsiConsole.Ask<string>(AccountSettings.EnterNewFullName);
 
         try
         {
             if (accountService.UpdateFullName(user, newName))
             {
-                AnsiConsole.MarkupLine("[green]✅ Full Name updated successfully![/]");
+                AnsiConsole.MarkupLine(AccountSettings.FullNameUpdated);
                 loggerService.LogInfo(LogOrigin.USER, LogEvent.FullNameUpdated, user.Username);
             }
             else
             {
-                AnsiConsole.MarkupLine("[red]❌ Critical error: Could not write to the database file.[/]");
+                AnsiConsole.MarkupLine(Common.CriticalErrorDb);
             }
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
@@ -76,18 +76,18 @@ internal static class AccountSettingsMenuHandler
     private static void ChangeUsername(Employee user, IAccountService accountService, ILoggerService loggerService)
     {
         AnsiConsole.WriteLine();
-        var newUsername = AnsiConsole.Ask<string>("Enter your new Username:");
+        var newUsername = AnsiConsole.Ask<string>(AccountSettings.EnterNewUsername);
 
         try
         {
             if (accountService.UpdateUsername(user, newUsername))
             {
-                AnsiConsole.MarkupLine("[green]✅ Username updated successfully![/]");
+                AnsiConsole.MarkupLine(AccountSettings.UsernameUpdated);
                 loggerService.LogInfo(LogOrigin.USER, LogEvent.UsernameUpdated, user.Username);
             }
             else
             {
-                AnsiConsole.MarkupLine("[red]❌ Critical error: Could not write to the database file.[/]");
+                AnsiConsole.MarkupLine(Common.CriticalErrorDb);
             }
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
@@ -107,32 +107,32 @@ internal static class AccountSettingsMenuHandler
         while (true)
         {
             newPassword = AnsiConsole.Prompt(
-                new TextPrompt<string>("[white]Enter your new password:[/]")
+                new TextPrompt<string>(Login.NewPasswordPrompt)
                     .PromptStyle("cyan")
                     .Secret('*')
             );
 
             var confirmPassword = AnsiConsole.Prompt(
-                new TextPrompt<string>("[white]Confirm your new password:[/]")
+                new TextPrompt<string>(Login.ConfirmPasswordPrompt)
                     .PromptStyle("cyan")
                     .Secret('*')
             );
 
             if (newPassword == confirmPassword) break;
 
-            AnsiConsole.MarkupLine("[red]❌ Passwords do not match. Please try again.[/]");
+            AnsiConsole.MarkupLine(Login.PasswordsDoNotMatch);
         }
 
         try
         {
             if (accountService.UpdatePassword(user, newPassword))
             {
-                AnsiConsole.MarkupLine("[green]✅ Password updated successfully![/]");
+                AnsiConsole.MarkupLine(AccountSettings.PasswordUpdated);
                 loggerService.LogInfo(LogOrigin.USER, LogEvent.PasswordUpdated, user.Username);
             }
             else
             {
-                AnsiConsole.MarkupLine("[red]❌ Critical error: Could not write to the database file.[/]");
+                AnsiConsole.MarkupLine(Common.CriticalErrorDb);
             }
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)

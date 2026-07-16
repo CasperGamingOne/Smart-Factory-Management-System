@@ -10,19 +10,19 @@ internal static class ProductMenuHandler
         while (true)
         {
             AnsiConsole.Clear();
-            AnsiConsole.Write(new Rule("[yellow]⚡ Product & Inventory Management System ⚡[/]").Centered());
+            AnsiConsole.Write(new Rule($"[yellow]{Products.Title}[/]").Centered());
             AnsiConsole.WriteLine();
 
             var summaryGrid = new Grid();
             summaryGrid.AddColumn();
             summaryGrid.AddRow(new Markup(
-                $"[grey]Operator Session:[/] [cyan]{currentUser.Name}[/] ([yellow]{currentUser.Role}[/])"));
+                string.Format(Products.OperatorSession, currentUser.Name, currentUser.Role)));
             summaryGrid.AddRow(new Markup(
-                $"[grey]Warehouse Storage Stock:[/] [green]{factory.Inventory.Count} / {factory.InventoryCapacity} units[/]"));
+                string.Format(Products.WarehouseStock, factory.Inventory.Count, factory.InventoryCapacity)));
 
             AnsiConsole.Write(
                 new Panel(summaryGrid)
-                    .Header("[bold blue] Storage Inventory Card [/]")
+                    .Header(Products.PanelHeader)
                     .Border(BoxBorder.Rounded)
                     .BorderStyle(new Style(Color.Blue))
             );
@@ -31,7 +31,7 @@ internal static class ProductMenuHandler
             var menuOptions = MenuOptions.ProductMenu.Select((item, index) => $"{index + 1}. {item}").ToList();
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title("[bold white]Navigate to an inventory operation:[/]")
+                    .Title(Products.NavigatePrompt)
                     .PageSize(10)
                     .AddChoices(menuOptions));
 
@@ -62,32 +62,33 @@ internal static class ProductMenuHandler
     private static void DisplayInventoryTable(Factory factory)
     {
         AnsiConsole.Clear();
-        AnsiConsole.Write(new Rule("[green]📦 Finished Electronics Inventory Stock[/]").Centered());
+        AnsiConsole.Write(new Rule($"[green]{Products.ViewFinishedStockTitle}[/]").Centered());
         AnsiConsole.WriteLine();
 
-        if (factory.Inventory.Count == 0)
+        var unsoldProducts = factory.Inventory.Where(p => !p.IsSold).ToList();
+
+        if (unsoldProducts.Count == 0)
         {
             AnsiConsole.Write(
-                new Panel(
-                        "[yellow]⚠️ Warehouse stock is currently empty. Fire up your Production Lines to manufacture goods![/]")
+                new Panel(Products.WarehouseEmpty)
                     .Border(BoxBorder.Square));
-            AnsiConsole.WriteLine("\nPress any key to return...");
+            AnsiConsole.WriteLine(Common.PressKeyToReturn);
             Console.ReadKey(true);
             return;
         }
 
         var table = new Table().Border(TableBorder.Rounded);
-        table.AddColumn("[bold blue]Slot[/]");
-        table.AddColumn("[bold cyan]Component Name[/]");
-        table.AddColumn("[bold green]Quantity[/]");
-        table.AddColumn("[bold green]Production Cost ($)[/]");
-        table.AddColumn("[bold yellow]Technical Specifications[/]");
-        table.AddColumn("[bold magenta]Value ($)[/]");
+        table.AddColumn(Products.SlotColumn);
+        table.AddColumn(Products.ComponentNameColumn);
+        table.AddColumn(Products.QuantityColumn);
+        table.AddColumn(Products.ProductionCostColumn);
+        table.AddColumn(Products.SpecsColumn);
+        table.AddColumn(Products.ValueColumn);
 
         // Populate table rows with inventory data
-        for (var i = 0; i < factory.Inventory.Count; i++)
+        for (var i = 0; i < unsoldProducts.Count; i++)
         {
-            var product = factory.Inventory[i];
+            var product = unsoldProducts[i];
             {
                 var dynamicSpecs = product.GetTechnicalSpecifications();
 
@@ -103,21 +104,23 @@ internal static class ProductMenuHandler
         }
 
         AnsiConsole.Write(table);
-        AnsiConsole.WriteLine("\nPress any key to return...");
+        AnsiConsole.WriteLine(Common.PressKeyToReturn);
         Console.ReadKey(true);
     }
 
     private static void DisplayInventoryAnalytics(Factory factory)
     {
         AnsiConsole.Clear();
-        AnsiConsole.Write(new Rule("[magenta]📈 Inventory Portfolio & Capacity Metrics[/]").Centered());
+        AnsiConsole.Write(new Rule($"[magenta]{Products.PortfolioTitle}[/]").Centered());
         AnsiConsole.WriteLine();
+
+        var unsoldProducts = factory.Inventory.Where(p => !p.IsSold).ToList();
 
         double cumulativeValue = 0;
         var cpuCount = 0;
         var pcbCount = 0;
 
-        foreach (var product in factory.Inventory)
+        foreach (var product in unsoldProducts)
         {
             cumulativeValue += product.SellingPrice;
 
@@ -126,19 +129,20 @@ internal static class ProductMenuHandler
             else if (product is Motherboard) pcbCount++;
         }
 
-        var storageUtilization = factory.Inventory.Count == 0
+        var storageUtilization = unsoldProducts.Count == 0
             ? 0.0
-            : (double)factory.Inventory.Count / factory.InventoryCapacity * 100;
+            : (double)unsoldProducts.Count / factory.InventoryCapacity * 100;
 
         var statsGrid = new Grid().AddColumns(2);
-        statsGrid.AddRow("[bold white]Total Volume Level:[/]",
-            $"[green]{factory.Inventory.Count} items[/] (📊 CPUs: {cpuCount} | ⚙️ PCBs: {pcbCount} )");
-        statsGrid.AddRow("[bold white]Asset Portfolio Valuation:[/]", $"[yellow]${cumulativeValue:F2} USD[/]");
-        statsGrid.AddRow("[bold white]Warehouse Occupancy Rate:[/]", $"[cyan]{storageUtilization:F1}% utilized[/]");
+        statsGrid.AddRow(Products.StatsGridTotalVolume,
+            string.Format(Products.StatsGridTotalVolumeValue, unsoldProducts.Count, cpuCount, pcbCount));
+        statsGrid.AddRow(Products.StatsGridValuation, string.Format(Products.StatsGridValuationValue, cumulativeValue));
+        statsGrid.AddRow(Products.StatsGridOccupancy,
+            string.Format(Products.StatsGridOccupancyValue, storageUtilization));
 
-        AnsiConsole.Write(new Panel(statsGrid).Header("[bold magenta] Business Operations Analysis [/]")
+        AnsiConsole.Write(new Panel(statsGrid).Header(Products.AnalyticsPanelHeader)
             .Border(BoxBorder.Double));
-        AnsiConsole.WriteLine("\nPress any key to return...");
+        AnsiConsole.WriteLine(Common.PressKeyToReturn);
         Console.ReadKey(true);
     }
 }

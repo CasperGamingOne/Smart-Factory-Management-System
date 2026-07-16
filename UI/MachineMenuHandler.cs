@@ -11,12 +11,12 @@ internal static class MachineMenuHandler
         while (inRoom)
         {
             AnsiConsole.Clear();
-            AnsiConsole.Write(new Rule("[cyan]MACHINE MONITORING & MAINTENANCE[/]").Centered());
+            AnsiConsole.Write(new Rule($"[cyan]{Machines.FleetMonitoringTitle}[/]").Centered());
 
             var menuOptions = MenuOptions.MachineMenu.Select((item, index) => $"{index + 1}. {item}").ToList();
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title("[yellow]Select a diagnostic option:[/]")
+                    .Title(Machines.SelectDiagnosticOption)
                     .AddChoices(menuOptions));
 
             var option = choice.Split(". ", 2)[1];
@@ -31,7 +31,7 @@ internal static class MachineMenuHandler
                     if (loggedInUser is not Technician)
                     {
                         AnsiConsole.MarkupLine(
-                            $"[red]❌ Access Denied: {loggedInUser.Role} cannot perform this action.[/]");
+                            string.Format(Common.AccessDenied, loggedInUser.Role));
                     }
                     else
                     {
@@ -51,7 +51,7 @@ internal static class MachineMenuHandler
 
             if (inRoom)
             {
-                AnsiConsole.MarkupLine("\n[grey]Press any key to continue...[/]");
+                AnsiConsole.MarkupLine(Common.PressKeyToContinue);
                 Console.ReadKey(true);
             }
         }
@@ -60,10 +60,10 @@ internal static class MachineMenuHandler
     private static void DisplayFleetOverview(Factory factory)
     {
         var table = new Table().Border(TableBorder.Square);
-        table.AddColumn("[cyan]Machine Asset[/]");
-        table.AddColumn("[cyan]Manufacturer[/]");
-        table.AddColumn("[cyan]Operational Status[/]");
-        table.AddColumn("[cyan]Structural Condition[/]");
+        table.AddColumn(Machines.MachineAssetColumn);
+        table.AddColumn(Machines.ManufacturerColumn);
+        table.AddColumn(Machines.OperationalStatusColumn);
+        table.AddColumn(Machines.StructuralConditionColumn);
 
         foreach (var mach in factory.Machines)
         {
@@ -78,36 +78,36 @@ internal static class MachineMenuHandler
     {
         if (factory.Machines.Count == 0)
         {
-            AnsiConsole.MarkupLine("[red]No machines are currently provisioned in the asset index.[/]");
+            AnsiConsole.MarkupLine(Machines.NoMachinesAssetIndex);
             return;
         }
 
         var selector = new SelectionPrompt<Machine>()
-            .Title("Select a machine to manage:")
+            .Title(Machines.SelectMachineToManage)
             .PageSize(10)
             .UseConverter(m =>
             {
                 var statusColor = m.Condition == MachineCondition.Critical ? "red" : "green";
-                return $"[{statusColor}]{m.Name}[/] - [dim]Status: {m.Status}[/]";
+                return string.Format(Machines.MachineSelectorConverter, statusColor, m.Name, m.Status);
             });
         foreach (var t in factory.Machines)
             selector.AddChoice(t);
 
         var chosenMachine = AnsiConsole.Prompt(selector);
 
-        AnsiConsole.MarkupLine($"\n[bold underline]Auditing Component Stack for: {chosenMachine.Name}[/]");
+        AnsiConsole.MarkupLine(string.Format(Machines.AuditingComponentStack, chosenMachine.Name));
 
         chosenMachine.InspectMachine();
 
         if (chosenMachine.NeedsRepair())
         {
-            AnsiConsole.MarkupLine("[yellow]This machine has parts that are not in excellent condition.[/]");
+            AnsiConsole.MarkupLine(Machines.PartsNotExcellent);
 
-            if (AnsiConsole.Confirm("Repair this machine now?")) chosenMachine.RepairMachine();
+            if (AnsiConsole.Confirm(Machines.RepairConfirm)) chosenMachine.RepairMachine();
         }
         else
         {
-            AnsiConsole.MarkupLine("[green]This machine does not currently need repairs.[/]");
+            AnsiConsole.MarkupLine(Machines.RepairNotNeeded);
         }
 
         loggerService.LogInfo(LogOrigin.USER, LogEvent.MaintenancePerformed,
