@@ -56,6 +56,20 @@ public class Factory
 
     public void AddProduct(Product product, string? batchId)
     {
+        product.BatchId = batchId;
+
+        if (!string.IsNullOrEmpty(batchId))
+        {
+            var existing = _inventory.FirstOrDefault(p =>
+                p.BatchId == batchId && p.GetType() == product.GetType() && p.Name == product.Name &&
+                p.IsSold == product.IsSold);
+            if (existing != null)
+            {
+                existing.AddQuantity(product.Quantity);
+                return;
+            }
+        }
+
         _inventory.Add(product);
         var index = _inventory.Count - 1;
 
@@ -69,6 +83,9 @@ public class Factory
     public void AddOrder(ProductionOrder order)
     {
         _pendingOrders.Enqueue(order);
+        var prioritized = _pendingOrders.OrderByDescending(o => o.GetPriorityScore()).ToList();
+        _pendingOrders.Clear();
+        foreach (var o in prioritized) _pendingOrders.Enqueue(o);
     }
 
     public void AddReportRequest(ReportRequest request)
@@ -79,5 +96,15 @@ public class Factory
     public void AddBatch(ProductionBatch batch)
     {
         _batches.Add(batch);
+    }
+
+    public void RemoveProduct(Product product)
+    {
+        _inventory.Remove(product);
+    }
+
+    public void RemoveBatch(ProductionBatch batch)
+    {
+        _batches.Remove(batch);
     }
 }

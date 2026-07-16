@@ -7,27 +7,37 @@ internal static class PasswordChangeHandler
     public static void Run(Employee user, IJsonRepository<Employee> repository, ILoggerService loggerService)
     {
         AnsiConsole.Clear();
-        AnsiConsole.Write(new Rule("[yellow]FIRST-TIME PASSWORD SETUP[/]").Centered());
-        AnsiConsole.MarkupLine($"[green]Hello {user.Name}, you must set a new password for your account.[/]");
+        AnsiConsole.Write(new Rule($"[yellow]{Login.ChangePasswordTitle}[/]").Centered());
+        AnsiConsole.WriteLine();
+        AnsiConsole.MarkupLine(string.Format(Login.FirstTimeMessage, user.Name));
+
+        var warningPanel = new Panel(UndoText.PasswordWarningMessage)
+        {
+            Border = BoxBorder.Double,
+            Padding = new Padding(1, 1, 1, 1),
+            Header = new PanelHeader($"[yellow]{UndoText.PasswordWarningHeader}[/]")
+        };
+        AnsiConsole.Write(warningPanel);
+        AnsiConsole.WriteLine();
 
         string newPassword;
         while (true)
         {
             newPassword = AnsiConsole.Prompt(
-                new TextPrompt<string>("[white]Enter your new password:[/]")
+                new TextPrompt<string>(Login.NewPasswordPrompt)
                     .PromptStyle("cyan")
                     .Secret('*')
             );
 
             var confirmPassword = AnsiConsole.Prompt(
-                new TextPrompt<string>("[white]Confirm your new password:[/]")
+                new TextPrompt<string>(Login.ConfirmPasswordPrompt)
                     .PromptStyle("cyan")
                     .Secret('*')
             );
 
             if (newPassword == confirmPassword) break;
 
-            AnsiConsole.MarkupLine("[red]❌ Passwords do not match. Please try again.[/]");
+            AnsiConsole.MarkupLine(Login.PasswordsDoNotMatch);
         }
 
         var hashedPassword = SecurityHelper.HashPassword(newPassword);
@@ -49,15 +59,15 @@ internal static class PasswordChangeHandler
             catch (IOException)
             {
                 // Log the actual error internally if needed
-                AnsiConsole.MarkupLine("[red]❌ Critical error: Could not write to the database file.[/]");
+                AnsiConsole.MarkupLine(Common.CriticalErrorDb);
             }
         }
         else
         {
-            AnsiConsole.MarkupLine($"[red]Error: Could not find user with ID {user.Id} in database.[/]");
+            AnsiConsole.MarkupLine(string.Format(Login.UserNotFound, user.Id));
         }
 
-        AnsiConsole.MarkupLine("[green]✔ Password updated successfully![/]");
+        AnsiConsole.MarkupLine(Login.PasswordUpdated);
         loggerService.LogInfo(LogOrigin.USER, LogEvent.PasswordChangedFirstLogin, user.Username);
         Thread.Sleep(1000);
     }

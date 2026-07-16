@@ -6,8 +6,25 @@ public class ProductionOrder(string productName, int quantity, int technicianId)
     public string ProductName { get; init; } = productName;
     public int Quantity { get; init; } = quantity;
     public int CompletedCount { get; private set; }
-    public int AssignedTechnicianId { get; init; } = technicianId;
+    public int AssignedTechnicianId { get; set; } = technicianId;
     public bool IsComplete => CompletedCount >= Quantity;
+
+    public string CustomProductName { get; set; } = string.Empty;
+    public int? Cores { get; set; }
+    public double? ClockSpeed { get; set; }
+    public string? SocketStandard { get; set; }
+    public string? PhysicalForm { get; set; }
+
+    public string PlacedBy { get; set; } = string.Empty;
+    public bool IsNotifiedComplete { get; set; } = false;
+
+    public DateTime CreatedAt { get; } = DateTime.UtcNow;
+
+    public double GetPriorityScore()
+    {
+        var minutesElapsed = (DateTime.UtcNow - CreatedAt).TotalMinutes;
+        return minutesElapsed - Quantity;
+    }
 
     public void IncrementCompletedCount()
     {

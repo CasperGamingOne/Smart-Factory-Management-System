@@ -17,7 +17,7 @@ public enum MachineCondition
     Critical
 }
 
-[JsonDerivedType(typeof(LithographyMachine), "litographyMachine")]
+[JsonDerivedType(typeof(LitographyMachine), "litographyMachine")]
 [JsonDerivedType(typeof(SmtMachine), "smtMachine")]
 [JsonDerivedType(typeof(PaPMachine), "papMachine")]
 [JsonDerivedType(typeof(ReflowOven), "reflowOven")]
@@ -85,16 +85,16 @@ public abstract class Machine
     public bool StartMachine()
     {
         AnsiConsole.Clear();
-        AnsiConsole.Write(Align.Left(new Rule($"[yellow]System Boot Sequences: {Name}[/]")));
+        AnsiConsole.Write(Align.Left(new Rule(string.Format($"[yellow]{Machines.BootSequence}[/]", Name))));
         AnsiConsole.WriteLine();
 
         AnsiConsole.Status()
             .Spinner(Spinner.Known.Dots)
             .SpinnerStyle(Style.Parse("yellow bold"))
-            .Start("Analyzing diagnostic circuit registers...", ctx =>
+            .Start(Machines.BootSpinnerAnalyzing, ctx =>
             {
                 Thread.Sleep(600);
-                ctx.Status("Checking component hardware array counters...");
+                ctx.Status(Machines.BootSpinnerChecking);
                 Thread.Sleep(500);
             });
 
@@ -106,13 +106,12 @@ public abstract class Machine
 
                 var errorPanel = new Panel(
                     new Markup(
-                        $"[red]❌ [bold]CRITICAL INITIALIZATION ERROR:[/] Component [underline]{part.Name}[/] has suffered a complete breakdown!\n" +
-                        $"[grey]Action Required:[/] Dispatch an authorized engineer to run maintenance protocols.[/]")
+                        string.Format(Machines.CriticalInitError, part.Name))
                 )
                 {
                     Border = BoxBorder.Rounded,
                     Padding = new Padding(1, 1, 1, 1),
-                    Header = new PanelHeader("[red bold] BOOT FAILURE [/]")
+                    Header = new PanelHeader($"[red bold]{Machines.BootFailureHeader}[/]")
                 };
 
                 AnsiConsole.Write(errorPanel);
@@ -124,7 +123,7 @@ public abstract class Machine
 
         var successPanel = new Panel(
             new Markup(
-                $"[green]✔ [bold]ONLINE:[/] {Name} is fully calibrated and processing manufacturing lines.[/]")
+                string.Format(Machines.OnlineMessage, Name))
         )
         {
             Border = BoxBorder.Rounded,
@@ -140,14 +139,14 @@ public abstract class Machine
     public void StopMachine()
     {
         AnsiConsole.Clear();
-        AnsiConsole.Write(Align.Left(new Rule($"[red]System Shutdown Sequence: {Name}[/]")));
+        AnsiConsole.Write(Align.Left(new Rule(string.Format($"[red]{Machines.ShutdownSequence}[/]", Name))));
         AnsiConsole.WriteLine();
 
         if (Status == MachineStatus.Stopped)
         {
             var alreadyStoppedPanel = new Panel(
                 new Markup(
-                    $"[yellow]⚠ [bold]SYSTEM IDLE:[/] [underline]{Name}[/] is already stopped and sitting securely in standby mode.[/]")
+                    string.Format(Machines.AlreadyStopped, Name))
             )
             {
                 Border = BoxBorder.Rounded,
@@ -160,25 +159,24 @@ public abstract class Machine
         AnsiConsole.Status()
             .Spinner(Spinner.Known.Dots)
             .SpinnerStyle(Style.Parse("red bold"))
-            .Start("Initiating safe assembly line deceleration...", ctx =>
+            .Start(Machines.SafeDecelerationSpinner, ctx =>
             {
                 Thread.Sleep(500);
-                ctx.Status("Spooling down dynamic mechanical sub-structures...");
+                ctx.Status(Machines.SpoolDownSpinner);
                 Thread.Sleep(600);
-                ctx.Status("Isolating secondary high-voltage power relays...");
+                ctx.Status(Machines.IsolateRelaysSpinner);
                 Thread.Sleep(500);
             });
 
         Status = MachineStatus.Stopped;
         //******
         var stopPanel = new Panel(
-            new Markup($"[red]🛑 [bold]SHUTDOWN COMPLETE:[/] {Name} has been safely isolated and powered down.\n" +
-                       $"[grey]Operational State updated to:[/] [yellow bold]STOPPED (STANDBY)[/]")
+            new Markup(string.Format(Machines.ShutdownComplete, Name))
         )
         {
             Border = BoxBorder.Rounded,
             Padding = new Padding(1, 1, 1, 1),
-            Header = new PanelHeader("[red bold] SYSTEM OFFLINE [/]")
+            Header = new PanelHeader($"[red bold]{Machines.SystemOfflineHeader}[/]")
         };
 
         AnsiConsole.Write(stopPanel);
@@ -202,14 +200,14 @@ public abstract class Machine
                 if (selectedPart.Condition == PartCondition.Critical)
                 {
                     AnsiConsole.Write(new Markup(
-                        $"[red bold]⚡ALERT:[/] [underline]{selectedPart.Name}[/] has suffered a total breakdown! Machine safety override has been tripped!\n"));
+                        string.Format(Machines.AlertCriticalPart, selectedPart.Name)));
                     Status = MachineStatus.Stopped;
                     Condition = MachineCondition.Critical;
                 }
                 else
                 {
                     AnsiConsole.Write(new Markup(
-                        $"[yellow]⚠ SYSTEM NOTICE:[/] [underline]{selectedPart.Name}[/] showing performance degradation (Moved to {selectedPart.Condition} condition).\n"));
+                        string.Format(Machines.WarningDegradation, selectedPart.Name, selectedPart.Condition)));
                     Condition = MachineCondition.Good;
                 }
             }
@@ -219,35 +217,37 @@ public abstract class Machine
     public void InspectMachine()
     {
         AnsiConsole.Clear();
-        AnsiConsole.Write(Align.Left(new Rule($"[cyan]Diagnostics Hub: {Name}[/]")));
+        AnsiConsole.Write(Align.Left(new Rule(string.Format($"[cyan]{Machines.DiagnosticHub}[/]", Name))));
         AnsiConsole.WriteLine();
 
         var profileTable = new Table();
         profileTable.Border(TableBorder.Minimal);
 
-        profileTable.AddColumn("[grey]Hardware Property[/]");
-        profileTable.AddColumn("[grey]Assigned Value[/]");
+        profileTable.AddColumn(Machines.HardwarePropertyColumn);
+        profileTable.AddColumn(Machines.AssignedValueColumn);
 
-        profileTable.AddRow("Manufacturer Identity", Manufacturer ?? "-");
-        profileTable.AddRow("Factory Serial Reference", SerialNumber ?? "-");
-        profileTable.AddRow("Asset Total Life Age",
-            $"{GetMachineAgeInYears():F1} Years / {(int)GetMachineAge().TotalDays} Days");
+        profileTable.AddRow(Machines.ManufacturerIdentity, Manufacturer ?? "-");
+        profileTable.AddRow(Machines.FactorySerialRef, SerialNumber ?? "-");
+        profileTable.AddRow(Machines.AssetLifeAge,
+            string.Format(Machines.AssetLifeAgeValue, GetMachineAgeInYears(), (int)GetMachineAge().TotalDays));
 
         var statusColor = Status == MachineStatus.Running
             ? "green"
             : Status == MachineStatus.Stopped
                 ? "yellow"
                 : "orange3";
-        profileTable.AddRow("Current Asset State", $"[{statusColor} bold]{Status.ToString().ToUpper()}[/]");
+        profileTable.AddRow(Machines.CurrentAssetState, $"[{statusColor} bold]{Status.ToString().ToUpper()}[/]");
 
         AnsiConsole.Write(new Panel(profileTable)
-            { Header = new PanelHeader("[bold cyan] Asset Identity Profile [/]"), Border = BoxBorder.Rounded });
+        {
+            Header = new PanelHeader($"[bold cyan]{Machines.AssetIdentityProfileHeader}[/]"), Border = BoxBorder.Rounded
+        });
         AnsiConsole.WriteLine();
 
         var componentTable = new Table().Border(TableBorder.Rounded);
-        componentTable.AddColumn("[bold]Tracked Component Item[/]");
-        componentTable.AddColumn(new TableColumn("[bold]Health Status[/]").Centered());
-        componentTable.AddColumn("[bold]Technical Specifications & Diagnostics[/]");
+        componentTable.AddColumn(Machines.TrackedComponentHeader);
+        componentTable.AddColumn(new TableColumn(Machines.HealthStatusHeader).Centered());
+        componentTable.AddColumn(Machines.TechSpecsHeader);
 
         foreach (var part in Parts ?? new List<MachinePart>())
         {
@@ -288,12 +288,12 @@ public abstract class Machine
     {
         if (!NeedsRepair())
         {
-            AnsiConsole.MarkupLine($"[green]{Name} does not need repairs right now.[/]");
+            AnsiConsole.MarkupLine(string.Format(Machines.DoesNotNeedRepairs, Name));
             return false;
         }
 
         AnsiConsole.Clear();
-        AnsiConsole.Write(Align.Left(new Rule($"[yellow]Maintenance Bay: {Name}[/]")));
+        AnsiConsole.Write(Align.Left(new Rule(string.Format($"[yellow]{Machines.MaintenanceBay}[/]", Name))));
         AnsiConsole.WriteLine();
 
         var repairedParts = 0;
@@ -308,12 +308,10 @@ public abstract class Machine
         Status = MachineStatus.Stopped;
 
         var panel = new Panel(new Markup(
-            $"[green]✔ Repair complete for [bold]{Name}[/].[/]\n" +
-            $"[grey]Parts restored:[/] {repairedParts}\n" +
-            $"[grey]Machine state:[/] {Condition} / {Status}"))
+            string.Format(Machines.RepairCompleteMsg, Name, repairedParts, Condition, Status)))
         {
             Border = BoxBorder.Rounded,
-            Header = new PanelHeader("[bold green] REPAIR COMPLETE [/]")
+            Header = new PanelHeader($"[bold green]{Machines.RepairCompleteHeader}[/]")
         };
 
         AnsiConsole.Write(panel);
@@ -332,34 +330,12 @@ public abstract class Machine
         return MachineCondition.Excellent;
     }
 
-    protected static bool TryProcessMotherboard(Product product, BoardState requiredInputState,
-        BoardState nextState, string stageName)
-    {
-        if (product is not Motherboard board)
-        {
-            AnsiConsole.MarkupLine($"[red]Error: This machine cannot process {product.GetType().Name}[/]");
-            return false;
-        }
-
-        if (board.CurrentState != requiredInputState)
-        {
-            AnsiConsole.MarkupLine(
-                $"[yellow]Warning: {board.Name} is not in the expected {requiredInputState} state for {stageName}.[/]");
-            return false;
-        }
-
-        board.TransitionTo(nextState);
-        AnsiConsole.MarkupLine(
-            $"[green]Successfully completed {stageName} for {board.Name}. New state: {nextState}[/]");
-        return true;
-    }
-
     public abstract bool Produce(Product product);
 }
 
-public class LithographyMachine : Machine
+public class LitographyMachine : Machine
 {
-    public LithographyMachine(string name, string manufacturer, string serialNumber,
+    public LitographyMachine(string name, string manufacturer, string serialNumber,
         List<MachinePart> parts, MachineCondition condition)
         : base(name, manufacturer, serialNumber, parts, condition)
     {
@@ -371,27 +347,20 @@ public class LithographyMachine : Machine
         if (ActiveOrder == null || ActiveOrder.IsComplete)
         {
             Status = MachineStatus.Stopped;
-            AnsiConsole.Write(new Markup($"[green]✔ Successfully manufactured: {blueprint.Name}[/]\n"));
+            AnsiConsole.Write(new Markup(string.Format(Machines.LitographySuccess, blueprint.Name)));
             return true;
         }
 
         if (blueprint.GetType() != SupportedProductType)
             throw new InvalidOperationException($"This machine only produces {SupportedProductType.Name}!");
 
-        if (Status != MachineStatus.Running)
-        {
-            AnsiConsole.Write(new Markup(
-                $"[red]❌ Cannot produce {blueprint.Name}. Machine is offline. Please boot or repair it first.[/]\n"));
-            return false;
-        }
-
         AnsiConsole.Write(
-            new Markup($"[cyan]🏭 Starting processing sequence for: [underline]{blueprint.Name}[/][/]\n"));
+            new Markup(string.Format(Machines.LitographyStart, blueprint.Name)));
 
         AnsiConsole.Status()
             .Spinner(Spinner.Known.BouncingBar)
             .SpinnerStyle(Style.Parse("cyan bold"))
-            .Start("Exposing wafer structure using optical masks...", _ => { Thread.Sleep(800); });
+            .Start(Machines.LitographySpinner, _ => { Thread.Sleep(800); });
         ApplyProductionWearAndTear();
         return true;
     }
@@ -408,8 +377,25 @@ public class SmtMachine : Machine // Solder Paste Printer
 
     public override bool Produce(Product product)
     {
-        return TryProcessMotherboard(product, BoardState.BlankBoard, BoardState.SolderPrinted,
-            "Solder Paste Printing");
+        if (product is not Motherboard board)
+        {
+            AnsiConsole.MarkupLine(string.Format(Machines.ProcessErrorUnsupported, product.GetType().Name));
+            return false;
+        }
+
+        if (board.CurrentState != BoardState.BlankBoard)
+        {
+            AnsiConsole.MarkupLine(
+                string.Format(Machines.ProcessWarningUnexpectedState, board.Name, BoardState.BlankBoard,
+                    "Solder Paste Printing"));
+            return false;
+        }
+
+        board.TransitionTo(BoardState.SolderPrinted);
+        AnsiConsole.MarkupLine(
+            string.Format(Machines.ProcessSuccessState, board.Name, BoardState.SolderPrinted, "Solder Paste Printing"));
+        ApplyProductionWearAndTear();
+        return true;
     }
 }
 
@@ -423,8 +409,26 @@ public class PaPMachine(
 {
     public override bool Produce(Product product)
     {
-        return TryProcessMotherboard(product, BoardState.SolderPrinted, BoardState.ComponentsPlaced,
-            "Pick and Place Assembly");
+        if (product is not Motherboard board)
+        {
+            AnsiConsole.MarkupLine(string.Format(Machines.ProcessErrorUnsupported, product.GetType().Name));
+            return false;
+        }
+
+        if (board.CurrentState != BoardState.SolderPrinted)
+        {
+            AnsiConsole.MarkupLine(
+                string.Format(Machines.ProcessWarningUnexpectedState, board.Name, BoardState.SolderPrinted,
+                    "Pick and Place Assembly"));
+            return false;
+        }
+
+        board.TransitionTo(BoardState.ComponentsPlaced);
+        AnsiConsole.MarkupLine(
+            string.Format(Machines.ProcessSuccessState, board.Name, BoardState.ComponentsPlaced,
+                "Pick and Place Assembly"));
+        ApplyProductionWearAndTear();
+        return true;
     }
 }
 
@@ -438,7 +442,24 @@ public class ReflowOven(
 {
     public override bool Produce(Product product)
     {
-        return TryProcessMotherboard(product, BoardState.ComponentsPlaced, BoardState.BakedAndSoldered,
-            "Reflow Baking");
+        if (product is not Motherboard board)
+        {
+            AnsiConsole.MarkupLine(string.Format(Machines.ProcessErrorUnsupported, product.GetType().Name));
+            return false;
+        }
+
+        if (board.CurrentState != BoardState.ComponentsPlaced)
+        {
+            AnsiConsole.MarkupLine(
+                string.Format(Machines.ProcessWarningUnexpectedState, board.Name, BoardState.ComponentsPlaced,
+                    "Reflow Baking"));
+            return false;
+        }
+
+        board.TransitionTo(BoardState.BakedAndSoldered);
+        AnsiConsole.MarkupLine(
+            string.Format(Machines.ProcessSuccessState, board.Name, BoardState.BakedAndSoldered, "Reflow Baking"));
+        ApplyProductionWearAndTear();
+        return true;
     }
 }

@@ -71,14 +71,14 @@ public class DataSeeder(
 
             var initialMachines = new List<Machine>
             {
-                new LithographyMachine("LithoScan EUV-3600", "ASML", "SN-ASML-2024-88A9", litoParts,
+                new LitographyMachine("LithoScan EUV-3600", "ASML", "SN-ASML-2024-88A9", litoParts,
                     MachineCondition.Excellent),
                 new SmtMachine("Horizon SolderPrinter X5", "DEK International", "SN-DEK-77492-B7", printerParts,
                     MachineCondition.Excellent),
                 new PaPMachine("NXT-III High-Speed Mounter", "Fuji Corporation", "SN-FUJI-991A-040", papParts,
                     MachineCondition.Excellent),
                 new ReflowOven("OmniMax Thermal Tunnel", "Heller Industries", "SN-HLR-5542-Z9", ovenParts,
-                    MachineCondition.Critical)
+                    MachineCondition.Excellent)
             };
             machineRepo.Save(initialMachines);
         }
