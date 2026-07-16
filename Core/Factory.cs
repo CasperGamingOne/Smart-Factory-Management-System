@@ -1,3 +1,5 @@
+using Spectre.Console;
+
 namespace Smart_Factory_Management_System;
 
 public class Factory
@@ -79,5 +81,29 @@ public class Factory
     public void AddBatch(ProductionBatch batch)
     {
         _batches.Add(batch);
+    }
+    public static void ShowInventoryAlerts(IEnumerable<Product> inventory)
+    {
+        // Folosim metoda creată în Product.cs
+        var lowStockItems = inventory.Where(p => p.IsLowStock()).ToList();
+
+        if (lowStockItems.Any())
+        {
+            var table = new Table().Border(TableBorder.Rounded);
+            table.AddColumn("[red]Status[/]");
+            table.AddColumn("Produs");
+            table.AddColumn("Stoc Curent");
+
+            foreach (var item in lowStockItems)
+            {
+                table.AddRow("⚠️", item.Name, $"[bold red]{item.Quantity}[/]");
+            }
+
+            AnsiConsole.Write(new Panel(table)
+            {
+                Header = new PanelHeader("[bold red] ALERTA INVENTAR [/]"),
+                Border = BoxBorder.Double
+            });
+        }
     }
 }

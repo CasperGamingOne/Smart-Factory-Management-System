@@ -60,7 +60,15 @@ public abstract class Machine
     [JsonIgnore] public Type SupportedProductType { get; private protected init; }
 
     protected ProductionOrder? ActiveOrder { get; private set; }
+    //*****
+    public int TotalProcessedCount { get; private set; }
+    public int TotalFailuresCount { get; private set; }
 
+    public void IncrementSuccess() => TotalProcessedCount++;
+    public void IncrementFailure() => TotalFailuresCount++;
+
+
+    //*******
     public static void InitializeIdCounter(int maxId)
     {
         _idCounter = maxId;
@@ -191,7 +199,7 @@ public abstract class Machine
         var randomIndex = Random.Next(0, Parts.Count);
         var selectedPart = Parts[randomIndex];
 
-        if (Random.Next(0, 100) < 20)
+        if (Random.Next(0, 100) < 80)
         {
             var oldCondition = selectedPart.Condition;
             selectedPart.DegradeStep();
@@ -210,11 +218,64 @@ public abstract class Machine
                 {
                     AnsiConsole.Write(new Markup(
                         $"[yellow]⚠ SYSTEM NOTICE:[/] [underline]{selectedPart.Name}[/] showing performance degradation (Moved to {selectedPart.Condition} condition).\n"));
+                    int daysRemaining = GetEstimatedDaysUntilMaintenance();
+                    AnsiConsole.MarkupLine($"[grey]Info: Mentenanță estimată necesară în aproximativ {daysRemaining} zile.[/]");
                     Condition = MachineCondition.Good;
                 }
             }
         }
     }
+    //*****
+    public double CalculateEfficiency()
+    {
+        // 1. Calculăm healthScore fără ??
+        double healthScore;
+
+        if (Parts != null && Parts.Count > 0)
+        {
+            healthScore = Parts.Average(p => p.Condition switch
+            {
+                PartCondition.Excellent => 1.0,
+                PartCondition.Good => 0.5,
+                _ => 0.0
+            });
+        }
+        else
+        {
+            healthScore = 1.0;
+        }
+
+        // 2. Procent bazat pe rata de succes (nu necesită ??)
+        double successRate = (TotalProcessedCount + TotalFailuresCount) > 0
+            ? (double)TotalProcessedCount / (TotalProcessedCount + TotalFailuresCount)
+            : 1.0;
+
+        // 3. Eficiența finală
+        return (healthScore * 0.7 + successRate * 0.3) * 100;
+    }
+    /// ***********
+    public int GetEstimatedDaysUntilMaintenance()
+    {
+        if (Parts == null || Parts.Count == 0)
+        {
+            return 30; 
+        }
+
+        // Calculăm scorul folosind LINQ
+        var scores = Parts.Select(p => p.Condition switch
+        {
+            PartCondition.Excellent => 3,
+            PartCondition.Good => 2,
+            _ => 1
+        });
+
+        double averageScore = scores.Average();
+
+        // Formula de calcul
+        return (int)(averageScore * 10);
+    }
+
+
 
     public void InspectMachine()
     {
@@ -271,6 +332,34 @@ public abstract class Machine
 
         AnsiConsole.Write(componentTable);
         AnsiConsole.WriteLine();
+        //******
+        var daysLeft = GetEstimatedDaysUntilMaintenance();
+
+        // Alegem culoarea în funcție de urgență
+        var alertColor = daysLeft <= 10 ? "red" : (daysLeft <= 20 ? "yellow" : "green");
+
+        var maintenancePanel = new Panel(new Markup(
+            $"[bold]Predictive Maintenance Estimate:[/] Mașina [bold]{Name}[/] " +
+            $"necesită mentenanță în aproximativ [{alertColor}]{daysLeft} zile[/]."))
+        {
+            Border = BoxBorder.Rounded,
+            Header = new PanelHeader("[bold blue] Info: Mentenanță Predictivă [/]")
+        };
+
+        AnsiConsole.Write(maintenancePanel);
+        AnsiConsole.WriteLine();
+
+        //****
+        double efficiency = CalculateEfficiency();
+        var effColor = efficiency > 80 ? "green" : (efficiency > 50 ? "yellow" : "red");
+
+        AnsiConsole.Write(new Panel(new Markup(
+            $"Eficiență Operațională: [{effColor} bold]{efficiency:F1}%[/]"))
+        {
+            Header = new PanelHeader("[bold]Production Efficiency Dashboard[/]")
+        });
+        //****
+
     }
 
     public bool NeedsRepair()
@@ -368,6 +457,8 @@ public class LithographyMachine : Machine
 
     public override bool Produce(Product blueprint)
     {
+        //Factory.ShowInventoryAlerts();
+
         if (ActiveOrder == null || ActiveOrder.IsComplete)
         {
             Status = MachineStatus.Stopped;
@@ -441,4 +532,9 @@ public class ReflowOven(
         return TryProcessMotherboard(product, BoardState.ComponentsPlaced, BoardState.BakedAndSoldered,
             "Reflow Baking");
     }
+
+
+    //***
+
+
 }

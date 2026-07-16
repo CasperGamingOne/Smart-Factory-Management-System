@@ -45,7 +45,15 @@ public abstract class Product
             _quantity = value;
         }
     }
+    //**
+    public int MinStockThreshold { get; set; } = 5; // Prag implicit
+    
 
+    public bool IsLowStock()
+    {
+        return Quantity <= MinStockThreshold;
+    }
+    //***
     public void UpdateSellingPrice(double price)
     {
         SellingPrice = price;
