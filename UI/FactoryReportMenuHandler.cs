@@ -9,12 +9,12 @@ internal static class FactoryReportMenuHandler
         while (true)
         {
             AnsiConsole.Clear();
-            AnsiConsole.Write(new Rule("[cyan]FACTORY REPORT MENU[/]").Centered());
+            AnsiConsole.Write(new Rule($"[cyan]{Reports.OverviewTitle}[/]").Centered());
 
             var menuOptions = MenuOptions.FactoryReportMenu.Select((item, index) => $"{index + 1}. {item}").ToList();
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title("Choose a factory report:")
+                    .Title(Reports.ChooseFactoryReport)
                     .AddChoices(menuOptions));
 
             var option = choice.Split(". ", 2)[1];
@@ -47,28 +47,29 @@ internal static class FactoryReportMenuHandler
     private static void ShowOverview(Factory factory, Employee loggedInUser)
     {
         AnsiConsole.Clear();
-        AnsiConsole.Write(new Rule("[cyan]Factory Overview[/]").Centered());
+        AnsiConsole.Write(new Rule($"[cyan]{Reports.FactoryOverviewTitle}[/]").Centered());
 
         var grid = new Grid().AddColumns(2);
-        grid.AddRow("[bold white]Requested By[/]", Markup.Escape(loggedInUser.Name));
-        grid.AddRow("[bold white]Employees[/]", factory.Employees.Count.ToString());
-        grid.AddRow("[bold white]Machines[/]", factory.Machines.Count.ToString());
-        grid.AddRow("[bold white]Inventory Item Types[/]", factory.Inventory.Count.ToString());
-        grid.AddRow("[bold white]Pending Orders[/]", factory.OrderCount.ToString());
-        grid.AddRow("[bold white]Batches[/]", factory.BatchCount.ToString());
+        grid.AddRow(Reports.RequestedBy, Markup.Escape(loggedInUser.Name));
+        grid.AddRow(Reports.Employees, factory.Employees.Count.ToString());
+        grid.AddRow(Reports.Machines, factory.Machines.Count.ToString());
+        grid.AddRow(Reports.InventoryItemTypes, factory.Inventory.Count.ToString());
+        grid.AddRow(Reports.PendingOrders, factory.OrderCount.ToString());
+        grid.AddRow(Reports.Batches, factory.BatchCount.ToString());
 
-        AnsiConsole.Write(new Panel(grid).Border(BoxBorder.Rounded).Header("[bold]Factory Snapshot[/]"));
+        AnsiConsole.Write(new Panel(grid).Border(BoxBorder.Rounded)
+            .Header($"[bold]{Reports.FactorySnapshotHeader}[/]"));
         Pause();
     }
 
     private static void ShowStaffingReport(Factory factory)
     {
         AnsiConsole.Clear();
-        AnsiConsole.Write(new Rule("[cyan]Staffing Report[/]").Centered());
+        AnsiConsole.Write(new Rule($"[cyan]{Reports.StaffingReportTitle}[/]").Centered());
 
         if (factory.Employees.Count == 0)
         {
-            AnsiConsole.MarkupLine("[yellow]No staff registered.[/]");
+            AnsiConsole.MarkupLine(Reports.NoStaff);
             Pause();
             return;
         }
@@ -80,11 +81,11 @@ internal static class FactoryReportMenuHandler
     private static void ShowMachineFleetReport(Factory factory)
     {
         AnsiConsole.Clear();
-        AnsiConsole.Write(new Rule("[cyan]Machine Fleet Report[/]").Centered());
+        AnsiConsole.Write(new Rule($"[cyan]{Reports.MachineFleetReportTitle}[/]").Centered());
 
         if (factory.Machines.Count == 0)
         {
-            AnsiConsole.MarkupLine("[yellow]No machines registered.[/]");
+            AnsiConsole.MarkupLine(Reports.NoMachines);
             Pause();
             return;
         }
@@ -116,11 +117,11 @@ internal static class FactoryReportMenuHandler
     private static void ShowInventoryReport(Factory factory)
     {
         AnsiConsole.Clear();
-        AnsiConsole.Write(new Rule("[cyan]Inventory Report[/]").Centered());
+        AnsiConsole.Write(new Rule($"[cyan]{Reports.InventoryReportTitle}[/]").Centered());
 
-        if (factory.Inventory.Count == 0)
+        if (!factory.Inventory.Any(p => !p.IsSold))
         {
-            AnsiConsole.MarkupLine("[yellow]No inventory items registered.[/]");
+            AnsiConsole.MarkupLine(Reports.NoInventory);
             Pause();
             return;
         }
@@ -135,7 +136,7 @@ internal static class FactoryReportMenuHandler
         double totalValue = 0;
         var totalQuantity = 0;
 
-        foreach (var product in factory.Inventory)
+        foreach (var product in factory.Inventory.Where(p => !p.IsSold))
         {
             {
                 var itemValue = product.SellingPrice * product.Quantity;
@@ -154,15 +155,15 @@ internal static class FactoryReportMenuHandler
 
         AnsiConsole.Write(table);
         AnsiConsole.Write(new Panel(new Markup(
-            $"[bold white]Total Units:[/] {totalQuantity}\n" +
-            $"[bold white]Estimated Inventory Value:[/] ${totalValue:F2}")
-        ).Border(BoxBorder.Rounded).Header("[bold]Inventory Totals[/]"));
+            $"{Reports.TotalUnits} {totalQuantity}\n" +
+            $"{Reports.EstInventoryValueTotal} ${totalValue:F2}")
+        ).Border(BoxBorder.Rounded).Header($"[bold]{Reports.InventoryTotalsHeader}[/]"));
         Pause();
     }
 
     private static void Pause()
     {
-        AnsiConsole.MarkupLine("\n[grey]Press any key to return...[/]");
+        AnsiConsole.MarkupLine(Common.PressKeyToReturn);
         Console.ReadKey(true);
     }
 }

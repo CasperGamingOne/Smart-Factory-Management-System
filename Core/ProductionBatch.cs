@@ -14,7 +14,7 @@ public class ProductionBatch(string productName, int quantity, double unitCost)
 
     public double TotalCost => UnitProductionCost * Quantity;
 
-    public void SetUnitSellPrice(double price)
+    public void SetUnitSellPrice(double? price)
     {
         if (price < 0)
             throw new ArgumentOutOfRangeException(nameof(price), "Price cannot be negative.");
@@ -24,6 +24,11 @@ public class ProductionBatch(string productName, int quantity, double unitCost)
     public void MarkAsSold()
     {
         IsSold = true;
+    }
+
+    public void MarkAsUnsold()
+    {
+        IsSold = false;
     }
 
     public void AddInventoryIndex(int index)

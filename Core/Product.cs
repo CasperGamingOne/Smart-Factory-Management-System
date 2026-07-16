@@ -20,6 +20,9 @@ public abstract class Product
 
     public string? Name { get; init; }
 
+    public string? BatchId { get; set; }
+    public bool IsSold { get; set; }
+
     public double ProductionCost
     {
         get => _productionCost;
@@ -54,6 +57,11 @@ public abstract class Product
         return Quantity <= MinStockThreshold;
     }
     //***
+    public void MarkAsSold()
+    {
+        IsSold = true;
+    }
+
     public void UpdateSellingPrice(double price)
     {
         SellingPrice = price;

@@ -1,4 +1,4 @@
-﻿namespace Smart_Factory_Management_System;
+namespace Smart_Factory_Management_System;
 
 public interface IFileSystemService
 {

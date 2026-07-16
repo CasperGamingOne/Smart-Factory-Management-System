@@ -6,6 +6,11 @@ public interface IJsonRepository<T>
     void Save(IEnumerable<T> data);
 }
 
+public interface INotificationService
+{
+    void CheckAndShowNotifications(Employee user, Factory factory);
+}
+
 public interface ILoggerService
 {
     void LogInfo(LogOrigin origin, LogEvent eventType, string context = "");

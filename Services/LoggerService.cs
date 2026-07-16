@@ -5,7 +5,8 @@ namespace Smart_Factory_Management_System;
 public enum LogOrigin
 {
     SYSTEM,
-    USER
+    USER,
+    UNDO
 }
 
 public enum LogEvent
@@ -41,7 +42,8 @@ public enum LogEvent
     FullNameUpdated,
     UsernameUpdated,
     PasswordUpdated,
-    PasswordChangedFirstLogin
+    PasswordChangedFirstLogin,
+    OperationUndone
 }
 
 public class LoggerService(IFileSystemService fileService) : ILoggerService
@@ -83,6 +85,7 @@ public class LoggerService(IFileSystemService fileService) : ILoggerService
             LogEvent.UsernameUpdated => $"Username updated for user: {context}",
             LogEvent.PasswordUpdated => $"Password updated for user: {context}",
             LogEvent.PasswordChangedFirstLogin => $"First-time login password setup completed for user: {context}",
+            LogEvent.OperationUndone => string.Format(UndoText.LogMessageFormat, context),
             _ => "Unknown event occurred"
         };
 
@@ -108,22 +111,22 @@ public class LoggerService(IFileSystemService fileService) : ILoggerService
     public void ShowOperationHistory()
     {
         AnsiConsole.Clear();
-        AnsiConsole.Write(new Rule("[cyan]Operation History Log[/]").Centered());
+        AnsiConsole.Write(new Rule(History.Title).Centered());
 
         var logContent = fileService.ReadFromFile(LogFileName);
         if (string.IsNullOrEmpty(logContent))
         {
-            AnsiConsole.MarkupLine("[yellow]No operation history found yet.[/]");
+            AnsiConsole.MarkupLine(History.NoHistory);
             return;
         }
 
         var lines = logContent.Split([Environment.NewLine], StringSplitOptions.RemoveEmptyEntries);
 
         var table = new Table().Border(TableBorder.Rounded);
-        table.AddColumn("Timestamp");
-        table.AddColumn("Level");
-        table.AddColumn("Origin");
-        table.AddColumn("Description");
+        table.AddColumn(History.ColumnTimestamp);
+        table.AddColumn(History.ColumnLevel);
+        table.AddColumn(History.ColumnOrigin);
+        table.AddColumn(History.ColumnDescription);
 
         foreach (var line in lines)
         {
