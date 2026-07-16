@@ -18,6 +18,7 @@ internal static class Program
         var machinesRepo = new JsonRepository<Machine>(fileSystem, "machines.json");
         var productsRepo = new JsonRepository<Product>(fileSystem, "products.json");
         var accountService = new AccountService(employeeRepo);
+        var notificationService = new NotificationService();
 
         var dataSeeder = new DataSeeder(employeeRepo, machinesRepo, productsRepo, fileSystem);
         dataSeeder.Seed();
@@ -46,6 +47,8 @@ internal static class Program
             AnsiConsole.MarkupLine(string.Format(Login.WelcomeBack, loggedInUser.Name, loggedInUser.Role));
             AnsiConsole.Status().Start(Login.BootingEnvironment, _ => { Thread.Sleep(800); });
 
+            notificationService.CheckAndShowNotifications(loggedInUser, factory);
+
             var sessionActive = true;
             while (sessionActive)
             {
@@ -56,9 +59,15 @@ internal static class Program
                 var available = loggedInUser.GetAvailableMenuOptions().ToList();
                 var logoutIndex = available.IndexOf("Log Out / Exit Session");
                 if (logoutIndex >= 0)
+                {
                     available.Insert(logoutIndex, "Account Settings");
+                    available.Insert(logoutIndex, "Undo Menu");
+                }
                 else
+                {
+                    available.Add("Undo Menu");
                     available.Add("Account Settings");
+                }
 
                 var indexedAvailable = available.Select((item, index) => $"{index + 1}. {item}").ToList();
 
@@ -103,6 +112,9 @@ internal static class Program
                             break;
                         case "Account Settings":
                             AccountSettingsMenuHandler.Run(loggedInUser, accountService, loggerService);
+                            break;
+                        case "Undo Menu":
+                            UndoMenuHandler.Run(loggedInUser, loggerService);
                             break;
                         case "Log Out / Exit Session":
                             loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.Logout, loggedInUser.Username);

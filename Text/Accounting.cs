@@ -12,4 +12,8 @@ public static class Accounting
     public const string NoPendingRequests = "[yellow]No pending report requests.[/]";
     public const string SelectRequestToFulfill = "Select request to fulfill:";
     public const string RequestFulfilled = "[green]✔ Report '{0}' (Req ID: {1}) fulfilled by {2}.[/]";
+
+    public const string PendingReportHeader = "Pending Report Requests";
+    public const string PendingReportNotification = "Report Request [cyan]#{0}[/] ({1}) is pending your fulfillment!";
+    public const string PendingReportAcknowledge = "[grey]Press any key to acknowledge...[/]";
 }

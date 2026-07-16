@@ -33,4 +33,11 @@ public static class Production
     public const string ReflowBaking = "Reflow Baking";
     public const string ReflowBakingSpinner = "Heating solder joints to fuse the board...";
     public const string ReflowBakingFail = "Motherboard workflow stopped during reflow baking.";
+
+    public const string AutoAssignHeader = "Auto-Assignment Notification";
+
+    public const string AutoAssignNotification =
+        "Order [cyan]#{0}[/] ({1} x{2}) has been issued and auto-assigned to you!";
+
+    public const string AutoAssignAcknowledge = "[grey]Press any key to acknowledge...[/]";
 }

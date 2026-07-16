@@ -37,7 +37,7 @@ internal static class SalesMenuHandler
                     loggerService.LogInfo(LogOrigin.USER, LogEvent.PendingOrdersViewed, loggedInUser.Username);
                     break;
                 case "Record Sale for Batch":
-                    RecordSale(factory, loggerService, loggedInUser);
+                    RecordSale(factory, loggerService, loggedInUser, productRepo);
                     productRepo.Save(factory.Inventory);
                     break;
                 case "Return to Main Menu":
@@ -57,44 +57,43 @@ internal static class SalesMenuHandler
                 .Title(Sales.SelectProduct)
                 .AddChoices(MenuOptions.ProductTypes));
 
+        var customName = AnsiConsole.Ask<string>(Sales.EnterCustomProductName);
         var quantity = AnsiConsole.Ask<int>(Sales.EnterQuantity);
 
-        // Choose technician
-        var techSelector = new SelectionPrompt<string>()
-            .Title(Sales.AssignToTechnician)
-            .AddChoices(MenuOptions.TechAssignChoices);
+        int? cores = null;
+        double? clockSpeed = null;
+        string? socketStandard = null;
+        string? physicalForm = null;
 
-        var techChoice = AnsiConsole.Prompt(techSelector);
-        var technicianId = -1;
-        var technicians = GetTechnicians(factory);
-
-        if (techChoice == "Auto-assign (first available)")
+        if (productChoice == "Microprocessor")
         {
-            if (technicians.Count > 0)
-                technicianId = technicians[0].Id;
+            cores = AnsiConsole.Ask<int>(Sales.EnterCpuCores);
+            clockSpeed = AnsiConsole.Ask<double>(Sales.EnterClockSpeed);
         }
-        else
+        else if (productChoice == "Motherboard")
         {
-            if (technicians.Count == 0)
-            {
-                AnsiConsole.MarkupLine(Sales.NoTechnicians);
-                return;
-            }
-
-            var techList = new SelectionPrompt<Employee>().Title(Sales.SelectTechnician);
-            foreach (var technician in technicians) techList.AddChoice(technician);
-            var chosen = AnsiConsole.Prompt(techList);
-            technicianId = chosen.Id;
+            socketStandard = AnsiConsole.Ask<string>(Sales.EnterSocketStandard);
+            physicalForm = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title(Sales.SelectFormFactor)
+                    .AddChoices(MenuOptions.FormFactors));
         }
 
-        var order = new ProductionOrder(productChoice, quantity, technicianId);
+        var order = new ProductionOrder(productChoice, quantity, -1)
+        {
+            CustomProductName = customName,
+            Cores = cores,
+            ClockSpeed = clockSpeed.GetValueOrDefault(),
+            SocketStandard = socketStandard,
+            PhysicalForm = physicalForm,
+            PlacedBy = loggedInUser.Username
+        };
         factory.AddOrder(order);
 
         AnsiConsole.MarkupLine(
-            string.Format(Sales.OrderPlaced, order.OrderId, order.ProductName, order.Quantity,
-                order.AssignedTechnicianId));
+            string.Format(Sales.OrderPlacedOnHold, order.OrderId, order.CustomProductName, order.Quantity));
         loggerService.LogInfo(LogOrigin.USER, LogEvent.OrderPlaced,
-            $"Order {order.OrderId}: {order.ProductName} x{order.Quantity} (Assigned Tech: {order.AssignedTechnicianId}) by {loggedInUser.Username}");
+            $"Order {order.OrderId}: {order.CustomProductName} x{order.Quantity} (Status: On Hold / Unassigned) by {loggedInUser.Username}");
     }
 
     private static List<Employee> GetTechnicians(Factory factory)
@@ -133,7 +132,8 @@ internal static class SalesMenuHandler
         AnsiConsole.Write(table);
     }
 
-    private static void RecordSale(Factory factory, ILoggerService loggerService, Employee loggedInUser)
+    private static void RecordSale(Factory factory, ILoggerService loggerService, Employee loggedInUser,
+        IJsonRepository<Product> productRepo)
     {
         // Offer selling either from completed batches or from existing inventory
         var options = new List<string>();
@@ -165,17 +165,22 @@ internal static class SalesMenuHandler
             chosen.SetUnitSellPrice(soldPrice);
 
             // Apply price to linked inventory items and mark them as sold
+            var inventoryIndexes = new List<int>();
             foreach (var idx in chosen.InventoryIndexes)
                 if (idx >= 0 && idx < factory.Inventory.Count)
                 {
                     factory.Inventory[idx].UpdateSellingPrice(soldPrice);
                     factory.Inventory[idx].MarkAsSold();
+                    inventoryIndexes.Add(idx);
                 }
 
             AnsiConsole.MarkupLine(
                 string.Format(Sales.SaleRecordedBatch, chosen.BatchId, soldPrice));
             loggerService.LogInfo(LogOrigin.USER, LogEvent.SaleRecorded,
                 $"Batch {chosen.BatchId} sold at ${soldPrice:F2}/unit by {loggedInUser.Username}");
+
+            UndoService.Instance.RegisterCommand(new SellFromBatchCommand(chosen, factory, soldPrice, inventoryIndexes,
+                productRepo, loggedInUser.Username));
         }
         else if (pickContext == "Sell from Inventory")
         {
@@ -246,6 +251,9 @@ internal static class SalesMenuHandler
                 string.Format(Sales.SaleRecordedInventory, qty, chosen.Name, soldPrice, batch.BatchId));
             loggerService.LogInfo(LogOrigin.USER, LogEvent.SaleRecorded,
                 $"{qty} units of {chosen.Name} sold at ${soldPrice:F2}/unit by {loggedInUser.Username}");
+
+            UndoService.Instance.RegisterCommand(new SellFromInventoryCommand(chosen, qty, soldPrice, soldProduct,
+                batch, factory, productRepo, loggedInUser.Username));
         }
     }
 }

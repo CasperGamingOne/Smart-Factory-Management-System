@@ -71,11 +71,11 @@ public static class Machines
     public const string PartsNotExcellent = "[yellow]This machine has parts that are not in excellent condition.[/]";
     public const string RepairConfirm = "Repair this machine now?";
     public const string RepairNotNeeded = "[green]This machine does not currently need repairs.[/]";
-    public const string LithographySuccess = "[green]✔ Successfully manufactured: {0}[/]\n";
+    public const string LitographySuccess = "[green]✔ Successfully manufactured: {0}[/]\n";
 
-    public const string LithographyOffline =
+    public const string LitographyOffline =
         "[red]❌ Cannot produce {0}. Machine is offline. Please boot or repair it first.[/]\n";
 
-    public const string LithographyStart = "[cyan]🏭 Starting processing sequence for: [underline]{0}[/][/]\n";
-    public const string LithographySpinner = "Exposing wafer structure using optical masks...";
+    public const string LitographyStart = "[cyan]🏭 Starting processing sequence for: [underline]{0}[/][/]\n";
+    public const string LitographySpinner = "Exposing wafer structure using optical masks...";
 }

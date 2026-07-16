@@ -40,4 +40,8 @@ public static class Reports
     public const string TotalUnits = "[bold white]Total Units:[/]";
     public const string EstInventoryValueTotal = "[bold white]Estimated Inventory Value:[/]";
     public const string InventoryTotalsHeader = "Inventory Totals";
+
+    public const string ReportFulfilledHeader = "Printable Report Fulfilled";
+    public const string ReportFulfilledNotification = "Your requested report '{0}' (Req ID: [cyan]#{1}[/]) is ready!";
+    public const string ReportFulfilledAcknowledge = "[grey]Press any key to acknowledge...[/]";
 }

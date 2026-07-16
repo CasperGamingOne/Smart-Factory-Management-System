@@ -94,7 +94,7 @@ internal static class ProductionMenuHandler
         if (unitCost <= 0)
             unitCost = order.ProductName == "Microprocessor" ? 50 : 20;
 
-        var template = CreateProductTemplate(order.ProductName, unitCost);
+        var template = CreateProductTemplate(order, unitCost);
 
         if (template == null)
         {
@@ -112,17 +112,18 @@ internal static class ProductionMenuHandler
             var produced = CreateProducedProduct(template);
 
             selectedMachine.StartOrder(order);
-            selectedMachine.Produce(produced);
+            var success = selectedMachine.Produce(produced);
             loggerService.LogInfo(LogOrigin.USER, LogEvent.ProductionStarted,
                 $"${order.ProductName} * {order.Quantity}");
 
-            if (selectedMachine.Status == MachineStatus.Running)
+            if (success)
             {
                 var completedCount = CommitProducedUnit(factory, order, batch, produced);
                 AnsiConsole.MarkupLine(
                     string.Format(Production.ProducedOneUnit, produced.Name, completedCount, order.Quantity));
             }
-            else
+
+            if (selectedMachine.Status != MachineStatus.Running)
             {
                 AnsiConsole.MarkupLine(Production.MachineTripped);
                 break;
@@ -152,12 +153,14 @@ internal static class ProductionMenuHandler
         Console.ReadKey(true);
     }
 
-    private static Product? CreateProductTemplate(string productName, double unitCost)
+    private static Product? CreateProductTemplate(ProductionOrder order, double unitCost)
     {
-        return productName switch
+        return order.ProductName switch
         {
-            "Microprocessor" => new Microprocessor("Batch Microprocessor", unitCost, 0, 1, 4, 2.5),
-            "Motherboard" => new Motherboard("Batch Motherboard", unitCost, 0, 1, "AM4", "ATX"),
+            "Microprocessor" => new Microprocessor(order.CustomProductName, unitCost, 0, 1, order.Cores ?? 4,
+                order.ClockSpeed ?? 2.5),
+            "Motherboard" => new Motherboard(order.CustomProductName, unitCost, 0, 1, order.SocketStandard ?? "AM4",
+                order.PhysicalForm ?? "ATX"),
             _ => null
         };
     }
@@ -194,41 +197,74 @@ internal static class ProductionMenuHandler
         loggerService.LogInfo(LogOrigin.USER, LogEvent.ProductionStarted,
             $"{order.ProductName} * {order.Quantity}");
 
-        var motherboardTemplate = new Motherboard("Batch Motherboard", 20, 0, 1, "AM4", "ATX");
+        var motherboardTemplate = new Motherboard(order.CustomProductName, 20, 0, 1, order.SocketStandard ?? "AM4",
+            order.PhysicalForm ?? "ATX");
 
         while (!order.IsComplete)
         {
-            var board = (Motherboard)CreateProducedProduct(motherboardTemplate);
+            var board = factory.Inventory.OfType<Motherboard>()
+                .FirstOrDefault(b =>
+                    b.Name == order.CustomProductName && b.CurrentState != BoardState.BakedAndSoldered && !b.IsSold);
 
-            if (!RunMotherboardStage(
-                    solderPrinter,
-                    order,
-                    board,
-                    Production.SolderPastePrinting,
-                    Production.SolderPastePrintingSpinner,
-                    Production.SolderPastePrintingFail))
-                break;
+            var isNewBoard = false;
+            if (board == null)
+            {
+                board = (Motherboard)CreateProducedProduct(motherboardTemplate);
+                isNewBoard = true;
+            }
 
-            if (!RunMotherboardStage(
-                    pickAndPlace,
-                    order,
-                    board,
-                    Production.PickAndPlace,
-                    Production.PickAndPlaceSpinner,
-                    Production.PickAndPlaceFail))
-                break;
+            board.BatchId = batch.BatchId;
 
-            if (!RunMotherboardStage(
-                    reflowOven,
-                    order,
-                    board,
-                    Production.ReflowBaking,
-                    Production.ReflowBakingSpinner,
-                    Production.ReflowBakingFail))
-                break;
+            if (isNewBoard) factory.AddProduct(board, batch.BatchId);
 
-            var completedCount = CommitProducedUnit(factory, order, batch, board);
-            AnsiConsole.MarkupLine(string.Format(Production.MotherboardCompleted, completedCount, order.Quantity));
+            if (board.CurrentState == BoardState.BlankBoard)
+                if (!RunMotherboardStage(
+                        solderPrinter,
+                        order,
+                        board,
+                        Production.SolderPastePrinting,
+                        Production.SolderPastePrintingSpinner,
+                        Production.SolderPastePrintingFail))
+                    break;
+
+            if (board.CurrentState == BoardState.SolderPrinted)
+                if (!RunMotherboardStage(
+                        pickAndPlace,
+                        order,
+                        board,
+                        Production.PickAndPlace,
+                        Production.PickAndPlaceSpinner,
+                        Production.PickAndPlaceFail))
+                    break;
+
+            if (board.CurrentState == BoardState.ComponentsPlaced)
+                if (!RunMotherboardStage(
+                        reflowOven,
+                        order,
+                        board,
+                        Production.ReflowBaking,
+                        Production.ReflowBakingSpinner,
+                        Production.ReflowBakingFail))
+                    break;
+
+            if (board.CurrentState == BoardState.BakedAndSoldered)
+            {
+                order.IncrementCompletedCount();
+
+                var completedBoard = factory.Inventory.OfType<Motherboard>()
+                    .FirstOrDefault(b =>
+                        b.BatchId == batch.BatchId && b != board && b.CurrentState == BoardState.BakedAndSoldered &&
+                        !b.IsSold);
+
+                if (completedBoard != null)
+                {
+                    completedBoard.AddQuantity(board.Quantity);
+                    factory.RemoveProduct(board);
+                }
+
+                AnsiConsole.MarkupLine(string.Format(Production.MotherboardCompleted, order.CompletedCount,
+                    order.Quantity));
+            }
         }
 
         if (order.IsComplete)

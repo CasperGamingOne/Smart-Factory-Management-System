@@ -5,7 +5,8 @@ namespace Smart_Factory_Management_System;
 public enum LogOrigin
 {
     SYSTEM,
-    USER
+    USER,
+    UNDO
 }
 
 public enum LogEvent
@@ -41,7 +42,8 @@ public enum LogEvent
     FullNameUpdated,
     UsernameUpdated,
     PasswordUpdated,
-    PasswordChangedFirstLogin
+    PasswordChangedFirstLogin,
+    OperationUndone
 }
 
 public class LoggerService(IFileSystemService fileService) : ILoggerService
@@ -83,6 +85,7 @@ public class LoggerService(IFileSystemService fileService) : ILoggerService
             LogEvent.UsernameUpdated => $"Username updated for user: {context}",
             LogEvent.PasswordUpdated => $"Password updated for user: {context}",
             LogEvent.PasswordChangedFirstLogin => $"First-time login password setup completed for user: {context}",
+            LogEvent.OperationUndone => string.Format(UndoText.LogMessageFormat, context),
             _ => "Unknown event occurred"
         };
 

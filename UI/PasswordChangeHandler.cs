@@ -8,7 +8,17 @@ internal static class PasswordChangeHandler
     {
         AnsiConsole.Clear();
         AnsiConsole.Write(new Rule($"[yellow]{Login.ChangePasswordTitle}[/]").Centered());
+        AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine(string.Format(Login.FirstTimeMessage, user.Name));
+
+        var warningPanel = new Panel(UndoText.PasswordWarningMessage)
+        {
+            Border = BoxBorder.Double,
+            Padding = new Padding(1, 1, 1, 1),
+            Header = new PanelHeader($"[yellow]{UndoText.PasswordWarningHeader}[/]")
+        };
+        AnsiConsole.Write(warningPanel);
+        AnsiConsole.WriteLine();
 
         string newPassword;
         while (true)

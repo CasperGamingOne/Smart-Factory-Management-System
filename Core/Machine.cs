@@ -17,7 +17,7 @@ public enum MachineCondition
     Critical
 }
 
-[JsonDerivedType(typeof(LithographyMachine), "litographyMachine")]
+[JsonDerivedType(typeof(LitographyMachine), "litographyMachine")]
 [JsonDerivedType(typeof(SmtMachine), "smtMachine")]
 [JsonDerivedType(typeof(PaPMachine), "papMachine")]
 [JsonDerivedType(typeof(ReflowOven), "reflowOven")]
@@ -330,34 +330,12 @@ public abstract class Machine
         return MachineCondition.Excellent;
     }
 
-    protected static bool TryProcessMotherboard(Product product, BoardState requiredInputState,
-        BoardState nextState, string stageName)
-    {
-        if (product is not Motherboard board)
-        {
-            AnsiConsole.MarkupLine(string.Format(Machines.ProcessErrorUnsupported, product.GetType().Name));
-            return false;
-        }
-
-        if (board.CurrentState != requiredInputState)
-        {
-            AnsiConsole.MarkupLine(
-                string.Format(Machines.ProcessWarningUnexpectedState, board.Name, requiredInputState, stageName));
-            return false;
-        }
-
-        board.TransitionTo(nextState);
-        AnsiConsole.MarkupLine(
-            string.Format(Machines.ProcessSuccessState, board.Name, nextState, stageName));
-        return true;
-    }
-
     public abstract bool Produce(Product product);
 }
 
-public class LithographyMachine : Machine
+public class LitographyMachine : Machine
 {
-    public LithographyMachine(string name, string manufacturer, string serialNumber,
+    public LitographyMachine(string name, string manufacturer, string serialNumber,
         List<MachinePart> parts, MachineCondition condition)
         : base(name, manufacturer, serialNumber, parts, condition)
     {
@@ -369,27 +347,20 @@ public class LithographyMachine : Machine
         if (ActiveOrder == null || ActiveOrder.IsComplete)
         {
             Status = MachineStatus.Stopped;
-            AnsiConsole.Write(new Markup(string.Format(Machines.LithographySuccess, blueprint.Name)));
+            AnsiConsole.Write(new Markup(string.Format(Machines.LitographySuccess, blueprint.Name)));
             return true;
         }
 
         if (blueprint.GetType() != SupportedProductType)
             throw new InvalidOperationException($"This machine only produces {SupportedProductType.Name}!");
 
-        if (Status != MachineStatus.Running)
-        {
-            AnsiConsole.Write(new Markup(
-                string.Format(Machines.LithographyOffline, blueprint.Name)));
-            return false;
-        }
-
         AnsiConsole.Write(
-            new Markup(string.Format(Machines.LithographyStart, blueprint.Name)));
+            new Markup(string.Format(Machines.LitographyStart, blueprint.Name)));
 
         AnsiConsole.Status()
             .Spinner(Spinner.Known.BouncingBar)
             .SpinnerStyle(Style.Parse("cyan bold"))
-            .Start(Machines.LithographySpinner, _ => { Thread.Sleep(800); });
+            .Start(Machines.LitographySpinner, _ => { Thread.Sleep(800); });
         ApplyProductionWearAndTear();
         return true;
     }
@@ -406,8 +377,25 @@ public class SmtMachine : Machine // Solder Paste Printer
 
     public override bool Produce(Product product)
     {
-        return TryProcessMotherboard(product, BoardState.BlankBoard, BoardState.SolderPrinted,
-            "Solder Paste Printing");
+        if (product is not Motherboard board)
+        {
+            AnsiConsole.MarkupLine(string.Format(Machines.ProcessErrorUnsupported, product.GetType().Name));
+            return false;
+        }
+
+        if (board.CurrentState != BoardState.BlankBoard)
+        {
+            AnsiConsole.MarkupLine(
+                string.Format(Machines.ProcessWarningUnexpectedState, board.Name, BoardState.BlankBoard,
+                    "Solder Paste Printing"));
+            return false;
+        }
+
+        board.TransitionTo(BoardState.SolderPrinted);
+        AnsiConsole.MarkupLine(
+            string.Format(Machines.ProcessSuccessState, board.Name, BoardState.SolderPrinted, "Solder Paste Printing"));
+        ApplyProductionWearAndTear();
+        return true;
     }
 }
 
@@ -421,8 +409,26 @@ public class PaPMachine(
 {
     public override bool Produce(Product product)
     {
-        return TryProcessMotherboard(product, BoardState.SolderPrinted, BoardState.ComponentsPlaced,
-            "Pick and Place Assembly");
+        if (product is not Motherboard board)
+        {
+            AnsiConsole.MarkupLine(string.Format(Machines.ProcessErrorUnsupported, product.GetType().Name));
+            return false;
+        }
+
+        if (board.CurrentState != BoardState.SolderPrinted)
+        {
+            AnsiConsole.MarkupLine(
+                string.Format(Machines.ProcessWarningUnexpectedState, board.Name, BoardState.SolderPrinted,
+                    "Pick and Place Assembly"));
+            return false;
+        }
+
+        board.TransitionTo(BoardState.ComponentsPlaced);
+        AnsiConsole.MarkupLine(
+            string.Format(Machines.ProcessSuccessState, board.Name, BoardState.ComponentsPlaced,
+                "Pick and Place Assembly"));
+        ApplyProductionWearAndTear();
+        return true;
     }
 }
 
@@ -436,7 +442,24 @@ public class ReflowOven(
 {
     public override bool Produce(Product product)
     {
-        return TryProcessMotherboard(product, BoardState.ComponentsPlaced, BoardState.BakedAndSoldered,
-            "Reflow Baking");
+        if (product is not Motherboard board)
+        {
+            AnsiConsole.MarkupLine(string.Format(Machines.ProcessErrorUnsupported, product.GetType().Name));
+            return false;
+        }
+
+        if (board.CurrentState != BoardState.ComponentsPlaced)
+        {
+            AnsiConsole.MarkupLine(
+                string.Format(Machines.ProcessWarningUnexpectedState, board.Name, BoardState.ComponentsPlaced,
+                    "Reflow Baking"));
+            return false;
+        }
+
+        board.TransitionTo(BoardState.BakedAndSoldered);
+        AnsiConsole.MarkupLine(
+            string.Format(Machines.ProcessSuccessState, board.Name, BoardState.BakedAndSoldered, "Reflow Baking"));
+        ApplyProductionWearAndTear();
+        return true;
     }
 }

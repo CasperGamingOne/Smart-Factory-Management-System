@@ -53,12 +53,27 @@ internal static class AccountSettingsMenuHandler
         AnsiConsole.WriteLine();
         var newName = AnsiConsole.Ask<string>(AccountSettings.EnterNewFullName);
 
+        var password = AnsiConsole.Prompt(
+            new TextPrompt<string>(UndoText.PasswordPrompt)
+                .PromptStyle("cyan")
+                .Secret('*')
+        );
+        if (!SecurityHelper.VerifyPassword(password, user.PasswordHash))
+        {
+            AnsiConsole.MarkupLine(UndoText.IncorrectPassword);
+            Thread.Sleep(1500);
+            return;
+        }
+
         try
         {
+            var oldName = user.Name;
             if (accountService.UpdateFullName(user, newName))
             {
                 AnsiConsole.MarkupLine(AccountSettings.FullNameUpdated);
                 loggerService.LogInfo(LogOrigin.USER, LogEvent.FullNameUpdated, user.Username);
+                UndoService.Instance.RegisterCommand(new ChangeFullNameCommand(user, oldName, newName, accountService,
+                    user.Username));
             }
             else
             {
@@ -78,12 +93,27 @@ internal static class AccountSettingsMenuHandler
         AnsiConsole.WriteLine();
         var newUsername = AnsiConsole.Ask<string>(AccountSettings.EnterNewUsername);
 
+        var password = AnsiConsole.Prompt(
+            new TextPrompt<string>(UndoText.PasswordPrompt)
+                .PromptStyle("cyan")
+                .Secret('*')
+        );
+        if (!SecurityHelper.VerifyPassword(password, user.PasswordHash))
+        {
+            AnsiConsole.MarkupLine(UndoText.IncorrectPassword);
+            Thread.Sleep(1500);
+            return;
+        }
+
         try
         {
+            var oldUsername = user.Username;
             if (accountService.UpdateUsername(user, newUsername))
             {
                 AnsiConsole.MarkupLine(AccountSettings.UsernameUpdated);
                 loggerService.LogInfo(LogOrigin.USER, LogEvent.UsernameUpdated, user.Username);
+                UndoService.Instance.RegisterCommand(new ChangeUsernameCommand(user, oldUsername, newUsername,
+                    accountService, user.Username));
             }
             else
             {
@@ -103,6 +133,15 @@ internal static class AccountSettingsMenuHandler
     private static void ChangePassword(Employee user, IAccountService accountService, ILoggerService loggerService)
     {
         AnsiConsole.WriteLine();
+        var warningPanel = new Panel(UndoText.PasswordWarningMessage)
+        {
+            Border = BoxBorder.Double,
+            Padding = new Padding(1, 1, 1, 1),
+            Header = new PanelHeader($"[yellow]{UndoText.PasswordWarningHeader}[/]")
+        };
+        AnsiConsole.Write(warningPanel);
+        AnsiConsole.WriteLine();
+
         string newPassword;
         while (true)
         {
