@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Smart_Factory_Management_System;
 
 public class ProductionOrder
@@ -13,24 +15,33 @@ public class ProductionOrder
         AssignedTechnicianId = technicianId;
     }
 
-    public string OrderId { get; set; } = Guid.NewGuid().ToString().Substring(0, 8);
-    public string ProductName { get; set; } = string.Empty;
-    public int Quantity { get; set; }
-    public int CompletedCount { get; set; }
+    [JsonInclude] public string OrderId { get; init; } = Guid.NewGuid().ToString().Substring(0, 8);
+
+    [JsonInclude] public string ProductName { get; init; } = string.Empty;
+
+    [JsonInclude] public int Quantity { get; init; }
+
+    [JsonInclude] public int CompletedCount { get; private set; }
+
     public int AssignedTechnicianId { get; set; }
     public bool IsComplete => CompletedCount >= Quantity;
 
-    public string CustomProductName { get; set; } = string.Empty;
-    public int? Cores { get; set; }
-    public double? ClockSpeed { get; set; }
-    public string? SocketStandard { get; set; }
-    public string? PhysicalForm { get; set; }
+    [JsonInclude] public string CustomProductName { get; init; } = string.Empty;
 
-    public string PlacedBy { get; set; } = string.Empty;
+    [JsonInclude] public int? Cores { get; init; }
+
+    [JsonInclude] public double? ClockSpeed { get; init; }
+
+    [JsonInclude] public string? SocketStandard { get; init; }
+
+    [JsonInclude] public string? PhysicalForm { get; init; }
+
+    [JsonInclude] public string PlacedBy { get; init; } = string.Empty;
+
     public bool IsNotifiedComplete { get; set; }
     public string? BatchId { get; set; }
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    [JsonInclude] public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 
     public double GetPriorityScore()
     {

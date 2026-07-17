@@ -26,7 +26,7 @@ public class Factory
     public IReadOnlyList<Machine> Machines => _machines;
     public IReadOnlyList<Product> Inventory => _inventory;
     public int MaxBatches => 20;
-    public int MaxUnitsPerBatch => 100;
+    private int MaxUnitsPerBatch => 100;
     public int MaxCapacity => MaxBatches * MaxUnitsPerBatch;
     public int MinStockThreshold => 200;
 
