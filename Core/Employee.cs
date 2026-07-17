@@ -21,7 +21,7 @@ public abstract class Employee
         IsFirstTimeLogin = isFirstTimeLogin;
     }
 
-    public int Id { get; }
+    public int Id { get; set; }
     public string Name { get; private set; }
     public string Username { get; private set; }
     public string PasswordHash { get; private set; }

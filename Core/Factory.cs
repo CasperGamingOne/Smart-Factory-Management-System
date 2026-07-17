@@ -38,6 +38,13 @@ public class Factory
     public void LoadFromRepository(IEnumerable<Employee> employees, IEnumerable<Machine> machines,
         IEnumerable<Product> products, IEnumerable<ProductionOrder> orders, IEnumerable<ReportRequest> reportRequests)
     {
+        // Reset counters to 0 BEFORE materializing the lists.
+        // JsonSerializer calls the real constructor for each deserialized object, which increments
+        // the static counter. Without this reset the counter would be inflated by the load itself,
+        // causing the next genuinely new entity to receive a wrong (too-high) ID.
+        Employee.InitializeIdCounter(0);
+        Machine.InitializeIdCounter(0);
+
         var employeeList = employees.ToList();
         var machineList = machines.ToList();
         var productList = products.ToList();
@@ -77,6 +84,7 @@ public class Factory
             _batches.Add(batch);
         }
 
+        // Now set counters to the highest persisted ID so the next new entity continues from there.
         if (employeeList.Count > 0)
         {
             var maxEmployeeId = employeeList.Max(e => e.Id);
@@ -144,24 +152,21 @@ public class Factory
         // Use the helper method defined in Product.cs
         var lowStockItems = inventory.Where(p => p.IsLowStock()).ToList();
 
-        if (lowStockItems.Any())
-        {
-            var table = new Table().Border(TableBorder.Rounded);
-            table.AddColumn("[red]Status[/]");
-            table.AddColumn("Product");
-            table.AddColumn("Current Stock");
+        if (lowStockItems.Count == 0) return;
+        var table = new Table().Border(TableBorder.Rounded);
+        table.AddColumn("[red]Status[/]");
+        table.AddColumn("Product");
+        table.AddColumn("Current Stock");
 
-            foreach (var item in lowStockItems)
-            {
+        foreach (var item in lowStockItems)
+            if (item.Name != null)
                 table.AddRow("⚠️", item.Name, $"[bold red]{item.Quantity}[/]");
-            }
 
-            AnsiConsole.Write(new Panel(table)
-            {
-                Header = new PanelHeader("[bold red] INVENTORY ALERT [/]"),
-                Border = BoxBorder.Double
-            });
-        }
+        AnsiConsole.Write(new Panel(table)
+        {
+            Header = new PanelHeader("[bold red] INVENTORY ALERT [/]"),
+            Border = BoxBorder.Double
+        });
     }
 
     public void RemoveProduct(Product product)
