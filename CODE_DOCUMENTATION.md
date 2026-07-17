@@ -7,6 +7,7 @@ This document provides a highly detailed description of each class and method pr
 - [Services (Infrastructure/Logic)](#services)
 - [UI (User Interface)](#ui)
 - [Text (Static Text/Constants)](#text)
+- [Code Patterns & Design Decisions](#code)
 
 ---
 
@@ -630,7 +631,7 @@ Manages the terminal interface for editing personal account details.
 ### Undo.cs
 *   **`UndoText`**: Defines strings for the Undo module, including warnings about passwords not being undoable and confirmation dialogs.
 
-## Code Patterns & Design Decisions
+## [Code Patterns & Design Decisions](#code)
 
 ### Why JSON Polymorphism?
 The project utilizes `[JsonDerivedType(typeof(DerivedClass), "typeDiscriminator")]` on base classes like `Employee`, `Machine`, `MachinePart`, and `Product`. This is a deliberate design decision for the `Core` entities to allow standard generic serialization via `System.Text.Json` (in `JsonRepository<T>`) while perfectly preserving the specific subclass properties (like `Microprocessor.Cores` or `LitographyMachine` vs `ReflowOven` behavior). This avoids writing custom JSON converters for complex inheritance structures and keeps the storage flat and simple.
