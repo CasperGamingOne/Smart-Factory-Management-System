@@ -68,7 +68,7 @@ internal static class PasswordChangeHandler
         }
 
         AnsiConsole.MarkupLine(Login.PasswordUpdated);
-        loggerService.LogInfo(LogOrigin.USER, LogEvent.PasswordChangedFirstLogin, user.Username);
+        loggerService.LogInfo(LogOrigin.User, LogEvent.PasswordChangedFirstLogin, user.Username);
         Thread.Sleep(1000);
     }
 }

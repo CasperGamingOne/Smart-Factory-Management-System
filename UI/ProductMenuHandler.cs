@@ -1,11 +1,11 @@
-using Spectre.Console;
+﻿using Spectre.Console;
 
 namespace Smart_Factory_Management_System;
 
 internal static class ProductMenuHandler
 {
     public static void Run(Factory factory, Employee currentUser, ILoggerService loggerService,
-        IJsonRepository<Product> productRepo)
+        IJsonRepository<Product> productRepo, IJsonRepository<ProductionOrder> ordersRepo)
     {
         while (true)
         {
@@ -17,14 +17,25 @@ internal static class ProductMenuHandler
             summaryGrid.AddColumn();
             summaryGrid.AddRow(new Markup(
                 string.Format(Products.OperatorSession, currentUser.Name, currentUser.Role)));
+
+            var totalUnits = factory.GetTotalUnsoldUnits();
+            var maxUnits = factory.MaxCapacity;
+            var activeBatches = factory.Batches.Count(b => !b.IsSold);
+            var maxBatches = factory.MaxBatches;
+
             summaryGrid.AddRow(new Markup(
-                string.Format(Products.WarehouseStock, factory.Inventory.Count, factory.InventoryCapacity)));
+                $"[grey]Warehouse Storage Stock:[/] [green]{totalUnits} / {maxUnits} units[/] ({activeBatches} / {maxBatches} batches)"));
+
+            var isLowInventory = totalUnits < factory.MinStockThreshold;
+            if (isLowInventory)
+                summaryGrid.AddRow(new Markup(
+                    $"\n[blink bold red]⚠️ INVENTORY ALERT: Stock level ({totalUnits} units) is below the minimum threshold of {factory.MinStockThreshold} units! Please start production orders. ⚠️[/]"));
 
             AnsiConsole.Write(
                 new Panel(summaryGrid)
                     .Header(Products.PanelHeader)
                     .Border(BoxBorder.Rounded)
-                    .BorderStyle(new Style(Color.Blue))
+                    .BorderStyle(new Style(isLowInventory ? Color.Red : Color.Blue))
             );
             AnsiConsole.WriteLine();
 
@@ -40,16 +51,16 @@ internal static class ProductMenuHandler
             {
                 case "View Finished Goods Stock":
                     DisplayInventoryTable(factory);
-                    loggerService.LogInfo(LogOrigin.USER, LogEvent.InventoryViewed, currentUser.Username);
+                    loggerService.LogInfo(LogOrigin.User, LogEvent.InventoryViewed, currentUser.Username);
                     break;
                 case "View Inventory Financial & Capacity Analytics":
                     DisplayInventoryAnalytics(factory);
-                    loggerService.LogInfo(LogOrigin.USER, LogEvent.InventoryAnalyticsViewed, currentUser.Username);
+                    loggerService.LogInfo(LogOrigin.User, LogEvent.InventoryAnalyticsViewed, currentUser.Username);
                     break;
                 case "Sales & Orders":
                     // Reuse Sales menu view; if user is SalesAgent, open full Sales UI
                     if (currentUser is SalesAgent || currentUser is Director)
-                        SalesMenuHandler.Run(factory, currentUser, loggerService, productRepo);
+                        SalesMenuHandler.Run(factory, currentUser, loggerService, productRepo, ordersRepo);
                     else
                         SalesMenuHandler.ShowPendingOrders(factory);
                     break;
@@ -122,20 +133,22 @@ internal static class ProductMenuHandler
 
         foreach (var product in unsoldProducts)
         {
-            cumulativeValue += product.SellingPrice;
+            cumulativeValue += product.SellingPrice * product.Quantity;
 
             // Type checking subclasses safely for metrics grouping
-            if (product is Microprocessor) cpuCount++;
-            else if (product is Motherboard) pcbCount++;
+            if (product is Microprocessor) cpuCount += product.Quantity;
+            else if (product is Motherboard) pcbCount += product.Quantity;
         }
 
-        var storageUtilization = unsoldProducts.Count == 0
+        var unsoldUnitsCount = factory.GetTotalUnsoldUnits();
+        var activeBatches = factory.Batches.Count(b => !b.IsSold);
+        var storageUtilization = unsoldUnitsCount == 0
             ? 0.0
-            : (double)unsoldProducts.Count / factory.InventoryCapacity * 100;
+            : (double)unsoldUnitsCount / factory.MaxCapacity * 100;
 
         var statsGrid = new Grid().AddColumns(2);
         statsGrid.AddRow(Products.StatsGridTotalVolume,
-            string.Format(Products.StatsGridTotalVolumeValue, unsoldProducts.Count, cpuCount, pcbCount));
+            string.Format(Products.StatsGridTotalVolumeValue, unsoldUnitsCount, cpuCount, pcbCount));
         statsGrid.AddRow(Products.StatsGridValuation, string.Format(Products.StatsGridValuationValue, cumulativeValue));
         statsGrid.AddRow(Products.StatsGridOccupancy,
             string.Format(Products.StatsGridOccupancyValue, storageUtilization));

@@ -17,6 +17,8 @@ internal static class Program
         var employeeRepo = new JsonRepository<Employee>(fileSystem, "employees.json");
         var machinesRepo = new JsonRepository<Machine>(fileSystem, "machines.json");
         var productsRepo = new JsonRepository<Product>(fileSystem, "products.json");
+        var ordersRepo = new JsonRepository<ProductionOrder>(fileSystem, "orders.json");
+        var reportRequestsRepo = new JsonRepository<ReportRequest>(fileSystem, "report_requests.json");
         var accountService = new AccountService(employeeRepo);
         var notificationService = new NotificationService();
 
@@ -26,7 +28,9 @@ internal static class Program
         factory.LoadFromRepository(
             employeeRepo.Load(),
             machinesRepo.Load(),
-            productsRepo.Load()
+            productsRepo.Load(),
+            ordersRepo.Load(),
+            reportRequestsRepo.Load()
         );
 
         while (true)
@@ -37,7 +41,7 @@ internal static class Program
             var loggedInUser = LoginMenuHandler.ShowLoginScreen(employeeRepo, loggerService);
             if (loggedInUser == null)
             {
-                loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.ClosingApplication, loggedInUser?.Username);
+                loggerService.LogInfo(LogOrigin.System, LogEvent.ClosingApplication, loggedInUser?.Username);
                 AnsiConsole.MarkupLine(Login.AppShuttingDown);
                 break;
             }
@@ -53,7 +57,7 @@ internal static class Program
             while (sessionActive)
             {
                 // Render header and session info
-                TuiHelper.RenderSessionHeader(loggedInUser, factory);
+                TuiHelper.RenderSessionHeader(loggedInUser);
 
                 // Build role-filtered main menu
                 var available = loggedInUser.GetAvailableMenuOptions().ToList();
@@ -81,7 +85,8 @@ internal static class Program
 
                 if (option == loggedInUser.QuickActionName)
                 {
-                    ExecuteQuickAction(loggedInUser, factory, employeeRepo, loggerService, machinesRepo, productsRepo);
+                    ExecuteQuickAction(loggedInUser, factory, employeeRepo, loggerService, machinesRepo, productsRepo,
+                        ordersRepo, reportRequestsRepo, fileSystem);
                 }
                 else
                 {
@@ -91,10 +96,11 @@ internal static class Program
                             EmployeeMenuHandler.Run(factory, loggedInUser, loggerService, employeeRepo);
                             break;
                         case "Machine Management":
-                            MachineMenuHandler.Run(factory, loggedInUser, loggerService, machinesRepo, productsRepo);
+                            MachineMenuHandler.Run(factory, loggedInUser, loggerService, machinesRepo, productsRepo,
+                                ordersRepo);
                             break;
                         case "Product Management":
-                            ProductMenuHandler.Run(factory, loggedInUser, loggerService, productsRepo);
+                            ProductMenuHandler.Run(factory, loggedInUser, loggerService, productsRepo, ordersRepo);
                             break;
                         case "View Operation History":
                             loggerService.ShowOperationHistory();
@@ -102,13 +108,11 @@ internal static class Program
                             Console.ReadKey(true);
                             break;
                         case "Accounting":
-                            AccountingMenuHandler.Run(factory, loggedInUser, loggerService);
+                            AccountingMenuHandler.Run(factory, loggedInUser, loggerService, fileSystem,
+                                reportRequestsRepo);
                             break;
                         case "Reports":
-                            ReportMenuHandler.Run(factory, loggedInUser, loggerService);
-                            break;
-                        case "Factory Information":
-                            FactoryReportMenuHandler.Run(factory, loggedInUser, loggerService);
+                            ReportMenuHandler.Run(factory, loggedInUser, loggerService, reportRequestsRepo);
                             break;
                         case "Account Settings":
                             AccountSettingsMenuHandler.Run(loggedInUser, accountService, loggerService);
@@ -117,7 +121,7 @@ internal static class Program
                             UndoMenuHandler.Run(loggedInUser, loggerService);
                             break;
                         case "Log Out / Exit Session":
-                            loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.Logout, loggedInUser.Username);
+                            loggerService.LogInfo(LogOrigin.System, LogEvent.Logout, loggedInUser.Username);
                             AnsiConsole.MarkupLine(Login.LoggedOut);
                             Thread.Sleep(600);
                             sessionActive = false;
@@ -129,11 +133,15 @@ internal static class Program
     }
 
     private static void ExecuteQuickAction(Employee user, Factory factory, IJsonRepository<Employee> authRepository,
-        ILoggerService loggerService, IJsonRepository<Machine> machinesRepo, IJsonRepository<Product> productsRepo)
+        ILoggerService loggerService, IJsonRepository<Machine> machinesRepo, IJsonRepository<Product> productsRepo,
+        IJsonRepository<ProductionOrder> ordersRepo, IJsonRepository<ReportRequest> reportRequestsRepo,
+        IFileSystemService fileSystem)
     {
         if (user is Director) EmployeeMenuHandler.Run(factory, user, loggerService, authRepository);
-        else if (user is Technician) MachineMenuHandler.Run(factory, user, loggerService, machinesRepo, productsRepo);
-        else if (user is SalesAgent) SalesMenuHandler.Run(factory, user, loggerService, productsRepo);
-        else if (user is Accountant) AccountingMenuHandler.Run(factory, user, loggerService);
+        else if (user is Technician)
+            MachineMenuHandler.Run(factory, user, loggerService, machinesRepo, productsRepo, ordersRepo);
+        else if (user is SalesAgent) SalesMenuHandler.Run(factory, user, loggerService, productsRepo, ordersRepo);
+        else if (user is Accountant)
+            AccountingMenuHandler.RunQuickActions(factory, user, loggerService, fileSystem, reportRequestsRepo);
     }
 }

@@ -6,8 +6,7 @@ namespace Smart_Factory_Management_System;
 public enum MachineStatus
 {
     Running,
-    Stopped,
-    Maintenance
+    Stopped
 }
 
 public enum MachineCondition
@@ -41,11 +40,11 @@ public abstract class Machine
         SupportedProductType = typeof(Product);
     }
 
-    public int Id { get; set; }
+    public int Id { get; }
 
-    public string? Name { get; init; }
+    public string? Name { get; }
 
-    public string? Manufacturer { get; init; }
+    public string? Manufacturer { get; }
 
     public string? SerialNumber { get; }
 
@@ -60,9 +59,12 @@ public abstract class Machine
     [JsonIgnore] public Type SupportedProductType { get; private protected init; }
 
     protected ProductionOrder? ActiveOrder { get; private set; }
+
     //*****
     public int TotalProcessedCount { get; private set; }
     public int TotalFailuresCount { get; private set; }
+
+    public static bool SilentMode { get; set; }
 
     public void IncrementSuccess() => TotalProcessedCount++;
     public void IncrementFailure() => TotalFailuresCount++;
@@ -144,52 +146,6 @@ public abstract class Machine
         return true;
     }
 
-    public void StopMachine()
-    {
-        AnsiConsole.Clear();
-        AnsiConsole.Write(Align.Left(new Rule(string.Format($"[red]{Machines.ShutdownSequence}[/]", Name))));
-        AnsiConsole.WriteLine();
-
-        if (Status == MachineStatus.Stopped)
-        {
-            var alreadyStoppedPanel = new Panel(
-                new Markup(
-                    string.Format(Machines.AlreadyStopped, Name))
-            )
-            {
-                Border = BoxBorder.Rounded,
-                Padding = new Padding(1, 1, 1, 1)
-            };
-            AnsiConsole.Write(alreadyStoppedPanel);
-            return;
-        }
-
-        AnsiConsole.Status()
-            .Spinner(Spinner.Known.Dots)
-            .SpinnerStyle(Style.Parse("red bold"))
-            .Start(Machines.SafeDecelerationSpinner, ctx =>
-            {
-                Thread.Sleep(500);
-                ctx.Status(Machines.SpoolDownSpinner);
-                Thread.Sleep(600);
-                ctx.Status(Machines.IsolateRelaysSpinner);
-                Thread.Sleep(500);
-            });
-
-        Status = MachineStatus.Stopped;
-        //******
-        var stopPanel = new Panel(
-            new Markup(string.Format(Machines.ShutdownComplete, Name))
-        )
-        {
-            Border = BoxBorder.Rounded,
-            Padding = new Padding(1, 1, 1, 1),
-            Header = new PanelHeader($"[red bold]{Machines.SystemOfflineHeader}[/]")
-        };
-
-        AnsiConsole.Write(stopPanel);
-    }
-
     protected void ApplyProductionWearAndTear()
     {
         if (Parts == null || Parts.Count == 0) return;
@@ -197,81 +153,103 @@ public abstract class Machine
         var randomIndex = Random.Next(0, Parts.Count);
         var selectedPart = Parts[randomIndex];
 
-        if (Random.Next(0, 100) < 80)
+        // 20% chance overall for wear-and-tear:
+        //   - If part is Excellent, it may degrade to Good (10%) or break directly to Critical (10%).
+        //   - If part is Good, it degrades to Critical (20%).
+        //   - Critical parts stay Critical.
+        if (Random.Next(0, 100) < 20)
         {
             var oldCondition = selectedPart.Condition;
-            selectedPart.DegradeStep();
+            if (selectedPart.Condition == PartCondition.Excellent)
+            {
+                // Split between Good and Critical
+                if (Random.Next(0, 100) < 10) // 10% chance to go to Good
+                    selectedPart.DegradeStep(); // Excellent -> Good
+                else
+                    // Directly jump to Critical
+                    selectedPart.BreakDown();
+            }
+            else if (selectedPart.Condition == PartCondition.Good)
+            {
+                // Good degrades to Critical
+                selectedPart.DegradeStep(); // Good -> Critical
+            }
+            // If already Critical, nothing changes
 
             if (selectedPart.Condition != oldCondition)
             {
-                AnsiConsole.WriteLine();
                 if (selectedPart.Condition == PartCondition.Critical)
                 {
-                    AnsiConsole.Write(new Markup(
-                        string.Format(Machines.AlertCriticalPart, selectedPart.Name)));
+                    if (!SilentMode)
+                    {
+                        AnsiConsole.WriteLine();
+                        AnsiConsole.Write(new Markup(
+                            string.Format(Machines.AlertCriticalPart, selectedPart.Name)));
+                    }
+
                     Status = MachineStatus.Stopped;
                     Condition = MachineCondition.Critical;
                 }
                 else
                 {
-                    AnsiConsole.Write(new Markup(
-                        string.Format(Machines.WarningDegradation, selectedPart.Name, selectedPart.Condition)));
+                    if (!SilentMode)
+                    {
+                        AnsiConsole.WriteLine();
+                        AnsiConsole.Write(new Markup(
+                            string.Format(Machines.WarningDegradation, selectedPart.Name, selectedPart.Condition)));
+                    }
+
                     Condition = MachineCondition.Good;
                 }
             }
         }
     }
-    //*****
+
     public double CalculateEfficiency()
     {
-        // 1. Calculăm healthScore fără ??
-        double healthScore;
+        if (Parts == null || Parts.Count == 0) return 0;
 
-        if (Parts != null && Parts.Count > 0)
+        // Mathematical formula: the average of part condition scores multiplied by the product of those scores.
+        // Excellent = 1.0, Good = 0.85 (drops by 15%), Critical = 0.0.
+        // If any part reaches Critical, the product terms will drive the entire efficiency score to 0.0 naturally.
+        var partFactors = Parts.Select(p => p.Condition switch
         {
-            healthScore = Parts.Average(p => p.Condition switch
-            {
-                PartCondition.Excellent => 1.0,
-                PartCondition.Good => 0.5,
-                _ => 0.0
-            });
-        }
-        else
-        {
-            healthScore = 1.0;
-        }
+            PartCondition.Excellent => 1.0,
+            PartCondition.Good => 0.85,
+            _ => 0.0
+        }).ToList();
 
-        // 2. Procent bazat pe rata de succes (nu necesită ??)
-        double successRate = (TotalProcessedCount + TotalFailuresCount) > 0
-            ? (double)TotalProcessedCount / (TotalProcessedCount + TotalFailuresCount)
-            : 1.0;
+        var averageFactor = partFactors.Average();
+        var productFactor = partFactors.Aggregate(1.0, (acc, val) => acc * val);
 
-        // 3. Eficiența finală
-        return (healthScore * 0.7 + successRate * 0.3) * 100;
+        return averageFactor * productFactor * 100.0;
     }
-    /// ***********
+
     public int GetEstimatedDaysUntilMaintenance()
     {
-        if (Parts == null || Parts.Count == 0)
-        {
-            return 30; 
-        }
+        if (Parts == null || Parts.Count == 0) return 30;
 
-        // Calculăm scorul folosind LINQ
-        var scores = Parts.Select(p => p.Condition switch
+        // Formula derived from ApplyProductionWearAndTear randomness:
+        // - Random selection of 1 of N parts (1/N chance).
+        // - 20% degradation probability (0.2).
+        // - Expected production cycles for a part to degrade by 1 step is (N / 0.2).
+        // - Excellent parts have 2 steps to critical, Good parts have 1 step, Critical parts have 0 steps.
+        // - Machine fails (and requires repair) as soon as the first part goes Critical.
+        // - Remaining Cycles Estimate = min(StepsRemaining) * (N / 0.2).
+        var n = Parts.Count;
+        var remainingSteps = Parts.Select(p => p.Condition switch
         {
-            PartCondition.Excellent => 3,
-            PartCondition.Good => 2,
-            _ => 1
+            PartCondition.Excellent => 2,
+            PartCondition.Good => 1,
+            _ => 0
         });
 
-        double averageScore = scores.Average();
+        var minSteps = remainingSteps.Min();
+        if (minSteps == 0) return 0;
 
-        // Formula de calcul
-        return (int)(averageScore * 10);
+        var expectedCycles = minSteps * n / 0.2;
+        return (int)Math.Round(expectedCycles);
     }
-
-
 
     public void InspectMachine()
     {
@@ -330,34 +308,30 @@ public abstract class Machine
 
         AnsiConsole.Write(componentTable);
         AnsiConsole.WriteLine();
-        //******
-        var daysLeft = GetEstimatedDaysUntilMaintenance();
 
-        // Alegem culoarea în funcție de urgență
-        var alertColor = daysLeft <= 10 ? "red" : (daysLeft <= 20 ? "yellow" : "green");
+        var daysLeft = GetEstimatedDaysUntilMaintenance();
+        var alertColor = daysLeft <= 5 ? "red" : daysLeft <= 10 ? "yellow" : "green";
 
         var maintenancePanel = new Panel(new Markup(
-            $"[bold]Predictive Maintenance Estimate:[/] Mașina [bold]{Name}[/] " +
-            $"necesită mentenanță în aproximativ [{alertColor}]{daysLeft} zile[/]."))
+            $"[bold]Predictive Maintenance Estimate:[/] Machine [bold]{Name}[/] " +
+            $"requires maintenance in approximately [{alertColor}]{daysLeft} active production cycles (days)[/]."))
         {
             Border = BoxBorder.Rounded,
-            Header = new PanelHeader("[bold blue] Info: Mentenanță Predictivă [/]")
+            Header = new PanelHeader("[bold blue] Info: Predictive Maintenance [/]")
         };
 
         AnsiConsole.Write(maintenancePanel);
         AnsiConsole.WriteLine();
 
-        //****
         double efficiency = CalculateEfficiency();
         var effColor = efficiency > 80 ? "green" : (efficiency > 50 ? "yellow" : "red");
 
         AnsiConsole.Write(new Panel(new Markup(
-            $"Eficiență Operațională: [{effColor} bold]{efficiency:F1}%[/]"))
+            $"Operational Efficiency: [{effColor} bold]{efficiency:F1}%[/]"))
         {
             Header = new PanelHeader("[bold]Production Efficiency Dashboard[/]")
         });
-        //****
-
+        AnsiConsole.WriteLine();
     }
 
     public bool NeedsRepair()
@@ -371,12 +345,12 @@ public abstract class Machine
         return false;
     }
 
-    public bool RepairMachine()
+    public void RepairMachine()
     {
         if (!NeedsRepair())
         {
             AnsiConsole.MarkupLine(string.Format(Machines.DoesNotNeedRepairs, Name));
-            return false;
+            return;
         }
 
         AnsiConsole.Clear();
@@ -384,12 +358,25 @@ public abstract class Machine
         AnsiConsole.WriteLine();
 
         var repairedParts = 0;
-        foreach (var part in Parts ?? new List<MachinePart>())
-            if (part.Condition != PartCondition.Excellent)
+
+        AnsiConsole.Status()
+            .Spinner(Spinner.Known.Dots)
+            .SpinnerStyle(Style.Parse("yellow bold"))
+            .Start(string.Format(Machines.RepairSpinnerOpeningPanels, Name), ctx =>
             {
-                part.Repair(PartCondition.Excellent);
-                repairedParts++;
-            }
+                Thread.Sleep(800);
+                foreach (var part in Parts ?? new List<MachinePart>())
+                    if (part.Condition != PartCondition.Excellent)
+                    {
+                        ctx.Status(string.Format(Machines.RepairSpinnerServicingPart, part.Name));
+                        Thread.Sleep(1000);
+                        part.Repair(PartCondition.Excellent);
+                        repairedParts++;
+                    }
+
+                ctx.Status(Machines.RepairSpinnerDiagnostics);
+                Thread.Sleep(800);
+            });
 
         Condition = GetMachineCondition();
         Status = MachineStatus.Stopped;
@@ -402,7 +389,6 @@ public abstract class Machine
         };
 
         AnsiConsole.Write(panel);
-        return true;
     }
 
     private MachineCondition GetMachineCondition()
@@ -436,20 +422,24 @@ public class LitographyMachine : Machine
         if (ActiveOrder == null || ActiveOrder.IsComplete)
         {
             Status = MachineStatus.Stopped;
-            AnsiConsole.Write(new Markup(string.Format(Machines.LitographySuccess, blueprint.Name)));
+            if (!SilentMode) AnsiConsole.Write(new Markup(string.Format(Machines.LitographySuccess, blueprint.Name)));
             return true;
         }
 
         if (blueprint.GetType() != SupportedProductType)
             throw new InvalidOperationException($"This machine only produces {SupportedProductType.Name}!");
 
-        AnsiConsole.Write(
-            new Markup(string.Format(Machines.LitographyStart, blueprint.Name)));
+        if (!SilentMode)
+        {
+            AnsiConsole.Write(
+                new Markup(string.Format(Machines.LitographyStart, blueprint.Name)));
 
-        AnsiConsole.Status()
-            .Spinner(Spinner.Known.BouncingBar)
-            .SpinnerStyle(Style.Parse("cyan bold"))
-            .Start(Machines.LitographySpinner, _ => { Thread.Sleep(800); });
+            AnsiConsole.Status()
+                .Spinner(Spinner.Known.BouncingBar)
+                .SpinnerStyle(Style.Parse("cyan bold"))
+                .Start(Machines.LitographySpinner, _ => { Thread.Sleep(800); });
+        }
+
         ApplyProductionWearAndTear();
         return true;
     }
@@ -468,21 +458,25 @@ public class SmtMachine : Machine // Solder Paste Printer
     {
         if (product is not Motherboard board)
         {
-            AnsiConsole.MarkupLine(string.Format(Machines.ProcessErrorUnsupported, product.GetType().Name));
+            if (!SilentMode)
+                AnsiConsole.MarkupLine(string.Format(Machines.ProcessErrorUnsupported, product.GetType().Name));
             return false;
         }
 
         if (board.CurrentState != BoardState.BlankBoard)
         {
-            AnsiConsole.MarkupLine(
-                string.Format(Machines.ProcessWarningUnexpectedState, board.Name, BoardState.BlankBoard,
-                    "Solder Paste Printing"));
+            if (!SilentMode)
+                AnsiConsole.MarkupLine(
+                    string.Format(Machines.ProcessWarningUnexpectedState, board.Name, BoardState.BlankBoard,
+                        "Solder Paste Printing"));
             return false;
         }
 
         board.TransitionTo(BoardState.SolderPrinted);
-        AnsiConsole.MarkupLine(
-            string.Format(Machines.ProcessSuccessState, board.Name, BoardState.SolderPrinted, "Solder Paste Printing"));
+        if (!SilentMode)
+            AnsiConsole.MarkupLine(
+                string.Format(Machines.ProcessSuccessState, board.Name, BoardState.SolderPrinted,
+                    "Solder Paste Printing"));
         ApplyProductionWearAndTear();
         return true;
     }
@@ -500,22 +494,25 @@ public class PaPMachine(
     {
         if (product is not Motherboard board)
         {
-            AnsiConsole.MarkupLine(string.Format(Machines.ProcessErrorUnsupported, product.GetType().Name));
+            if (!SilentMode)
+                AnsiConsole.MarkupLine(string.Format(Machines.ProcessErrorUnsupported, product.GetType().Name));
             return false;
         }
 
         if (board.CurrentState != BoardState.SolderPrinted)
         {
-            AnsiConsole.MarkupLine(
-                string.Format(Machines.ProcessWarningUnexpectedState, board.Name, BoardState.SolderPrinted,
-                    "Pick and Place Assembly"));
+            if (!SilentMode)
+                AnsiConsole.MarkupLine(
+                    string.Format(Machines.ProcessWarningUnexpectedState, board.Name, BoardState.SolderPrinted,
+                        "Pick and Place Assembly"));
             return false;
         }
 
         board.TransitionTo(BoardState.ComponentsPlaced);
-        AnsiConsole.MarkupLine(
-            string.Format(Machines.ProcessSuccessState, board.Name, BoardState.ComponentsPlaced,
-                "Pick and Place Assembly"));
+        if (!SilentMode)
+            AnsiConsole.MarkupLine(
+                string.Format(Machines.ProcessSuccessState, board.Name, BoardState.ComponentsPlaced,
+                    "Pick and Place Assembly"));
         ApplyProductionWearAndTear();
         return true;
     }
@@ -533,27 +530,28 @@ public class ReflowOven(
     {
         if (product is not Motherboard board)
         {
-            AnsiConsole.MarkupLine(string.Format(Machines.ProcessErrorUnsupported, product.GetType().Name));
+            if (!SilentMode)
+                AnsiConsole.MarkupLine(string.Format(Machines.ProcessErrorUnsupported, product.GetType().Name));
             return false;
         }
 
         if (board.CurrentState != BoardState.ComponentsPlaced)
         {
-            AnsiConsole.MarkupLine(
-                string.Format(Machines.ProcessWarningUnexpectedState, board.Name, BoardState.ComponentsPlaced,
-                    "Reflow Baking"));
+            if (!SilentMode)
+                AnsiConsole.MarkupLine(
+                    string.Format(Machines.ProcessWarningUnexpectedState, board.Name, BoardState.ComponentsPlaced,
+                        "Reflow Baking"));
             return false;
         }
 
         board.TransitionTo(BoardState.BakedAndSoldered);
-        AnsiConsole.MarkupLine(
-            string.Format(Machines.ProcessSuccessState, board.Name, BoardState.BakedAndSoldered, "Reflow Baking"));
+        if (!SilentMode)
+            AnsiConsole.MarkupLine(
+                string.Format(Machines.ProcessSuccessState, board.Name, BoardState.BakedAndSoldered, "Reflow Baking"));
         ApplyProductionWearAndTear();
         return true;
     }
 
 
     //***
-
-
 }

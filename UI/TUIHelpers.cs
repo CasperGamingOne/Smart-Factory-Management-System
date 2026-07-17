@@ -4,7 +4,7 @@ namespace Smart_Factory_Management_System;
 
 internal static class TuiHelper
 {
-    public static void RenderSessionHeader(Employee user, Factory factory)
+    public static void RenderSessionHeader(Employee user)
     {
         AnsiConsole.Clear();
         var header = new Rule($"[blue]FACTORY CONTROL PANEL - Session: {user.Name}[/]").Centered();

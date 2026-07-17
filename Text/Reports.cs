@@ -44,4 +44,33 @@ public static class Reports
     public const string ReportFulfilledHeader = "Printable Report Fulfilled";
     public const string ReportFulfilledNotification = "Your requested report '{0}' (Req ID: [cyan]#{1}[/]) is ready!";
     public const string ReportFulfilledAcknowledge = "[grey]Press any key to acknowledge...[/]";
+
+    public const string ChooseExportFolderPrompt = "Choose target export folder for the report:";
+    public const string ExportDestDesktop = "Desktop";
+    public const string ExportDestReportsFolder = "Program Reports Folder";
+    public const string ExportDestSelected = "Export destination selected: [cyan]{0}[/]";
+
+    public const string ProductionSummaryHeader = "Production Summary & Financials";
+    public const string BatchesDetailsHeader = "[bold cyan] Factory Production Batches Details [/]";
+    public const string ColumnBatchId = "BatchId";
+    public const string ColumnProduct = "Product";
+    public const string ColumnQty = "Qty";
+    public const string ColumnProductionCostUnit = "Production Cost/Unit";
+    public const string ColumnSellPriceUnit = "Sell Price/Unit";
+    public const string ColumnStatus = "Status";
+    public const string StatusSold = "[green]Sold[/]";
+    public const string StatusProduced = "[grey]Produced[/]";
+    public const string NoBatchesProduced = "[grey]No batches produced yet.[/]";
+
+    public const string FinanceExpensesLabel = "[bold white]Total Expenses (Production Cost):[/]";
+    public const string FinanceIncomeLabel = "[bold white]Total Income (Sales Revenue):[/]";
+    public const string FinanceProfitLabel = "[bold white]Total Net Profit/Loss:[/]";
+    public const string FinanceHeader = " Factory Financial Summary ";
+
+    public const string OrderBacklogSummaryHeader = "Order Backlog Summary";
+    public const string ColumnOrderId = "OrderId";
+    public const string ColumnCompleted = "Completed";
+    public const string ColumnAssignedTech = "Assigned Tech";
+    public const string StatusComplete = "Complete";
+    public const string StatusInProgress = "In Progress";
 }

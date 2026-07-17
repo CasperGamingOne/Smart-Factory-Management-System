@@ -4,9 +4,9 @@ namespace Smart_Factory_Management_System;
 
 public enum LogOrigin
 {
-    SYSTEM,
-    USER,
-    UNDO
+    System,
+    User,
+    Undo
 }
 
 public enum LogEvent
@@ -43,7 +43,8 @@ public enum LogEvent
     UsernameUpdated,
     PasswordUpdated,
     PasswordChangedFirstLogin,
-    OperationUndone
+    OperationUndone,
+    EmployeeRemoved
 }
 
 public class LoggerService(IFileSystemService fileService) : ILoggerService
@@ -89,7 +90,7 @@ public class LoggerService(IFileSystemService fileService) : ILoggerService
             _ => "Unknown event occurred"
         };
 
-        WriteToFile("INFO", origin, message);
+        WriteToFile("INFO", nameof(origin).ToUpper(), message);
     }
 
     public void LogWarning(LogOrigin origin, LogEvent eventType, string context = "")
@@ -100,12 +101,12 @@ public class LoggerService(IFileSystemService fileService) : ILoggerService
             _ => "Unknown event occurred"
         };
 
-        WriteToFile("WARN", origin, message);
+        WriteToFile("WARN", nameof(origin).ToUpper(), message);
     }
 
     public void LogError(string message)
     {
-        WriteToFile("ERROR", LogOrigin.SYSTEM, message);
+        WriteToFile("ERROR", nameof(LogOrigin.System).ToUpper(), message);
     }
 
     public void ShowOperationHistory()
@@ -173,7 +174,7 @@ public class LoggerService(IFileSystemService fileService) : ILoggerService
         AnsiConsole.Write(table);
     }
 
-    private void WriteToFile(string level, LogOrigin origin, string message)
+    private void WriteToFile(string level, string origin, string message)
     {
         var entry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{level}] [{origin}] {message}";
         fileService.AppendToFile(LogFileName, entry);

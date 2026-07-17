@@ -6,13 +6,24 @@ public enum ReportStatus
     Fulfilled
 }
 
-public class ReportRequest(string reportType, string requestedByDirectorName)
+public class ReportRequest
 {
-    public string RequestId { get; } = Guid.NewGuid().ToString().Substring(0, 8);
-    public string ReportType { get; init; } = reportType;
-    public string RequestedByDirectorName { get; } = requestedByDirectorName;
-    public bool IsNotifiedComplete { get; set; } = false;
-    public ReportStatus Status { get; private set; } = ReportStatus.Pending;
+    public ReportRequest()
+    {
+    }
+
+    public ReportRequest(string reportType, string requestedByDirectorName)
+    {
+        ReportType = reportType;
+        RequestedByDirectorName = requestedByDirectorName;
+    }
+
+    public string RequestId { get; set; } = Guid.NewGuid().ToString().Substring(0, 8);
+    public string ReportType { get; set; } = string.Empty;
+    public string RequestedByDirectorName { get; set; } = string.Empty;
+    public bool IsNotifiedComplete { get; set; }
+    public string ExportDestination { get; set; } = "ReportsFolder";
+    public ReportStatus Status { get; set; } = ReportStatus.Pending;
 
     public void Fulfill()
     {

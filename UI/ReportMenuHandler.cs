@@ -4,7 +4,8 @@ namespace Smart_Factory_Management_System;
 
 internal static class ReportMenuHandler
 {
-    public static void Run(Factory factory, Employee loggedInUser, ILoggerService loggerService)
+    public static void Run(Factory factory, Employee loggedInUser, ILoggerService loggerService,
+        IJsonRepository<ReportRequest> reportRequestsRepo)
     {
         while (true)
         {
@@ -25,23 +26,19 @@ internal static class ReportMenuHandler
             {
                 case "Production Summary":
                     ShowProductionSummary(factory, loggedInUser);
-                    loggerService.LogInfo(LogOrigin.USER, LogEvent.ProductionSummaryReportGenerated,
+                    loggerService.LogInfo(LogOrigin.User, LogEvent.ProductionSummaryReportGenerated,
                         loggedInUser.Username);
                     break;
                 case "Employee Report":
                     ShowEmployeeReport(factory);
-                    loggerService.LogInfo(LogOrigin.USER, LogEvent.EmployeeReportGenerated, loggedInUser.Username);
-                    break;
-                case "Batch Revenue Summary":
-                    ShowBatchRevenueSummary(factory);
-                    loggerService.LogInfo(LogOrigin.USER, LogEvent.BatchRevenueReportGenerated, loggedInUser.Username);
+                    loggerService.LogInfo(LogOrigin.User, LogEvent.EmployeeReportGenerated, loggedInUser.Username);
                     break;
                 case "Order Backlog Summary":
                     ShowOrderBacklogSummary(factory);
-                    loggerService.LogInfo(LogOrigin.USER, LogEvent.OrderBacklogReportGenerated, loggedInUser.Username);
+                    loggerService.LogInfo(LogOrigin.User, LogEvent.OrderBacklogReportGenerated, loggedInUser.Username);
                     break;
                 case "Request Printable Report":
-                    RequestPrintableReport(factory, loggedInUser, loggerService);
+                    RequestPrintableReport(factory, loggedInUser, loggerService, reportRequestsRepo);
                     break;
                 case "Return to Main Menu":
                     return;
@@ -57,7 +54,8 @@ internal static class ReportMenuHandler
         Pause();
     }
 
-    private static void RequestPrintableReport(Factory factory, Employee director, ILoggerService loggerService)
+    private static void RequestPrintableReport(Factory factory, Employee director, ILoggerService loggerService,
+        IJsonRepository<ReportRequest> reportRequestsRepo)
     {
         AnsiConsole.Clear();
         AnsiConsole.Write(new Rule($"[magenta]{Reports.RequestPrintableReport}[/]").Centered());
@@ -67,90 +65,102 @@ internal static class ReportMenuHandler
                 .Title(Reports.SelectReportToRequest)
                 .AddChoices("Production Summary", "Employee Report", "Batch Revenue Summary", "Order Backlog Summary"));
 
-        factory.AddReportRequest(new ReportRequest(reportType, director.Name));
+        var destination = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title(Reports.ChooseExportFolderPrompt)
+                .AddChoices(Reports.ExportDestDesktop, Reports.ExportDestReportsFolder));
+
+        var request = new ReportRequest(reportType, director.Name)
+        {
+            ExportDestination = destination == Reports.ExportDestDesktop ? "Desktop" : "ReportsFolder"
+        };
+
+        factory.AddReportRequest(request);
+        reportRequestsRepo.Save(factory.PendingReportRequests);
 
         AnsiConsole.MarkupLine(string.Format(Reports.RequestSubmitted, reportType));
-        loggerService.LogInfo(LogOrigin.USER, LogEvent.PrintableReportRequested,
-            $"Report '{reportType}' requested by {director.Username}");
+        AnsiConsole.MarkupLine(string.Format(Reports.ExportDestSelected, destination));
+        loggerService.LogInfo(LogOrigin.User, LogEvent.PrintableReportRequested,
+            $"Report '{reportType}' (Target: {destination}) requested by {director.Username}");
         Pause();
     }
 
-    private static void ShowProductionSummary(Factory factory, Employee loggedInUser)
+    internal static void ShowProductionSummary(Factory factory, Employee loggedInUser)
     {
         AnsiConsole.Clear();
-        AnsiConsole.Write(new Rule("[magenta]Production Summary[/]").Centered());
+        AnsiConsole.Write(new Rule($"[magenta]{Reports.ProductionSummaryHeader}[/]").Centered());
 
-        double inventoryValue = 0;
-        foreach (var product in factory.Inventory.Where(p => !p.IsSold))
-        {
-            inventoryValue += product.SellingPrice * product.Quantity;
-        }
+        var inventoryValue = factory.Inventory.Where(p => !p.IsSold).Sum(p => p.SellingPrice * p.Quantity);
+        var totalUnsoldUnits = GetTotalInventoryUnits(factory);
 
         var grid = new Grid().AddColumns(2);
         grid.AddRow(Reports.GeneratedBy, Markup.Escape(loggedInUser.Name));
         grid.AddRow(Reports.Timestamp, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
         grid.AddRow(Reports.InventoryItemTypes, factory.Inventory.Count(p => !p.IsSold).ToString());
-        grid.AddRow(Reports.InventoryUnits, GetTotalInventoryUnits(factory).ToString());
+        grid.AddRow(Reports.InventoryUnits, totalUnsoldUnits.ToString());
         grid.AddRow(Reports.EstInventoryValue, $"${inventoryValue:F2}");
         grid.AddRow(Reports.Employees, factory.Employees.Count.ToString());
         grid.AddRow(Reports.Machines, factory.Machines.Count.ToString());
 
         AnsiConsole.Write(new Panel(grid).Header($"[bold]{Reports.SnapshotPanelHeader}[/]").Border(BoxBorder.Rounded));
-        Pause();
-    }
+        AnsiConsole.WriteLine();
 
-    private static void ShowBatchRevenueSummary(Factory factory)
-    {
-        AnsiConsole.Clear();
-        AnsiConsole.Write(new Rule("[magenta]Batch Revenue Summary[/]").Centered());
-
-        if (factory.BatchCount == 0)
-        {
-            AnsiConsole.MarkupLine(Reports.NoBatches);
-            Pause();
-            return;
-        }
-
+        // 1. Batches Table (Sold and Unsold)
+        AnsiConsole.MarkupLine(Reports.BatchesDetailsHeader);
         var table = new Table().Border(TableBorder.Rounded);
-        table.AddColumn("BatchId");
-        table.AddColumn("Product");
-        table.AddColumn("Qty");
-        table.AddColumn("Cost");
-        table.AddColumn("Sell Price");
-        table.AddColumn("Status");
+        table.AddColumn(Reports.ColumnBatchId);
+        table.AddColumn(Reports.ColumnProduct);
+        table.AddColumn(Reports.ColumnQty);
+        table.AddColumn(Reports.ColumnProductionCostUnit);
+        table.AddColumn(Reports.ColumnSellPriceUnit);
+        table.AddColumn(Reports.ColumnStatus);
 
-        double totalPotentialRevenue = 0;
-        double totalCost = 0;
+        double totalExpenses = 0;
+        double totalIncome = 0;
 
-        for (var i = 0; i < factory.BatchCount; i++)
+        foreach (var batch in factory.Batches)
         {
-            var batch = factory.Batches[i];
-
-            totalCost += batch.TotalCost;
-            if (batch.UnitSellPrice.HasValue) totalPotentialRevenue += batch.UnitSellPrice.Value * batch.Quantity;
+            totalExpenses += batch.TotalCost;
+            if (batch.IsSold && batch.UnitSellPrice.HasValue) totalIncome += batch.UnitSellPrice.Value * batch.Quantity;
 
             table.AddRow(
                 batch.BatchId,
                 batch.ProductName,
                 batch.Quantity.ToString(),
                 $"${batch.UnitProductionCost:F2}",
-                batch.UnitSellPrice?.ToString("F2") ?? "-",
-                batch.IsSold ? "Sold" : batch.IsPriced ? "Priced" : "Open"
+                batch.IsSold ? $"${batch.UnitSellPrice ?? 0.0:F2}" : "$0.00",
+                batch.IsSold ? Reports.StatusSold : Reports.StatusProduced
             );
         }
 
-        AnsiConsole.Write(table);
-        AnsiConsole.Write(new Panel(new Markup(
-            $"{Reports.TotalProductionCost} ${totalCost:F2}\n" +
-            $"{Reports.PotentialRevenue} ${totalPotentialRevenue:F2}")
-        ).Border(BoxBorder.Rounded).Header($"[bold]{Reports.BatchSummaryPanelHeader}[/]"));
+        if (factory.BatchCount > 0)
+            AnsiConsole.Write(table);
+        else
+            AnsiConsole.MarkupLine(Reports.NoBatchesProduced);
+
+        AnsiConsole.WriteLine();
+
+        // 2. Financial Summary
+        var totalProfit = totalIncome - totalExpenses;
+        var profitColor = totalProfit >= 0 ? "green" : "red";
+
+        var financeGrid = new Grid().AddColumns(2);
+        financeGrid.AddRow(Reports.FinanceExpensesLabel, $"[red]${totalExpenses:F2}[/]");
+        financeGrid.AddRow(Reports.FinanceIncomeLabel, $"[green]${totalIncome:F2}[/]");
+        financeGrid.AddRow(Reports.FinanceProfitLabel, $"[{profitColor}]${totalProfit:F2}[/]");
+
+        AnsiConsole.Write(new Panel(financeGrid)
+            .Header($"[bold yellow]{Reports.FinanceHeader}[/]")
+            .Border(BoxBorder.Rounded));
+        AnsiConsole.WriteLine();
+
         Pause();
     }
 
     private static void ShowOrderBacklogSummary(Factory factory)
     {
         AnsiConsole.Clear();
-        AnsiConsole.Write(new Rule("[magenta]Order Backlog Summary[/]").Centered());
+        AnsiConsole.Write(new Rule($"[magenta]{Reports.OrderBacklogSummaryHeader}[/]").Centered());
 
         if (factory.OrderCount == 0)
         {
@@ -160,12 +170,12 @@ internal static class ReportMenuHandler
         }
 
         var table = new Table().Border(TableBorder.Rounded);
-        table.AddColumn("OrderId");
-        table.AddColumn("Product");
-        table.AddColumn("Qty");
-        table.AddColumn("Completed");
-        table.AddColumn("Assigned Tech");
-        table.AddColumn("Status");
+        table.AddColumn(Reports.ColumnOrderId);
+        table.AddColumn(Reports.ColumnProduct);
+        table.AddColumn(Reports.ColumnQty);
+        table.AddColumn(Reports.ColumnCompleted);
+        table.AddColumn(Reports.ColumnAssignedTech);
+        table.AddColumn(Reports.ColumnStatus);
 
         foreach (var order in factory.PendingOrders)
         {
@@ -175,7 +185,7 @@ internal static class ReportMenuHandler
                 order.Quantity.ToString(),
                 order.CompletedCount.ToString(),
                 order.AssignedTechnicianId.ToString(),
-                order.IsComplete ? "Complete" : "In Progress"
+                order.IsComplete ? Reports.StatusComplete : Reports.StatusInProgress
             );
         }
 

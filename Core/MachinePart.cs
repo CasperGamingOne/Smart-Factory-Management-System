@@ -15,7 +15,7 @@ public enum PartCondition
 [JsonDerivedType(typeof(AoiSystem), "aoiSystem")]
 public abstract class MachinePart(string name, PartCondition? condition)
 {
-    public string? Name { get; private protected set; } = name;
+    public string? Name { get; } = name;
     public PartCondition? Condition { get; private set; } = condition;
 
     public void BreakDown()

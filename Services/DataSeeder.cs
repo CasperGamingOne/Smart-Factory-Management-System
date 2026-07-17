@@ -16,14 +16,10 @@ public class DataSeeder(
         {
             var initialEmployees = new List<Employee>
             {
-                new Director("Andrei Popescu", "andrei", SecurityHelper.HashPassword("password"),
-                    false),
-                new Technician("Maria Ionescu", "maria", SecurityHelper.HashPassword("password"),
-                    false),
-                new SalesAgent("Alexandru Dumitru", "alex", SecurityHelper.HashPassword("password"),
-                    false),
-                new Accountant("Elena Vasilescu", "elena", SecurityHelper.HashPassword("password"),
-                    false)
+                new Director("Andrei Popescu", "andrei", SecurityHelper.HashPassword("password")),
+                new Technician("Maria Ionescu", "maria", SecurityHelper.HashPassword("password")),
+                new SalesAgent("Alexandru Dumitru", "alex", SecurityHelper.HashPassword("password")),
+                new Accountant("Elena Vasilescu", "elena", SecurityHelper.HashPassword("password"))
             };
             employeeRepo.Save(initialEmployees);
         }
@@ -87,8 +83,20 @@ public class DataSeeder(
         {
             var initialProducts = new List<Product>
             {
-                new Microprocessor("ARM Cortex-M4", 50, 74.99, 10, 4, 2.5),
-                new Motherboard("Motherboard ATX", 50.00, 99.99, 5, "AM4", "ATX")
+                // Unsold stock (Total: 70 units - triggers the < 200 unit alert banner demo)
+                new Microprocessor("ARM Cortex-M4", 50.00, 0, 10, 4, 2.5) { BatchId = "BATCH-01", IsSold = false },
+                new Microprocessor("Intel Core i5", 120.00, 0, 15, 6, 3.2) { BatchId = "BATCH-02", IsSold = false },
+                new Microprocessor("AMD Ryzen 5", 110.00, 0, 20, 6, 3.6) { BatchId = "BATCH-03", IsSold = false },
+                new Motherboard("Motherboard ATX", 50.00, 0, 5, "AM4", "ATX") { BatchId = "BATCH-04", IsSold = false },
+                new Motherboard("Asus ROG Strix", 150.00, 0, 8, "LGA1700", "ATX")
+                    { BatchId = "BATCH-05", IsSold = false },
+                new Motherboard("MSI Tomahawk", 90.00, 0, 12, "AM5", "ATX") { BatchId = "BATCH-06", IsSold = false },
+
+                // Pre-sold history (for revenue/financial dashboard demonstration)
+                new Microprocessor("ARM Cortex-M4", 50.00, 74.99, 50, 4, 2.5) { BatchId = "BATCH-S1", IsSold = true },
+                new Microprocessor("Intel Core i5", 120.00, 199.99, 30, 6, 3.2) { BatchId = "BATCH-S2", IsSold = true },
+                new Motherboard("Motherboard ATX", 50.00, 99.99, 25, "AM4", "ATX")
+                    { BatchId = "BATCH-S3", IsSold = true }
             };
             productRepo.Save(initialProducts);
         }

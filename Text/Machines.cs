@@ -78,4 +78,7 @@ public static class Machines
 
     public const string LitographyStart = "[cyan]🏭 Starting processing sequence for: [underline]{0}[/][/]\n";
     public const string LitographySpinner = "Exposing wafer structure using optical masks...";
+    public const string RepairSpinnerOpeningPanels = "Opening maintenance access panels for {0}...";
+    public const string RepairSpinnerServicingPart = "Repairing/calibrating component: {0}...";
+    public const string RepairSpinnerDiagnostics = "Running diagnostic calibration cycles...";
 }

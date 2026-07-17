@@ -26,7 +26,7 @@ internal static class EmployeeMenuHandler
                 case "View Registered Staff":
                 case "View All Registered Staff":
                     DisplayStaffTable(factory);
-                    loggerService.LogInfo(LogOrigin.USER, LogEvent.StaffViewed, loggedInUser.Username);
+                    loggerService.LogInfo(LogOrigin.User, LogEvent.StaffViewed, loggedInUser.Username);
                     break;
 
                 case "Add New Employee":
@@ -35,6 +35,15 @@ internal static class EmployeeMenuHandler
                             string.Format(Common.AccessDenied, loggedInUser.Role));
                     else
                         AddNewEmployeeFlow(factory, repository, loggerService, loggedInUser);
+
+                    break;
+
+                case "Remove Employee":
+                    if (loggedInUser is not Director)
+                        AnsiConsole.MarkupLine(
+                            string.Format(Common.AccessDenied, loggedInUser.Role));
+                    else
+                        RemoveEmployeeFlow(factory, repository, loggerService, loggedInUser);
 
                     break;
 
@@ -108,7 +117,53 @@ internal static class EmployeeMenuHandler
         repository.Save(users);
 
         AnsiConsole.MarkupLine(string.Format(Employees.RegisteredSuccessfully, name));
-        loggerService.LogInfo(LogOrigin.USER, LogEvent.EmployeeAdded,
+        loggerService.LogInfo(LogOrigin.User, LogEvent.EmployeeAdded,
             $"New user '{username}' ({role}) registered by '{loggedInUser.Username}'");
+    }
+
+    private static void RemoveEmployeeFlow(Factory factory, IJsonRepository<Employee> repository,
+        ILoggerService loggerService, Employee loggedInUser)
+    {
+        AnsiConsole.Clear();
+        AnsiConsole.Write(new Rule($"[red]{Employees.RemoveTitle}[/]").Centered());
+
+        var candidates = factory.Employees.Where(e => e.Id != loggedInUser.Id).ToList();
+
+        if (candidates.Count == 0)
+        {
+            AnsiConsole.MarkupLine(Employees.NoEmployeesToRemove);
+            return;
+        }
+
+        var selector = new SelectionPrompt<Employee>()
+            .Title(Employees.SelectEmployeeToRemove)
+            .UseConverter(e => $"{e.Id} - {e.Name} ({e.Role})")
+            .AddChoices(candidates);
+
+        var chosen = AnsiConsole.Prompt(selector);
+
+        if (AnsiConsole.Confirm(string.Format(Employees.RemoveConfirmPrompt, chosen.Name, chosen.Role)))
+        {
+            factory.RemoveEmployee(chosen);
+
+            var users = repository.Load();
+            var matchedUser = users.FirstOrDefault(u => u.Id == chosen.Id);
+            if (matchedUser != null)
+            {
+                users.Remove(matchedUser);
+                repository.Save(users);
+            }
+
+            UndoService.Instance.RegisterCommand(new RemoveEmployeeCommand(chosen, factory, repository,
+                loggedInUser.Username));
+
+            AnsiConsole.MarkupLine(string.Format(Employees.RemoveSuccess, chosen.Name));
+            loggerService.LogInfo(LogOrigin.User, LogEvent.EmployeeRemoved,
+                $"Employee '{chosen.Username}' ({chosen.Role}) removed by '{loggedInUser.Username}'");
+        }
+        else
+        {
+            AnsiConsole.MarkupLine(Employees.RemoveCancelled);
+        }
     }
 }

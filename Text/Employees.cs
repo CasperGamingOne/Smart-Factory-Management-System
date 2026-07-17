@@ -14,4 +14,11 @@ public static class Employees
     public const string SelectJobTitle = "Select Job Title:";
     public const string InvalidRole = "[red]❌ Invalid role selection. Operation aborted.[/]";
     public const string RegisteredSuccessfully = "[green]✔ Employee '{0}' registered successfully![/]";
+
+    public const string RemoveTitle = "Remove Employee";
+    public const string NoEmployeesToRemove = "[yellow]No other employees registered in the system to remove.[/]";
+    public const string SelectEmployeeToRemove = "Select employee to remove:";
+    public const string RemoveConfirmPrompt = "Are you sure you want to permanently remove employee [red]{0}[/] ({1})?";
+    public const string RemoveSuccess = "[green]✔ Employee {0} has been successfully removed from the system.[/]";
+    public const string RemoveCancelled = "[yellow]Removal cancelled.[/]";
 }

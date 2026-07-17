@@ -25,10 +25,18 @@ public class Factory
     public IReadOnlyList<Employee> Employees => _employees;
     public IReadOnlyList<Machine> Machines => _machines;
     public IReadOnlyList<Product> Inventory => _inventory;
-    public int InventoryCapacity => _inventory.Capacity;
+    public int MaxBatches => 20;
+    public int MaxUnitsPerBatch => 100;
+    public int MaxCapacity => MaxBatches * MaxUnitsPerBatch;
+    public int MinStockThreshold => 200;
+
+    public int GetTotalUnsoldUnits()
+    {
+        return _batches.Where(b => !b.IsSold).Sum(b => b.Quantity);
+    }
 
     public void LoadFromRepository(IEnumerable<Employee> employees, IEnumerable<Machine> machines,
-        IEnumerable<Product> products)
+        IEnumerable<Product> products, IEnumerable<ProductionOrder> orders, IEnumerable<ReportRequest> reportRequests)
     {
         var employeeList = employees.ToList();
         var machineList = machines.ToList();
@@ -37,6 +45,37 @@ public class Factory
         _employees.AddRange(employeeList);
         _machines.AddRange(machineList);
         _inventory.AddRange(productList);
+
+        _pendingOrders.Clear();
+        foreach (var order in orders) _pendingOrders.Enqueue(order);
+
+        _pendingReportRequests.Clear();
+        foreach (var request in reportRequests) _pendingReportRequests.Enqueue(request);
+
+        // Reconstruct batches from the loaded products
+        var productsByBatch = productList.Where(p => !string.IsNullOrEmpty(p.BatchId)).GroupBy(p => p.BatchId);
+        foreach (var group in productsByBatch)
+        {
+            var firstProduct = group.First();
+            var totalQuantity = group.Sum(p => p.Quantity);
+            var totalCost = group.Sum(p => p.ProductionCost * p.Quantity);
+            var unitCost = totalQuantity > 0 ? totalCost / totalQuantity : firstProduct.ProductionCost;
+
+            var batch = new ProductionBatch(firstProduct.Name ?? "Loaded Product", totalQuantity, unitCost, group.Key);
+
+            var maxSellingPrice = group.Max(p => p.SellingPrice);
+            if (maxSellingPrice > 0) batch.SetUnitSellPrice(maxSellingPrice);
+
+            // If all products in the batch are marked as sold, the batch is sold
+            if (group.All(p => p.IsSold)) batch.MarkAsSold();
+
+            // Link matching product indexes to the batch
+            for (var i = 0; i < productList.Count; i++)
+                if (productList[i].BatchId == group.Key)
+                    batch.AddInventoryIndex(i);
+
+            _batches.Add(batch);
+        }
 
         if (employeeList.Count > 0)
         {
@@ -99,17 +138,18 @@ public class Factory
     {
         _batches.Add(batch);
     }
+
     public static void ShowInventoryAlerts(IEnumerable<Product> inventory)
     {
-        // Folosim metoda creată în Product.cs
+        // Use the helper method defined in Product.cs
         var lowStockItems = inventory.Where(p => p.IsLowStock()).ToList();
 
         if (lowStockItems.Any())
         {
             var table = new Table().Border(TableBorder.Rounded);
             table.AddColumn("[red]Status[/]");
-            table.AddColumn("Produs");
-            table.AddColumn("Stoc Curent");
+            table.AddColumn("Product");
+            table.AddColumn("Current Stock");
 
             foreach (var item in lowStockItems)
             {
@@ -118,10 +158,11 @@ public class Factory
 
             AnsiConsole.Write(new Panel(table)
             {
-                Header = new PanelHeader("[bold red] ALERTA INVENTAR [/]"),
+                Header = new PanelHeader("[bold red] INVENTORY ALERT [/]"),
                 Border = BoxBorder.Double
             });
         }
+    }
 
     public void RemoveProduct(Product product)
     {
@@ -131,5 +172,10 @@ public class Factory
     public void RemoveBatch(ProductionBatch batch)
     {
         _batches.Remove(batch);
+    }
+
+    public void RemoveEmployee(Employee employee)
+    {
+        _employees.Remove(employee);
     }
 }
