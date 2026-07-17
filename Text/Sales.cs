@@ -40,4 +40,5 @@ public static class Sales
         "Your order [cyan]#{0}[/] ({1} x{2}) has been successfully completed by production!";
 
     public const string OrderCompleteAcknowledge = "[grey]Press any key to acknowledge...[/]";
+    public const string NoUnsoldBatchesToSell = "[yellow]No unsold batches available to sell.[/]";
 }

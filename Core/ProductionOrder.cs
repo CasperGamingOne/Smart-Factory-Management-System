@@ -1,12 +1,23 @@
 namespace Smart_Factory_Management_System;
 
-public class ProductionOrder(string productName, int quantity, int technicianId)
+public class ProductionOrder
 {
-    public string OrderId { get; } = Guid.NewGuid().ToString().Substring(0, 8);
-    public string ProductName { get; init; } = productName;
-    public int Quantity { get; init; } = quantity;
-    public int CompletedCount { get; private set; }
-    public int AssignedTechnicianId { get; set; } = technicianId;
+    public ProductionOrder()
+    {
+    }
+
+    public ProductionOrder(string productName, int quantity, int technicianId)
+    {
+        ProductName = productName;
+        Quantity = quantity;
+        AssignedTechnicianId = technicianId;
+    }
+
+    public string OrderId { get; set; } = Guid.NewGuid().ToString().Substring(0, 8);
+    public string ProductName { get; set; } = string.Empty;
+    public int Quantity { get; set; }
+    public int CompletedCount { get; set; }
+    public int AssignedTechnicianId { get; set; }
     public bool IsComplete => CompletedCount >= Quantity;
 
     public string CustomProductName { get; set; } = string.Empty;
@@ -16,9 +27,10 @@ public class ProductionOrder(string productName, int quantity, int technicianId)
     public string? PhysicalForm { get; set; }
 
     public string PlacedBy { get; set; } = string.Empty;
-    public bool IsNotifiedComplete { get; set; } = false;
+    public bool IsNotifiedComplete { get; set; }
+    public string? BatchId { get; set; }
 
-    public DateTime CreatedAt { get; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public double GetPriorityScore()
     {

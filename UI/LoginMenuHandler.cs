@@ -40,14 +40,14 @@ internal static class LoginMenuHandler
             // Authentication logic
             if (matchedEmployee != null)
             {
-                loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.LoginSuccess, matchedEmployee.Username);
+                loggerService.LogInfo(LogOrigin.System, LogEvent.LoginSuccess, matchedEmployee.Username);
                 AnsiConsole.MarkupLine(Login.AccessGranted);
                 Thread.Sleep(600); // Visual feedback pause
                 return matchedEmployee;
             }
 
             // Error boundary feedback
-            loggerService.LogInfo(LogOrigin.SYSTEM, LogEvent.LoginFailed, username);
+            loggerService.LogInfo(LogOrigin.System, LogEvent.LoginFailed, username);
             AnsiConsole.MarkupLine(Login.InvalidCredentials);
             AnsiConsole.MarkupLine(Login.PressKeyToTryAgain);
 

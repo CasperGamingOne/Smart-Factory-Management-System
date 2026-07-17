@@ -5,7 +5,7 @@ namespace Smart_Factory_Management_System;
 internal static class SalesMenuHandler
 {
     public static void Run(Factory factory, Employee loggedInUser, ILoggerService loggerService,
-        IJsonRepository<Product> productRepo)
+        IJsonRepository<Product> productRepo, IJsonRepository<ProductionOrder> ordersRepo)
     {
         if (loggedInUser is not SalesAgent && loggedInUser is not Director)
         {
@@ -30,11 +30,11 @@ internal static class SalesMenuHandler
             switch (option)
             {
                 case "Place Production Order":
-                    PlaceOrder(factory, loggerService, loggedInUser);
+                    PlaceOrder(factory, loggerService, loggedInUser, ordersRepo);
                     break;
                 case "View Pending Orders":
                     ShowPendingOrders(factory);
-                    loggerService.LogInfo(LogOrigin.USER, LogEvent.PendingOrdersViewed, loggedInUser.Username);
+                    loggerService.LogInfo(LogOrigin.User, LogEvent.PendingOrdersViewed, loggedInUser.Username);
                     break;
                 case "Record Sale for Batch":
                     RecordSale(factory, loggerService, loggedInUser, productRepo);
@@ -49,7 +49,8 @@ internal static class SalesMenuHandler
         }
     }
 
-    private static void PlaceOrder(Factory factory, ILoggerService loggerService, Employee loggedInUser)
+    private static void PlaceOrder(Factory factory, ILoggerService loggerService, Employee loggedInUser,
+        IJsonRepository<ProductionOrder> ordersRepo)
     {
         AnsiConsole.WriteLine();
         var productChoice = AnsiConsole.Prompt(
@@ -58,7 +59,15 @@ internal static class SalesMenuHandler
                 .AddChoices(MenuOptions.ProductTypes));
 
         var customName = AnsiConsole.Ask<string>(Sales.EnterCustomProductName);
-        var quantity = AnsiConsole.Ask<int>(Sales.EnterQuantity);
+        var quantity = AnsiConsole.Prompt(
+            new TextPrompt<int>(Sales.EnterQuantity)
+                .ValidationErrorMessage("[red]Quantity must be between 1 and 100 units per batch.[/]")
+                .Validate(q => q switch
+                {
+                    <= 0 => ValidationResult.Error("[red]Quantity must be positive.[/]"),
+                    > 100 => ValidationResult.Error("[red]Maximum quantity per batch is 100 units.[/]"),
+                    _ => ValidationResult.Success()
+                }));
 
         int? cores = null;
         double? clockSpeed = null;
@@ -89,22 +98,12 @@ internal static class SalesMenuHandler
             PlacedBy = loggedInUser.Username
         };
         factory.AddOrder(order);
+        ordersRepo.Save(factory.PendingOrders);
 
         AnsiConsole.MarkupLine(
             string.Format(Sales.OrderPlacedOnHold, order.OrderId, order.CustomProductName, order.Quantity));
-        loggerService.LogInfo(LogOrigin.USER, LogEvent.OrderPlaced,
+        loggerService.LogInfo(LogOrigin.User, LogEvent.OrderPlaced,
             $"Order {order.OrderId}: {order.CustomProductName} x{order.Quantity} (Status: On Hold / Unassigned) by {loggedInUser.Username}");
-    }
-
-    private static List<Employee> GetTechnicians(Factory factory)
-    {
-        var technicians = new List<Employee>();
-
-        foreach (var t in factory.Employees)
-            if (t is Technician)
-                technicians.Add(t);
-
-        return technicians;
     }
 
     public static void ShowPendingOrders(Factory factory)
@@ -150,15 +149,20 @@ internal static class SalesMenuHandler
 
         if (pickContext == "Sell from Batch")
         {
-            var selector = new SelectionPrompt<ProductionBatch>().Title(Sales.SelectBatchToSell);
-            for (var i = 0; i < factory.BatchCount; i++) selector.AddChoice(factory.Batches[i]);
-
-            var chosen = AnsiConsole.Prompt(selector);
-            if (chosen.IsSold)
+            var unsoldBatches = factory.Batches.Where(b => !b.IsSold).ToList();
+            if (!unsoldBatches.Any())
             {
-                AnsiConsole.MarkupLine(Sales.BatchAlreadySold);
+                AnsiConsole.MarkupLine(Sales.NoUnsoldBatchesToSell);
                 return;
             }
+
+            var selector = new SelectionPrompt<ProductionBatch>()
+                .Title(Sales.SelectBatchToSell)
+                .UseConverter(b =>
+                    $"{b.BatchId} - {b.ProductName} (Qty: {b.Quantity}, Cost: ${b.UnitProductionCost:F2})")
+                .AddChoices(unsoldBatches);
+
+            var chosen = AnsiConsole.Prompt(selector);
 
             var soldPrice = AnsiConsole.Ask<double>(Sales.EnterUnitSoldPrice);
             chosen.MarkAsSold();
@@ -176,7 +180,7 @@ internal static class SalesMenuHandler
 
             AnsiConsole.MarkupLine(
                 string.Format(Sales.SaleRecordedBatch, chosen.BatchId, soldPrice));
-            loggerService.LogInfo(LogOrigin.USER, LogEvent.SaleRecorded,
+            loggerService.LogInfo(LogOrigin.User, LogEvent.SaleRecorded,
                 $"Batch {chosen.BatchId} sold at ${soldPrice:F2}/unit by {loggedInUser.Username}");
 
             UndoService.Instance.RegisterCommand(new SellFromBatchCommand(chosen, factory, soldPrice, inventoryIndexes,
@@ -187,7 +191,7 @@ internal static class SalesMenuHandler
             var products = new List<Product>();
             foreach (var p in factory.Inventory)
             {
-                if (p.Quantity > 0 && !p.IsSold)
+                if (p is { Quantity: > 0, IsSold: false })
                     products.Add(p);
             }
 
@@ -242,6 +246,14 @@ internal static class SalesMenuHandler
 
             factory.AddProduct(soldProduct, soldProduct.BatchId);
 
+            // Find and deduct quantity from the original production batch
+            var originalBatch = factory.Batches.FirstOrDefault(b => b.BatchId == chosen.BatchId);
+            if (originalBatch != null)
+            {
+                originalBatch.Quantity -= qty;
+                if (originalBatch.Quantity <= 0) originalBatch.MarkAsSold();
+            }
+
             var batch = new ProductionBatch(chosen.Name ?? "Inventory Sale", qty, chosen.ProductionCost);
             batch.MarkAsSold();
             batch.SetUnitSellPrice(soldPrice);
@@ -249,7 +261,7 @@ internal static class SalesMenuHandler
 
             AnsiConsole.MarkupLine(
                 string.Format(Sales.SaleRecordedInventory, qty, chosen.Name, soldPrice, batch.BatchId));
-            loggerService.LogInfo(LogOrigin.USER, LogEvent.SaleRecorded,
+            loggerService.LogInfo(LogOrigin.User, LogEvent.SaleRecorded,
                 $"{qty} units of {chosen.Name} sold at ${soldPrice:F2}/unit by {loggedInUser.Username}");
 
             UndoService.Instance.RegisterCommand(new SellFromInventoryCommand(chosen, qty, soldPrice, soldProduct,

@@ -24,7 +24,7 @@ public static class UndoMenuHandler
             }
 
             // Get the last action (newest command in the filtered list)
-            var lastCommand = commands[commands.Count - 1];
+            var lastCommand = commands[^1];
 
             AnsiConsole.MarkupLine(string.Format(UndoText.LastActionInfo, lastCommand.ExecutedAt,
                 Markup.Escape(lastCommand.ExecutedBy), Markup.Escape(lastCommand.Description)));
@@ -43,7 +43,7 @@ public static class UndoMenuHandler
                 try
                 {
                     UndoService.Instance.UndoCommand(lastCommand);
-                    loggerService.LogInfo(LogOrigin.UNDO, LogEvent.OperationUndone,
+                    loggerService.LogInfo(LogOrigin.Undo, LogEvent.OperationUndone,
                         $"{lastCommand.Description} (Executed by {lastCommand.ExecutedBy})");
                     AnsiConsole.MarkupLine(UndoText.UndoSuccess);
                 }

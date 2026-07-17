@@ -71,7 +71,7 @@ internal static class AccountSettingsMenuHandler
             if (accountService.UpdateFullName(user, newName))
             {
                 AnsiConsole.MarkupLine(AccountSettings.FullNameUpdated);
-                loggerService.LogInfo(LogOrigin.USER, LogEvent.FullNameUpdated, user.Username);
+                loggerService.LogInfo(LogOrigin.User, LogEvent.FullNameUpdated, user.Username);
                 UndoService.Instance.RegisterCommand(new ChangeFullNameCommand(user, oldName, newName, accountService,
                     user.Username));
             }
@@ -111,7 +111,7 @@ internal static class AccountSettingsMenuHandler
             if (accountService.UpdateUsername(user, newUsername))
             {
                 AnsiConsole.MarkupLine(AccountSettings.UsernameUpdated);
-                loggerService.LogInfo(LogOrigin.USER, LogEvent.UsernameUpdated, user.Username);
+                loggerService.LogInfo(LogOrigin.User, LogEvent.UsernameUpdated, user.Username);
                 UndoService.Instance.RegisterCommand(new ChangeUsernameCommand(user, oldUsername, newUsername,
                     accountService, user.Username));
             }
@@ -167,7 +167,7 @@ internal static class AccountSettingsMenuHandler
             if (accountService.UpdatePassword(user, newPassword))
             {
                 AnsiConsole.MarkupLine(AccountSettings.PasswordUpdated);
-                loggerService.LogInfo(LogOrigin.USER, LogEvent.PasswordUpdated, user.Username);
+                loggerService.LogInfo(LogOrigin.User, LogEvent.PasswordUpdated, user.Username);
             }
             else
             {

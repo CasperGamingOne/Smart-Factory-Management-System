@@ -18,7 +18,7 @@ public static class Products
     public const string ProductionCostColumn = "[bold green]Production Cost ($)[/]";
     public const string SpecsColumn = "[bold yellow]Technical Specifications[/]";
     public const string ValueColumn = "[bold magenta]Value ($)[/]";
-    public const string PortfolioTitle = "📈 Inventory Portfolio & Capacity Metrics[/]";
+    public const string PortfolioTitle = "📈 Inventory Portfolio & Capacity Metrics";
     public const string StatsGridTotalVolume = "[bold white]Total Volume Level:[/]";
     public const string StatsGridTotalVolumeValue = "[green]{0} items[/] (📊 CPUs: {1} | ⚙️ PCBs: {2} )";
     public const string StatsGridValuation = "[bold white]Asset Portfolio Valuation:[/]";

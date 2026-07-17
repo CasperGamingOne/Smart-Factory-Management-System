@@ -40,4 +40,26 @@ public static class Production
         "Order [cyan]#{0}[/] ({1} x{2}) has been issued and auto-assigned to you!";
 
     public const string AutoAssignAcknowledge = "[grey]Press any key to acknowledge...[/]";
+
+    public const string CostAdvice =
+        "[yellow]ℹ️  ADVICE: When determining unit production cost, please account for any maintenance, repairs, or machine break-downs that occurred during this cycle.[/]";
+
+    public const string CostPrompt = "Enter the final unit production cost ($):";
+    public const string CostValidationInvalidNumber = "[red]Please enter a valid positive number.[/]";
+    public const string CostValidationNegative = "[red]Cost cannot be negative.[/]";
+
+    public const string ProductionLineTitle = "[yellow]Production Line: {0}[/]";
+
+    public const string MachineTrippedAlert =
+        "[bold red]⚠️ MACHINE TRIPPED: {0} has stopped due to a critical part breakdown! Please perform repairs. ⚠️[/]";
+
+    public const string CompletedUnitsStatus = "[bold green]Completed: {0} / {1} units[/]";
+    public const string MotherboardLineTitle = "[yellow]Motherboard Production Line[/]";
+
+    public const string WorkflowTrippedAlert =
+        "[bold red]⚠️ WORKFLOW TRIPPED: One or more machines have broken down! Please perform repairs. ⚠️[/]";
+
+    public const string StepSmt = "1. Solder Paste Printing (SMT)";
+    public const string StepPap = "2. Pick & Place Assembly (PaP)";
+    public const string StepOven = "3. Reflow Baking (Oven)";
 }

@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding" addBOMForNewFiles="with BOM under Windows, with no BOM otherwise">
+    <file url="file://$PROJECT_DIR$/Core/Employee.cs" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Core/MachinePart.cs" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Core/Product.cs" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Core/ProductionOrder.cs" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/UI/EmployeeMenuHandler.cs" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/UI/LoginMenuHandler.cs" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/UI/MachineMenuHandler.cs" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/UI/ReportMenuHandler.cs" charset="UTF-8" />
   </component>
 </project>

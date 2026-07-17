@@ -1,12 +1,12 @@
 namespace Smart_Factory_Management_System;
 
-public class ProductionBatch(string productName, int quantity, double unitCost)
+public class ProductionBatch(string productName, int quantity, double unitCost, string? batchId = null)
 {
     private readonly List<int> _inventoryIndexes = new();
-    public string BatchId { get; } = Guid.NewGuid().ToString().Substring(0, 8);
-    public string ProductName { get; init; } = productName;
-    public int Quantity { get; init; } = quantity;
-    public double UnitProductionCost { get; init; } = unitCost;
+    public string BatchId { get; } = batchId ?? Guid.NewGuid().ToString().Substring(0, 8);
+    public string ProductName { get; } = productName;
+    public int Quantity { get; set; } = quantity;
+    public double UnitProductionCost { get; set; } = unitCost;
     public double? UnitSellPrice { get; private set; }
     public bool IsPriced => UnitSellPrice is > 0;
     public bool IsSold { get; private set; }

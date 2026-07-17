@@ -6,9 +6,7 @@ namespace Smart_Factory_Management_System;
 [JsonDerivedType(typeof(Motherboard), "motherboard")]
 public abstract class Product
 {
-    private readonly double _productionCost;
-    private int _quantity;
-    private double _sellingPrice;
+    private double _productionCost;
 
     protected Product(string name, double productionCost, double sellingPrice, int quantity)
     {
@@ -18,7 +16,7 @@ public abstract class Product
         Quantity = quantity;
     }
 
-    public string? Name { get; init; }
+    public string? Name { get; }
 
     public string? BatchId { get; set; }
     public bool IsSold { get; set; }
@@ -26,18 +24,18 @@ public abstract class Product
     public double ProductionCost
     {
         get => _productionCost;
-        private init => _productionCost = value >= 0 ? value : 0;
+        set => _productionCost = value >= 0 ? value : 0;
     }
 
     public double SellingPrice
     {
-        get => _sellingPrice;
-        private set => _sellingPrice = value >= 0 ? value : 0;
+        get;
+        private set => field = value >= 0 ? value : 0;
     }
 
     public int Quantity
     {
-        get => _quantity;
+        get;
         private set
         {
             if (value < 0)
@@ -45,10 +43,20 @@ public abstract class Product
                 throw new ArgumentOutOfRangeException(nameof(value), "Quantity cannot be negative.");
             }
 
-            _quantity = value;
+            field = value;
         }
     }
 
+    //**
+    public int MinStockThreshold { get; set; } = 5; // Prag implicit
+
+
+    public bool IsLowStock()
+    {
+        return Quantity <= MinStockThreshold;
+    }
+
+    //***
     public void MarkAsSold()
     {
         IsSold = true;
@@ -87,9 +95,8 @@ public class Microprocessor(
     double clockSpeed)
     : Product(name, productionCost, sellingPrice, quantity)
 {
-    public string? Architecture { get; init; }
-    public int? Cores { get; init; } = cores;
-    public double ClockSpeed { get; init; } = clockSpeed;
+    public int? Cores { get; } = cores;
+    public double ClockSpeed { get; } = clockSpeed;
 
     public override string GetTechnicalSpecifications()
     {
@@ -120,8 +127,8 @@ public class Motherboard(
 {
     public BoardState CurrentState { get; private set; } = BoardState.BlankBoard;
 
-    public string? SocketStandard { get; init; } = socketStandard;
-    public string? PhysicalForm { get; init; } = physicalForm;
+    public string? SocketStandard { get; } = socketStandard;
+    public string? PhysicalForm { get; } = physicalForm;
 
     // Only the machines will call this
     public void TransitionTo(BoardState nextState)

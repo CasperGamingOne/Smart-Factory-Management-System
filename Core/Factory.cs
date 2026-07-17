@@ -1,3 +1,5 @@
+using Spectre.Console;
+
 namespace Smart_Factory_Management_System;
 
 public class Factory
@@ -23,11 +25,26 @@ public class Factory
     public IReadOnlyList<Employee> Employees => _employees;
     public IReadOnlyList<Machine> Machines => _machines;
     public IReadOnlyList<Product> Inventory => _inventory;
-    public int InventoryCapacity => _inventory.Capacity;
+    public int MaxBatches => 20;
+    public int MaxUnitsPerBatch => 100;
+    public int MaxCapacity => MaxBatches * MaxUnitsPerBatch;
+    public int MinStockThreshold => 200;
+
+    public int GetTotalUnsoldUnits()
+    {
+        return _batches.Where(b => !b.IsSold).Sum(b => b.Quantity);
+    }
 
     public void LoadFromRepository(IEnumerable<Employee> employees, IEnumerable<Machine> machines,
-        IEnumerable<Product> products)
+        IEnumerable<Product> products, IEnumerable<ProductionOrder> orders, IEnumerable<ReportRequest> reportRequests)
     {
+        // Reset counters to 0 BEFORE materializing the lists.
+        // JsonSerializer calls the real constructor for each deserialized object, which increments
+        // the static counter. Without this reset the counter would be inflated by the load itself,
+        // causing the next genuinely new entity to receive a wrong (too-high) ID.
+        Employee.InitializeIdCounter(0);
+        Machine.InitializeIdCounter(0);
+
         var employeeList = employees.ToList();
         var machineList = machines.ToList();
         var productList = products.ToList();
@@ -36,6 +53,38 @@ public class Factory
         _machines.AddRange(machineList);
         _inventory.AddRange(productList);
 
+        _pendingOrders.Clear();
+        foreach (var order in orders) _pendingOrders.Enqueue(order);
+
+        _pendingReportRequests.Clear();
+        foreach (var request in reportRequests) _pendingReportRequests.Enqueue(request);
+
+        // Reconstruct batches from the loaded products
+        var productsByBatch = productList.Where(p => !string.IsNullOrEmpty(p.BatchId)).GroupBy(p => p.BatchId);
+        foreach (var group in productsByBatch)
+        {
+            var firstProduct = group.First();
+            var totalQuantity = group.Sum(p => p.Quantity);
+            var totalCost = group.Sum(p => p.ProductionCost * p.Quantity);
+            var unitCost = totalQuantity > 0 ? totalCost / totalQuantity : firstProduct.ProductionCost;
+
+            var batch = new ProductionBatch(firstProduct.Name ?? "Loaded Product", totalQuantity, unitCost, group.Key);
+
+            var maxSellingPrice = group.Max(p => p.SellingPrice);
+            if (maxSellingPrice > 0) batch.SetUnitSellPrice(maxSellingPrice);
+
+            // If all products in the batch are marked as sold, the batch is sold
+            if (group.All(p => p.IsSold)) batch.MarkAsSold();
+
+            // Link matching product indexes to the batch
+            for (var i = 0; i < productList.Count; i++)
+                if (productList[i].BatchId == group.Key)
+                    batch.AddInventoryIndex(i);
+
+            _batches.Add(batch);
+        }
+
+        // Now set counters to the highest persisted ID so the next new entity continues from there.
         if (employeeList.Count > 0)
         {
             var maxEmployeeId = employeeList.Max(e => e.Id);
@@ -98,6 +147,28 @@ public class Factory
         _batches.Add(batch);
     }
 
+    public static void ShowInventoryAlerts(IEnumerable<Product> inventory)
+    {
+        // Use the helper method defined in Product.cs
+        var lowStockItems = inventory.Where(p => p.IsLowStock()).ToList();
+
+        if (lowStockItems.Count == 0) return;
+        var table = new Table().Border(TableBorder.Rounded);
+        table.AddColumn("[red]Status[/]");
+        table.AddColumn("Product");
+        table.AddColumn("Current Stock");
+
+        foreach (var item in lowStockItems)
+            if (item.Name != null)
+                table.AddRow("⚠️", item.Name, $"[bold red]{item.Quantity}[/]");
+
+        AnsiConsole.Write(new Panel(table)
+        {
+            Header = new PanelHeader("[bold red] INVENTORY ALERT [/]"),
+            Border = BoxBorder.Double
+        });
+    }
+
     public void RemoveProduct(Product product)
     {
         _inventory.Remove(product);
@@ -106,5 +177,10 @@ public class Factory
     public void RemoveBatch(ProductionBatch batch)
     {
         _batches.Remove(batch);
+    }
+
+    public void RemoveEmployee(Employee employee)
+    {
+        _employees.Remove(employee);
     }
 }

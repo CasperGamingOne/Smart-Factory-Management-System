@@ -21,7 +21,7 @@ public abstract class Employee
         IsFirstTimeLogin = isFirstTimeLogin;
     }
 
-    public int Id { get; init; }
+    public int Id { get; set; }
     public string Name { get; private set; }
     public string Username { get; private set; }
     public string PasswordHash { get; private set; }
@@ -109,8 +109,6 @@ public class Technician : Employee
         [
             "Quick Actions",
             "Machine Management",
-            "Reports",
-            "Factory Information",
             "Log Out / Exit Session"
         ];
     }
@@ -150,7 +148,7 @@ public class Accountant : Employee
         Role = "Accountant";
     }
 
-    public override string QuickActionName => "N/A";
+    public override string QuickActionName => "Quick Actions";
 
     public override string ShowActivity()
     {
@@ -161,6 +159,7 @@ public class Accountant : Employee
     {
         return
         [
+            "Quick Actions",
             "Accounting",
             "Reports",
             "Log Out / Exit Session"

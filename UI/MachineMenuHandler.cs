@@ -5,7 +5,8 @@ namespace Smart_Factory_Management_System;
 internal static class MachineMenuHandler
 {
     public static void Run(Factory factory, Employee loggedInUser, ILoggerService loggerService,
-        IJsonRepository<Machine> machineRepo, IJsonRepository<Product> productRepo)
+        IJsonRepository<Machine> machineRepo, IJsonRepository<Product> productRepo,
+        IJsonRepository<ProductionOrder> ordersRepo)
     {
         var inRoom = true;
         while (inRoom)
@@ -24,7 +25,7 @@ internal static class MachineMenuHandler
             {
                 case "Overall Fleet Status Overview":
                     DisplayFleetOverview(factory);
-                    loggerService.LogInfo(LogOrigin.USER, LogEvent.FleetStatusViewed, loggedInUser.Username);
+                    loggerService.LogInfo(LogOrigin.User, LogEvent.FleetStatusViewed, loggedInUser.Username);
                     break;
 
                 case "Run Deep Component Inspection":
@@ -42,7 +43,8 @@ internal static class MachineMenuHandler
                     break;
 
                 case "Fulfill Pending Orders":
-                    ProductionMenuHandler.Run(factory, loggedInUser, loggerService, machineRepo, productRepo);
+                    ProductionMenuHandler.Run(factory, loggedInUser, loggerService, machineRepo, productRepo,
+                        ordersRepo);
                     break;
                 case "Return to Main Menu":
                     inRoom = false;
@@ -110,7 +112,7 @@ internal static class MachineMenuHandler
             AnsiConsole.MarkupLine(Machines.RepairNotNeeded);
         }
 
-        loggerService.LogInfo(LogOrigin.USER, LogEvent.MaintenancePerformed,
+        loggerService.LogInfo(LogOrigin.User, LogEvent.MaintenancePerformed,
             $"{chosenMachine.Id} - {chosenMachine.Name}");
     }
 }

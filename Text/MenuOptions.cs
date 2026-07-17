@@ -1,6 +1,6 @@
 namespace Smart_Factory_Management_System;
 
-internal static class MenuOptions
+public static class MenuOptions
 {
     public static readonly string[] ProductTypes = ["Microprocessor", "Motherboard"];
 
@@ -16,7 +16,6 @@ internal static class MenuOptions
         "Product Management",
         "Accounting",
         "Reports",
-        "Factory Information",
         "Log Out / Exit Session"
     ];
 
@@ -49,7 +48,6 @@ internal static class MenuOptions
     [
         "Production Summary",
         "Employee Report",
-        "Batch Revenue Summary",
         "Order Backlog Summary",
         "Return to Main Menu"
     ];
@@ -65,7 +63,6 @@ internal static class MenuOptions
     public static readonly string[] AccountingMenu =
     [
         "View Batches",
-        "Set Unit Sell Price for Batch",
         "Process Report Requests",
         "Return to Main Menu"
     ];
@@ -76,6 +73,7 @@ internal static class MenuOptions
     [
         "View All Registered Staff",
         "Add New Employee",
+        "Remove Employee",
         "Return to Main Menu"
     ];
 }

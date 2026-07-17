@@ -17,7 +17,7 @@ public interface IUndoService
 
 public class UndoService : IUndoService
 {
-    private static readonly List<ICommand> _commands = new();
+    private static readonly List<ICommand> Commands = new();
 
     private UndoService()
     {
@@ -27,21 +27,21 @@ public class UndoService : IUndoService
 
     public void RegisterCommand(ICommand command)
     {
-        _commands.Add(command);
-        while (_commands.Count > 10) _commands.RemoveAt(0);
+        Commands.Add(command);
+        while (Commands.Count > 10) Commands.RemoveAt(0);
     }
 
     public IReadOnlyList<ICommand> GetUndoableCommands(Employee user)
     {
-        if (user is Director) return _commands;
+        if (user is Director) return Commands;
 
-        return _commands.FindAll(c => c.ExecutedBy.Equals(user.Username, StringComparison.OrdinalIgnoreCase));
+        return Commands.FindAll(c => c.ExecutedBy.Equals(user.Username, StringComparison.OrdinalIgnoreCase));
     }
 
     public void UndoCommand(ICommand command)
     {
         command.Undo();
-        _commands.Remove(command);
+        Commands.Remove(command);
     }
 }
 
@@ -125,6 +125,37 @@ public class SellFromInventoryCommand(
         chosen.AddQuantity(qty);
         factory.RemoveProduct(soldProduct);
         factory.RemoveBatch(batch);
+
+        var originalBatch = factory.Batches.FirstOrDefault(b => b.BatchId == chosen.BatchId);
+        if (originalBatch != null)
+        {
+            originalBatch.Quantity += qty;
+            originalBatch.MarkAsUnsold();
+        }
+
         productRepo.Save(factory.Inventory);
+    }
+}
+
+public class RemoveEmployeeCommand(
+    Employee employee,
+    Factory factory,
+    IJsonRepository<Employee> employeeRepo,
+    string executedBy) : ICommand
+{
+    public string Description => $"Removed employee '{employee.Name}' ({employee.Role})";
+    public string ExecutedBy => executedBy;
+    public DateTime ExecutedAt { get; } = DateTime.Now;
+
+    public void Undo()
+    {
+        factory.AddEmployee(employee);
+
+        var users = employeeRepo.Load();
+        if (!users.Any(u => u.Id == employee.Id))
+        {
+            users.Add(employee);
+            employeeRepo.Save(users);
+        }
     }
 }

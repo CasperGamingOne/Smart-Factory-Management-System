@@ -16,4 +16,10 @@ public static class Accounting
     public const string PendingReportHeader = "Pending Report Requests";
     public const string PendingReportNotification = "Report Request [cyan]#{0}[/] ({1}) is pending your fulfillment!";
     public const string PendingReportAcknowledge = "[grey]Press any key to acknowledge...[/]";
+
+    public const string QuickActionsTitle = "Accountant Quick Actions";
+    public const string QuickActionViewBatches = "1. View Batches";
+    public const string QuickActionViewProductionSummary = "2. View Production Summary";
+    public const string QuickActionProcessReportRequests = "3. Process Report Requests";
+    public const string QuickActionReturnToMainMenu = "4. Return to Main Menu";
 }
