@@ -654,6 +654,14 @@ The `UndoService` implements the Command Pattern. Instead of just trying to "rev
 ### Defensive Instantiation (`InitializeIdCounter`)
 When loading entities like `Employee` or `Machine` from JSON, `System.Text.Json` invokes their constructors. Because the constructors contain an auto-incrementing static ID logic (`_idCounter++`), merely loading a list of 10 employees would inflate the counter by 10 unnecessarily. To fix this, `Factory.LoadFromRepository()` temporarily sets the static counters to 0 before materializing the lists, and then sets them to the maximum found ID afterwards, ensuring the next newly created entity gets the correct ID.
 
+### Selective Serialization (`[JsonInclude]` and `[JsonIgnore]`)
+The project utilizes `System.Text.Json.Serialization` attributes to precisely control what data is saved to disk and what is derived at runtime, prioritizing security and data integrity.
+
+*   **`[JsonInclude]` on `init` properties**: In `ProductionOrder.cs`, properties like `OrderId`, `ProductName`, and `CreatedAt` use the `[JsonInclude]` attribute in combination with the `init` accessor. This is an exotic but powerful pattern. It means the property can only be set during object initialization (making the object immutable after creation from a coding perspective), but `System.Text.Json` is explicitly instructed that it is allowed to bypass this restriction during deserialization to populate the object from the JSON file. This guarantees that historical order data cannot be accidentally mutated by business logic later.
+
+*   **`[JsonIgnore]` on runtime dependencies**: In `Machine.cs`, the `SupportedProductType` property (which holds a `System.Type` object) is decorated with `[JsonIgnore]`. The `Type` object is a runtime construct used to dynamically check if a machine can produce a certain product (e.g., `if (blueprint.GetType() != SupportedProductType)`). It makes no sense to serialize a C# `Type` object to a flat JSON file. By ignoring it, we keep the JSON payload small and clean, and the `Type` is simply re-assigned in the constructor of the concrete machine class (like `LitographyMachine`) when the object is instantiated during deserialization via the `JsonDerivedType` discriminator.
+
+
 ### LINQ Usage Snippets
 The project heavily utilizes Language Integrated Query (LINQ) to efficiently filter, group, and analyze data in memory without complex `foreach` loops.
 
@@ -710,10 +718,3 @@ Used when loading flat JSON data and needing to reconstruct hierarchical relatio
 // Core/Factory.cs - Grouping products by their BatchId to reconstruct ProductionBatch objects
 var productsByBatch = productList.Where(p => !string.IsNullOrEmpty(p.BatchId)).GroupBy(p => p.BatchId);
 ```
-
-### Selective Serialization (`[JsonInclude]` and `[JsonIgnore]`)
-The project utilizes `System.Text.Json.Serialization` attributes to precisely control what data is saved to disk and what is derived at runtime, prioritizing security and data integrity.
-
-*   **`[JsonInclude]` on `init` properties**: In `ProductionOrder.cs`, properties like `OrderId`, `ProductName`, and `CreatedAt` use the `[JsonInclude]` attribute in combination with the `init` accessor. This is an exotic but powerful pattern. It means the property can only be set during object initialization (making the object immutable after creation from a coding perspective), but `System.Text.Json` is explicitly instructed that it is allowed to bypass this restriction during deserialization to populate the object from the JSON file. This guarantees that historical order data cannot be accidentally mutated by business logic later.
-
-*   **`[JsonIgnore]` on runtime dependencies**: In `Machine.cs`, the `SupportedProductType` property (which holds a `System.Type` object) is decorated with `[JsonIgnore]`. The `Type` object is a runtime construct used to dynamically check if a machine can produce a certain product (e.g., `if (blueprint.GetType() != SupportedProductType)`). It makes no sense to serialize a C# `Type` object to a flat JSON file. By ignoring it, we keep the JSON payload small and clean, and the `Type` is simply re-assigned in the constructor of the concrete machine class (like `LitographyMachine`) when the object is instantiated during deserialization via the `JsonDerivedType` discriminator.
