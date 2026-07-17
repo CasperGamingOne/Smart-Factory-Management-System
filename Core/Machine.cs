@@ -27,10 +27,18 @@ public abstract class Machine
     private static readonly Random Random = new();
 
     protected Machine(string name, string manufacturer, string serialNumber, List<MachinePart> parts,
-        MachineCondition condition)
+        MachineCondition condition, int id = 0)
     {
-        _idCounter++;
-        Id = _idCounter;
+        if (id > 0)
+        {
+            Id = id;
+        }
+        else
+        {
+            _idCounter++;
+            Id = _idCounter;
+        }
+
         Name = name;
         Manufacturer = manufacturer;
         SerialNumber = serialNumber;
@@ -401,8 +409,8 @@ public abstract class Machine
 public class LitographyMachine : Machine
 {
     public LitographyMachine(string name, string manufacturer, string serialNumber,
-        List<MachinePart> parts, MachineCondition condition)
-        : base(name, manufacturer, serialNumber, parts, condition)
+        List<MachinePart> parts, MachineCondition condition, int id = 0)
+        : base(name, manufacturer, serialNumber, parts, condition, id)
     {
         SupportedProductType = typeof(Microprocessor);
     }
@@ -440,8 +448,8 @@ public class LitographyMachine : Machine
 public class SmtMachine : Machine // Solder Paste Printer
 {
     public SmtMachine(string name, string manufacturer, string serialNumber, List<MachinePart> parts,
-        MachineCondition condition)
-        : base(name, manufacturer, serialNumber, parts, condition)
+        MachineCondition condition, int id = 0)
+        : base(name, manufacturer, serialNumber, parts, condition, id)
     {
         SupportedProductType = typeof(Motherboard);
     }
@@ -479,8 +487,9 @@ public class PaPMachine(
     string manufacturer,
     string serialNumber,
     List<MachinePart> parts,
-    MachineCondition condition)
-    : Machine(name, manufacturer, serialNumber, parts, condition) // Pick and Place
+    MachineCondition condition,
+    int id = 0)
+    : Machine(name, manufacturer, serialNumber, parts, condition, id) // Pick and Place
 {
     public override bool Produce(Product product)
     {
@@ -515,8 +524,9 @@ public class ReflowOven(
     string manufacturer,
     string serialNumber,
     List<MachinePart> parts,
-    MachineCondition condition)
-    : Machine(name, manufacturer, serialNumber, parts, condition)
+    MachineCondition condition,
+    int id = 0)
+    : Machine(name, manufacturer, serialNumber, parts, condition, id)
 {
     public override bool Produce(Product product)
     {

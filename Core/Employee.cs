@@ -11,10 +11,18 @@ public abstract class Employee
     private static int _idCounter;
 
 
-    protected Employee(string name, string username, string passwordHash, bool isFirstTimeLogin = true)
+    protected Employee(string name, string username, string passwordHash, bool isFirstTimeLogin = true, int id = 0)
     {
-        _idCounter++;
-        Id = _idCounter;
+        if (id > 0)
+        {
+            Id = id;
+        }
+        else
+        {
+            _idCounter++;
+            Id = _idCounter;
+        }
+
         Name = name;
         Username = username;
         PasswordHash = passwordHash;
@@ -62,8 +70,9 @@ public abstract class Employee
 
 public class Director : Employee
 {
-    public Director(string name, string username, string passwordHash, bool isFirstTimeLogin = true) : base(name,
-        username, passwordHash, isFirstTimeLogin)
+    public Director(string name, string username, string passwordHash, bool isFirstTimeLogin = true, int id = 0) : base(
+        name,
+        username, passwordHash, isFirstTimeLogin, id)
     {
         Role = "Director";
     }
@@ -90,8 +99,9 @@ public class Director : Employee
 
 public class Technician : Employee
 {
-    public Technician(string name, string username, string passwordHash, bool isFirstTimeLogin = true) : base(name,
-        username, passwordHash, isFirstTimeLogin)
+    public Technician(string name, string username, string passwordHash, bool isFirstTimeLogin = true, int id = 0) :
+        base(name,
+            username, passwordHash, isFirstTimeLogin, id)
     {
         Role = "Technician";
     }
@@ -116,8 +126,9 @@ public class Technician : Employee
 
 public class SalesAgent : Employee
 {
-    public SalesAgent(string name, string username, string passwordHash, bool isFirstTimeLogin = true) : base(name,
-        username, passwordHash, isFirstTimeLogin)
+    public SalesAgent(string name, string username, string passwordHash, bool isFirstTimeLogin = true, int id = 0) :
+        base(name,
+            username, passwordHash, isFirstTimeLogin, id)
     {
         Role = "Sales Agent";
     }
@@ -142,8 +153,9 @@ public class SalesAgent : Employee
 
 public class Accountant : Employee
 {
-    public Accountant(string name, string username, string passwordHash, bool isFirstTimeLogin = true) : base(name,
-        username, passwordHash, isFirstTimeLogin)
+    public Accountant(string name, string username, string passwordHash, bool isFirstTimeLogin = true, int id = 0) :
+        base(name,
+            username, passwordHash, isFirstTimeLogin, id)
     {
         Role = "Accountant";
     }

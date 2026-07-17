@@ -84,6 +84,19 @@ internal static class EmployeeMenuHandler
     {
         var name = AnsiConsole.Ask<string>(Employees.EnterFullName);
         var username = AnsiConsole.Ask<string>(Employees.EnterUsername);
+
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            AnsiConsole.MarkupLine("[red]❌ Username cannot be empty.[/]");
+            return;
+        }
+
+        if (factory.Employees.Any(e => e.Username.Equals(username, StringComparison.OrdinalIgnoreCase)))
+        {
+            AnsiConsole.MarkupLine("[red]❌ Username is already taken by another employee. Operation aborted.[/]");
+            return;
+        }
+
         var password = AnsiConsole.Ask<string>(Employees.EnterPassword);
         var hashedPassword = SecurityHelper.HashPassword(password);
 
