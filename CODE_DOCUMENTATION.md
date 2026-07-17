@@ -636,3 +636,77 @@ Manages the terminal interface for editing personal account details.
 
 ### Undo.cs
 *   **`UndoText`**: Defines strings for the Undo module, including warnings about passwords not being undoable and confirmation dialogs.
+
+## Code Patterns & Design Decisions
+
+### Why JSON Polymorphism?
+The project utilizes `[JsonDerivedType(typeof(DerivedClass), "typeDiscriminator")]` on base classes like `Employee`, `Machine`, `MachinePart`, and `Product`. This is a deliberate design decision for the `Core` entities to allow standard generic serialization via `System.Text.Json` (in `JsonRepository<T>`) while perfectly preserving the specific subclass properties (like `Microprocessor.Cores` or `LitographyMachine` vs `ReflowOven` behavior). This avoids writing custom JSON converters for complex inheritance structures and keeps the storage flat and simple.
+
+### Strict Segregation of Concerns (Architecture)
+The repository is split into distinct parts:
+1.  **Core**: Contains NO UI code and NO saving/loading logic. It holds the pure business state (`Factory.cs`) and entity behaviors (e.g., `Machine.ApplyProductionWearAndTear()`).
+2.  **Services**: Contains logic for data persistence (`JsonRepository`), authentication, and the Command Pattern for undo functionality (`UndoService`). The UI uses these via Interfaces, meaning the UI never directly reads/writes to files.
+3.  **UI**: Depends on `Spectre.Console` for drawing, but cannot change the database directly. It must call `IJsonRepository.Save()` or a `Service` class.
+
+### The Command Pattern for "Undo"
+The `UndoService` implements the Command Pattern. Instead of just trying to "reverse" an action, operations that need to be undo-able (like changing a username, selling a product, or removing an employee) are encapsulated into classes implementing `ICommand` (e.g., `SellFromInventoryCommand`). When an action happens, the UI registers this command. If the user wants to undo it, the service calls `.Undo()` on that specific command object, which holds all the original context (like the old name, or the exact product that was sold) necessary to perfectly revert the state.
+
+### Defensive Instantiation (`InitializeIdCounter`)
+When loading entities like `Employee` or `Machine` from JSON, `System.Text.Json` invokes their constructors. Because the constructors contain an auto-incrementing static ID logic (`_idCounter++`), merely loading a list of 10 employees would inflate the counter by 10 unnecessarily. To fix this, `Factory.LoadFromRepository()` temporarily sets the static counters to 0 before materializing the lists, and then sets them to the maximum found ID afterwards, ensuring the next newly created entity gets the correct ID.
+
+### LINQ Usage Snippets
+The project heavily utilizes Language Integrated Query (LINQ) to efficiently filter, group, and analyze data in memory without complex `foreach` loops.
+
+**1. Finding an item based on a condition (`FirstOrDefault`)**
+Used to safely try to find an item, returning `null` if it doesn't exist, preventing index out of bounds exceptions.
+```csharp
+// Authentication.cs - Finding a user by case-insensitive username
+var employee = users.FirstOrDefault(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+
+// UI/ProductionMenuHandler.cs - Finding a specific batch
+var existing = factory.Batches.FirstOrDefault(b => b.BatchId == order.BatchId);
+```
+
+**2. Filtering a collection (`Where`)**
+Used to return a subset of a collection based on a predicate.
+```csharp
+// Services/NotificationService.cs - Finding unassigned orders
+var unassigned = factory.PendingOrders.Where(o => o.AssignedTechnicianId == -1).ToList();
+
+// UI/ProductMenuHandler.cs - Getting only unsold products for the inventory view
+var unsoldProducts = factory.Inventory.Where(p => !p.IsSold).ToList();
+```
+
+**3. Checking for existence (`Any`)**
+Used for fast boolean checks to see if at least one element matches a condition, without iterating the whole list if a match is found early.
+```csharp
+// Services/AccountService.cs - Ensuring a username isn't already taken (excluding the current user)
+if (users.Any(u => u.Id != user.Id && u.Username.Equals(newUsername, StringComparison.OrdinalIgnoreCase)))
+
+// UI/AccountingMenuHandler.cs - Checking if there are any pending report requests
+if (!pendingRequests.Any())
+```
+
+**4. Aggregating values (`Sum`, `Max`)**
+Used for financial calculations and finding highest values.
+```csharp
+// UI/ReportMenuHandler.cs - Calculating the total monetary value of unsold inventory
+var inventoryValue = factory.Inventory.Where(p => !p.IsSold).Sum(p => p.SellingPrice * p.Quantity);
+
+// Core/Factory.cs - Finding the highest ID to reset the auto-increment counter
+var maxEmployeeId = employeeList.Max(e => e.Id);
+```
+
+**5. Transforming data (`Select`)**
+Often used to project data into a new format, especially for building UI menus.
+```csharp
+// UI/EmployeeMenuHandler.cs - Transforming raw string options into numbered menu choices for Spectre.Console
+var menuOptions = MenuOptions.EmployeeManagementMenu.Select((item, index) => $"{index + 1}. {item}").ToList();
+```
+
+**6. Grouping related items (`GroupBy`)**
+Used when loading flat JSON data and needing to reconstruct hierarchical relationships (like Products belonging to a Batch).
+```csharp
+// Core/Factory.cs - Grouping products by their BatchId to reconstruct ProductionBatch objects
+var productsByBatch = productList.Where(p => !string.IsNullOrEmpty(p.BatchId)).GroupBy(p => p.BatchId);
+```
