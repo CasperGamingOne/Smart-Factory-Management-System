@@ -97,8 +97,7 @@ internal static class EmployeeMenuHandler
             return;
         }
 
-        var password = AnsiConsole.Ask<string>(Employees.EnterPassword);
-        var hashedPassword = SecurityHelper.HashPassword(password);
+        var hashedPassword = SecurityHelper.HashPassword("password");
 
         var role = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
