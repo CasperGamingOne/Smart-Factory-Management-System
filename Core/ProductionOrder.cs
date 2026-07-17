@@ -26,7 +26,7 @@ public class ProductionOrder
     public int AssignedTechnicianId { get; set; }
     public bool IsComplete => CompletedCount >= Quantity;
 
-    [JsonInclude] public string CustomProductName { get; init; } = string.Empty;
+    [JsonInclude] public string Name { get; init; } = string.Empty;
 
     [JsonInclude] public int? Cores { get; init; }
 

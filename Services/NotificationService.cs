@@ -17,7 +17,7 @@ public class NotificationService : INotificationService
                 foreach (var o in unassigned)
                 {
                     o.AssignedTechnicianId = tech.Id;
-                    var displayName = string.IsNullOrEmpty(o.CustomProductName) ? o.ProductName : o.CustomProductName;
+                    var displayName = string.IsNullOrEmpty(o.Name) ? o.ProductName : o.Name;
                     content.AppendLine(string.Format(Production.AutoAssignNotification, o.OrderId, displayName,
                         o.Quantity));
                 }
@@ -66,7 +66,7 @@ public class NotificationService : INotificationService
                 foreach (var o in completedOrders)
                 {
                     o.IsNotifiedComplete = true;
-                    var displayName = string.IsNullOrEmpty(o.CustomProductName) ? o.ProductName : o.CustomProductName;
+                    var displayName = string.IsNullOrEmpty(o.Name) ? o.ProductName : o.Name;
                     content.AppendLine(string.Format(Sales.OrderCompleteNotification, o.OrderId, displayName,
                         o.Quantity));
                 }

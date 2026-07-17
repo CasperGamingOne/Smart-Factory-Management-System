@@ -266,9 +266,9 @@ internal static class ProductionMenuHandler
     {
         return order.ProductName switch
         {
-            "Microprocessor" => new Microprocessor(order.CustomProductName, unitCost, 0, 1, order.Cores ?? 4,
+            "Microprocessor" => new Microprocessor(order.Name, unitCost, 0, 1, order.Cores ?? 4,
                 order.ClockSpeed ?? 2.5),
-            "Motherboard" => new Motherboard(order.CustomProductName, unitCost, 0, 1, order.SocketStandard ?? "AM4",
+            "Motherboard" => new Motherboard(order.Name, unitCost, 0, 1, order.SocketStandard ?? "AM4",
                 order.PhysicalForm ?? "ATX"),
             _ => null
         };
@@ -309,7 +309,7 @@ internal static class ProductionMenuHandler
         AnsiConsole.Write(new Rule(Production.MotherboardLineTitle).Centered());
         AnsiConsole.WriteLine();
 
-        var motherboardTemplate = new Motherboard(order.CustomProductName, 20, 0, 1, order.SocketStandard ?? "AM4",
+        var motherboardTemplate = new Motherboard(order.Name, 20, 0, 1, order.SocketStandard ?? "AM4",
             order.PhysicalForm ?? "ATX");
 
         AnsiConsole.Live(liveGrid)
@@ -369,7 +369,7 @@ internal static class ProductionMenuHandler
 
                     var board = factory.Inventory.OfType<Motherboard>()
                         .FirstOrDefault(b =>
-                            b.Name == order.CustomProductName && b.CurrentState != BoardState.BakedAndSoldered &&
+                            b.Name == order.Name && b.CurrentState != BoardState.BakedAndSoldered &&
                             !b.IsSold);
 
                     var isNewBoard = false;

@@ -90,7 +90,7 @@ internal static class SalesMenuHandler
 
         var order = new ProductionOrder(productChoice, quantity, -1)
         {
-            CustomProductName = customName,
+            Name = customName,
             Cores = cores,
             ClockSpeed = clockSpeed.GetValueOrDefault(),
             SocketStandard = socketStandard,
@@ -101,9 +101,9 @@ internal static class SalesMenuHandler
         ordersRepo.Save(factory.PendingOrders);
 
         AnsiConsole.MarkupLine(
-            string.Format(Sales.OrderPlacedOnHold, order.OrderId, order.CustomProductName, order.Quantity));
+            string.Format(Sales.OrderPlacedOnHold, order.OrderId, order.Name, order.Quantity));
         loggerService.LogInfo(LogOrigin.User, LogEvent.OrderPlaced,
-            $"Order {order.OrderId}: {order.CustomProductName} x{order.Quantity} (Status: On Hold / Unassigned) by {loggedInUser.Username}");
+            $"Order {order.OrderId}: {order.Name} x{order.Quantity} (Status: On Hold / Unassigned) by {loggedInUser.Username}");
     }
 
     public static void ShowPendingOrders(Factory factory)
