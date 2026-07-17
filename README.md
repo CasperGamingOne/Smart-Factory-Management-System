@@ -58,7 +58,7 @@ A rich console application leveraging `Spectre.Console` for interactive menus, t
 ## 🎮 Usage Guide
 
 Upon launching the application, you will be greeted by the login screen.
-- **Default Login**: If running for the first time, default users are seeded. (e.g., `admin`/`admin` for the Director role).
+- **Default Login**: If running for the first time, default users are seeded. (You find them inside the program directory: $My Documents/SmartFactoryData/Employees.json | first time password is password).
 - **Navigation**: Use the `Arrow Keys` (Up/Down) to navigate menus, and `Enter` to select. The UI is designed to be highly intuitive, preventing invalid inputs natively.
 - **Workflows**: Technicians manage machines and process orders. Sales Agents manage the product catalog and place new orders. Directors oversee the entire operation and request reports, which Accountants then fulfill.
 
