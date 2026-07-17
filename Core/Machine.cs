@@ -153,27 +153,18 @@ public abstract class Machine
         var randomIndex = Random.Next(0, Parts.Count);
         var selectedPart = Parts[randomIndex];
 
-        // 20% chance overall for wear-and-tear:
-        //   - If part is Excellent, it may degrade to Good (10%) or break directly to Critical (10%).
-        //   - If part is Good, it degrades to Critical (20%).
+        // 15% chance overall for wear-and-tear per production cycle:
+        //   - If part is Excellent, it degrades one step to Good.
+        //   - If part is Good, it degrades one step to Critical.
         //   - Critical parts stay Critical.
-        if (Random.Next(0, 100) < 20)
+        if (Random.Next(0, 100) < 15)
         {
             var oldCondition = selectedPart.Condition;
+
             if (selectedPart.Condition == PartCondition.Excellent)
-            {
-                // Split between Good and Critical
-                if (Random.Next(0, 100) < 10) // 10% chance to go to Good
-                    selectedPart.DegradeStep(); // Excellent -> Good
-                else
-                    // Directly jump to Critical
-                    selectedPart.BreakDown();
-            }
+                selectedPart.DegradeStep(); // Excellent -> Good
             else if (selectedPart.Condition == PartCondition.Good)
-            {
-                // Good degrades to Critical
                 selectedPart.DegradeStep(); // Good -> Critical
-            }
             // If already Critical, nothing changes
 
             if (selectedPart.Condition != oldCondition)
@@ -231,11 +222,12 @@ public abstract class Machine
 
         // Formula derived from ApplyProductionWearAndTear randomness:
         // - Random selection of 1 of N parts (1/N chance).
-        // - 20% degradation probability (0.2).
-        // - Expected production cycles for a part to degrade by 1 step is (N / 0.2).
+        // - 15% degradation probability (0.15).
+        // - Degradation is strictly one-step: Excellent -> Good -> Critical.
+        // - Expected production cycles for a part to degrade by 1 step is (N / 0.15).
         // - Excellent parts have 2 steps to critical, Good parts have 1 step, Critical parts have 0 steps.
         // - Machine fails (and requires repair) as soon as the first part goes Critical.
-        // - Remaining Cycles Estimate = min(StepsRemaining) * (N / 0.2).
+        // - Remaining Cycles Estimate = min(StepsRemaining) * (N / 0.15).
         var n = Parts.Count;
         var remainingSteps = Parts.Select(p => p.Condition switch
         {
@@ -247,7 +239,7 @@ public abstract class Machine
         var minSteps = remainingSteps.Min();
         if (minSteps == 0) return 0;
 
-        var expectedCycles = minSteps * n / 0.2;
+        var expectedCycles = minSteps * n / 0.15;
         return (int)Math.Round(expectedCycles);
     }
 
