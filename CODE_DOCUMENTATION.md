@@ -10,18 +10,9 @@ This document provides a highly detailed description of each class and method pr
 
 ---
 
-## Core
+## [Core](#core)
+
 *Contains domain models and entities.*
-
-## Services
-*Contains infrastructure, data access, and business logic services.*
-
-## UI
-*Contains handlers for the Text User Interface (TUI).*
-
-## Text
-*Contains text constants and localization strings for the UI.*
-
 
 ### Employee.cs
 This file defines the domain model for employees in the system. It implements a class hierarchy using the abstract `Employee` class as a base, with derived classes for specific roles (`Director`, `Technician`, `SalesAgent`, `Accountant`). It uses JSON polymorphism for serialization.
@@ -299,7 +290,9 @@ This class models a request made by a Director for a specific report to be gener
         *   `Fulfill()`: Changes status to Fulfilled.
         *   `ToString()`: Returns a formatted string representing the request.
 
-## Services
+---
+
+## [Services](#services)
 *Contains infrastructure, data access, and business logic services.*
 
 ### ServicesInterfaces.cs
@@ -448,7 +441,7 @@ Implements the Command pattern to provide undo functionality for certain actions
     *   **`SellFromInventoryCommand`**: Reverts a partial sale from inventory by adding the quantity back to the original product, removing the separated sold product/batch, and saving the inventory.
     *   **`RemoveEmployeeCommand`**: Reverts employee deletion by adding the employee back to the `Factory` and the `IJsonRepository<Employee>`.
 
-## UI
+## [UI](#ui)
 *Contains handlers for the Text User Interface (TUI).*
 
 ### Program.cs
@@ -595,7 +588,7 @@ Manages the terminal interface for editing personal account details.
         *   `ChangeUsername(...)`: Similar to changing the full name. Prompts for a new username, verifies the password, updates via `IAccountService` (which ensures uniqueness), registers a `ChangeUsernameCommand`, and logs the event.
         *   `ChangePassword(...)`: Displays a warning panel that password changes cannot be undone. Prompts for a new password twice for confirmation. Updates the password via `IAccountService` and logs the event.
 
-## Text
+## [Text](#text)
 *Contains static text constants and format strings for the console UI, acting as a localization/text-resource layer.*
 
 ### Common.cs
