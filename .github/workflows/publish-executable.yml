@@ -20,7 +20,7 @@ jobs:
           fetch-depth: 0 # Fetches all history for all tags and branches
 
       - name: ⚙️ Setup .NET Environment
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '8.0.x' # Ensure this matches your project's target framework
 
