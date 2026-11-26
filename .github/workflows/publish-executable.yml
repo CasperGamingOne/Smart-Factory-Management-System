@@ -15,12 +15,12 @@ jobs:
 
     steps:
       - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0 # Fetches all history for all tags and branches
 
       - name: ⚙️ Setup .NET Environment
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '8.0.x' # Ensure this matches your project's target framework
 
@@ -63,7 +63,7 @@ jobs:
           zip -j linux-smart-factory-management-system.zip ./publish/linux/*
 
       - name: 🚀 Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: Smart Factory Management System Release ${{ github.ref_name }}
           generate_release_notes: true # Auto-generates changelog based on your PRs!
