@@ -165,7 +165,7 @@ public abstract class Machine
         //   - If part is Excellent, it degrades one step to Good.
         //   - If part is Good, it degrades one step to Critical.
         //   - Critical parts stay Critical.
-        if (Random.Next(0, 100) < 15)
+        if (Random.Shared.Next(0, 100) < 15)
         {
             var oldCondition = selectedPart.Condition;
 
