@@ -63,7 +63,7 @@ jobs:
           zip -j linux-smart-factory-management-system.zip ./publish/linux/*
 
       - name: 🚀 Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: Smart Factory Management System Release ${{ github.ref_name }}
           generate_release_notes: true # Auto-generates changelog based on your PRs!
